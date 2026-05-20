@@ -10,6 +10,7 @@ import Ranking  from './views/Ranking';
 import Misiones from './views/Misiones';
 import Navbar   from './components/Navbar';
 import Examen   from './views/Examen';
+import CofreGracia from './views/CofreGracia';
 
 import LoginCatequista from './views/LoginCatequista';
 import PanelCatequista from './views/PanelCatequista';
@@ -24,7 +25,7 @@ const Cargando = () => (
   </div>
 );
 
-// ── Helpers de cosmética ───────────────────────────────────────────────────
+// ── Helpers cosmética ──────────────────────────────────────────────────────
 const MARCOS = {
   marco_vitral_azul:   { border: 'border-blue-400',   shadow: 'shadow-[0_0_20px_rgba(96,165,250,0.5)]',  gradiente: 'from-blue-600 to-cyan-400'   },
   marco_vitral_dorado: { border: 'border-yellow-400', shadow: 'shadow-[0_0_20px_rgba(250,204,21,0.6)]',  gradiente: 'from-yellow-500 to-amber-300' },
@@ -36,7 +37,7 @@ const tieneSeguro = (inv) => inv.includes('seguro_racha');
 
 // ── Perfil ─────────────────────────────────────────────────────────────────
 const Perfil = () => {
-  const { nombre, grupo, monedas, nivelActual, rango, racha, vidas, inventario, cerrarSesion, minutosHastaVida } = useGame();
+  const { nombre, grupo, monedas, nivelActual, rango, racha, vidas, inventario, cerrarSesion, minutosHastaVida, cofresAbiertos } = useGame();
   const marco      = getMarco(inventario);
   const aura       = tieneAura(inventario);
   const tieneEsc   = tieneEscudo(inventario);
@@ -55,6 +56,7 @@ const Perfil = () => {
 
   return (
     <div className="py-6 space-y-4 animate-slide-up">
+      {/* Tarjeta principal */}
       <div className="glass-card rounded-3xl p-6 text-center space-y-3 border border-white/10 relative overflow-hidden">
         {aura && (
           <div className="absolute inset-0 pointer-events-none">
@@ -94,6 +96,7 @@ const Perfil = () => {
         )}
       </div>
 
+      {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="glass-card rounded-2xl p-4 border border-white/10 space-y-2">
           <div className="flex items-center gap-2">
@@ -110,7 +113,7 @@ const Perfil = () => {
           <p className="text-white/20 text-[9px] font-black">{nivelActual}/17 oraciones</p>
         </div>
 
-        <div className="glass-card rounded-2xl p-4 border border-yellow-400/20 flex flex-col justify-between">
+        <div className="glass-card rounded-2xl p-4 border border-yellow-400/20">
           <div className="flex items-center gap-2">
             <span className="text-xl">🪙</span>
             <div>
@@ -141,13 +144,25 @@ const Perfil = () => {
           </div>
           <div className="flex gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
-              <span key={i} className={`text-sm transition-all ${i < vidas ? 'opacity-100' : 'opacity-20'}`}>❤️</span>
+              <span key={i} className={`text-sm ${i < vidas ? 'opacity-100' : 'opacity-20'}`}>❤️</span>
             ))}
           </div>
           {tiempoVida && <p className="text-white/30 text-[9px] font-black mt-1">+1 en {tiempoVida}</p>}
         </div>
       </div>
 
+      {/* Cofres abiertos */}
+      {cofresAbiertos > 0 && (
+        <div className="glass-card rounded-2xl p-4 border border-amber-600/20 flex items-center gap-3">
+          <span className="text-2xl">📦</span>
+          <div>
+            <p className="text-amber-400 font-black text-sm">{cofresAbiertos} cofres abiertos</p>
+            <p className="text-white/30 text-xs">Sigue jugando para obtener más</p>
+          </div>
+        </div>
+      )}
+
+      {/* Inventario */}
       {inventario.length > 0 && (
         <div className="glass-card rounded-3xl p-5 border border-white/10 space-y-3">
           <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em]">Objetos equipados</p>
@@ -160,6 +175,8 @@ const Perfil = () => {
               { id: 'marco_vitral_dorado', icono: '🟡', nombre: 'Marco Vitral Dorado',    desc: 'Marco de perfil dorado'     },
               { id: 'titulo_guardian',     icono: '⚜️', nombre: 'Guardián del Credo',     desc: 'Título activo'              },
               { id: 'titulo_maestro',      icono: '👑', nombre: 'Maestro de la Fe',       desc: 'Título activo'              },
+              { id: 'pocion_sabiduria',    icono: '🧪', nombre: 'Poción de Sabiduría',    desc: 'Elimina opciones malas'     },
+              { id: 'reloj_arena',         icono: '⏳', nombre: 'Reloj de Arena',          desc: 'Tiempo extra'               },
             ].filter(obj => inventario.includes(obj.id)).map(obj => (
               <div key={obj.id} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-3 py-2">
                 <span className="text-lg shrink-0">{obj.icono}</span>
@@ -183,35 +200,59 @@ const Perfil = () => {
 
 // ── Shell estudiante ───────────────────────────────────────────────────────
 const AppShell = () => {
-  const { activeTab, enLeccion } = useGame();
+  const { activeTab, enLeccion, cofrePendiente, cerrarCofre } = useGame();
+  const [examenActivo, setExamenActivo] = useState(null);
 
-  // Estado del examen activo
-  const [examenActivo, setExamenActivo] = useState(null); // { clave, nombre }
+  if (enLeccion) return (
+    <>
+      <Leccion />
+      {/* Cofre aparece encima de la lección al terminarla */}
+      {cofrePendiente && (
+        <CofreGracia
+          tipoCofre={cofrePendiente.tipo}
+          recompensa={cofrePendiente.recompensa}
+          onCerrar={cerrarCofre}
+        />
+      )}
+    </>
+  );
 
-  if (enLeccion) return <Leccion />;
-
-  if (examenActivo) {
-    return (
+  if (examenActivo) return (
+    <>
       <Examen
         claveUnidad={examenActivo.clave}
         unidadNombre={examenActivo.nombre}
         onCerrar={() => setExamenActivo(null)}
       />
-    );
-  }
+      {cofrePendiente && (
+        <CofreGracia
+          tipoCofre={cofrePendiente.tipo}
+          recompensa={cofrePendiente.recompensa}
+          onCerrar={cerrarCofre}
+        />
+      )}
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-[#050b14] text-white font-sans flex flex-col">
       <main className="flex-1 pb-24 pt-4 px-4 max-w-xl mx-auto w-full">
-        {activeTab === 'mapa'     && (
-          <Mapa onIniciarExamen={(clave, nombre) => setExamenActivo({ clave, nombre })} />
-        )}
+        {activeTab === 'mapa'     && <Mapa onIniciarExamen={(clave, nombre) => setExamenActivo({ clave, nombre })} />}
         {activeTab === 'ranking'  && <Ranking />}
         {activeTab === 'misiones' && <Misiones />}
         {activeTab === 'tienda'   && <Tienda />}
         {activeTab === 'perfil'   && <Perfil />}
       </main>
       <Navbar />
+
+      {/* Cofre global — puede aparecer desde cualquier pestaña */}
+      {cofrePendiente && (
+        <CofreGracia
+          tipoCofre={cofrePendiente.tipo}
+          recompensa={cofrePendiente.recompensa}
+          onCerrar={cerrarCofre}
+        />
+      )}
     </div>
   );
 };

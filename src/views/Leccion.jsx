@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import confetti from 'canvas-confetti';
+import CofreGracia from './CofreGracia';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const mezclar = (arr) => [...arr].sort(() => Math.random() - 0.5);
@@ -21,13 +22,9 @@ const elegirTipo = (anterior) => {
 // ══════════════════════════════════════════════════════════════════════════
 const AnimacionEscudo = ({ onFin }) => {
   useEffect(() => {
-    // Confetti plateado/dorado
     confetti({
-      particleCount: 120,
-      spread: 100,
-      origin: { y: 0.5 },
-      colors: ['#e2e8f0', '#facc15', '#94a3b8', '#fbbf24'],
-      shapes: ['star'],
+      particleCount: 120, spread: 100, origin: { y: 0.5 },
+      colors: ['#e2e8f0', '#facc15', '#94a3b8', '#fbbf24'], shapes: ['star'],
     });
     const t = setTimeout(onFin, 2800);
     return () => clearTimeout(t);
@@ -35,7 +32,6 @@ const AnimacionEscudo = ({ onFin }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
-      {/* Anillo pulsante */}
       <div className="relative flex items-center justify-center mb-6">
         <div className="absolute w-40 h-40 rounded-full bg-blue-400/20 animate-ping" />
         <div className="absolute w-32 h-32 rounded-full bg-yellow-400/20 animate-pulse" />
@@ -45,34 +41,18 @@ const AnimacionEscudo = ({ onFin }) => {
           <span className="text-6xl drop-shadow-2xl">🛡️</span>
         </div>
       </div>
-
-      {/* Texto */}
       <div className="text-center space-y-2 animate-slide-up px-8">
-        <p className="text-yellow-400 font-black text-xs uppercase tracking-[0.5em]">
-          El escudo de
-        </p>
-        <h2 className="text-white font-black text-3xl tracking-tight">
-          San Miguel
-        </h2>
-        <p className="text-white font-black text-lg">
-          te ha protegido
-        </p>
-        <p className="text-white/50 text-sm font-bold italic mt-2">
-          Tu error fue absorbido ✦ ¡Sigue adelante!
-        </p>
+        <p className="text-yellow-400 font-black text-xs uppercase tracking-[0.5em]">El escudo de</p>
+        <h2 className="text-white font-black text-3xl tracking-tight">San Miguel</h2>
+        <p className="text-white font-black text-lg">te ha protegido</p>
+        <p className="text-white/50 text-sm font-bold italic mt-2">Tu error fue absorbido ✦ ¡Sigue adelante!</p>
       </div>
-
-      {/* Barra de tiempo */}
       <div className="mt-8 w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
-        <div className="h-full bg-yellow-400 rounded-full animate-[shrink_2.8s_linear_forwards]"
+        <div className="h-full bg-yellow-400 rounded-full"
           style={{ animation: 'shrink 2.8s linear forwards' }} />
       </div>
-
       <style>{`
-        @keyframes shrink {
-          from { width: 100%; }
-          to   { width: 0%;   }
-        }
+        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
       `}</style>
     </div>
   );
@@ -81,9 +61,11 @@ const AnimacionEscudo = ({ onFin }) => {
 // ══════════════════════════════════════════════════════════════════════════
 // PANTALLA DE VICTORIA
 // ══════════════════════════════════════════════════════════════════════════
-const PantallaVictoria = ({ oracion, monedasGanadas, errores, totalVersos, escudosUsados, onContinuar }) => {
-  const precision  = Math.round(((totalVersos - errores) / totalVersos) * 100);
-  const esPerfecta = errores === 0;
+const PantallaVictoria = ({
+  oracion, monedasGanadas, errores, totalVersos,
+  escudosUsados, esPerfecta, tipoCofre, onAbrirCofre,
+}) => {
+  const precision = Math.round(((totalVersos - errores) / totalVersos) * 100);
 
   useEffect(() => {
     const lanzar = () => confetti({
@@ -100,6 +82,14 @@ const PantallaVictoria = ({ oracion, monedasGanadas, errores, totalVersos, escud
     : precision >= 80 ? { label: '¡EXCELENTE!',  icono: '🔥', color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-400/30' }
     : precision >= 60 ? { label: '¡BIEN HECHO!', icono: '👍', color: 'text-blue-400',   bg: 'bg-blue-400/10 border-blue-400/30'    }
     :                   { label: '¡COMPLETADO!', icono: '✝️', color: 'text-white/60',   bg: 'bg-white/5 border-white/10'           };
+
+  // Info del cofre que van a recibir
+  const COFRE_INFO = {
+    oro:    { icono: '🏆', label: 'Cofre de Oro',    color: 'border-yellow-400/50 bg-yellow-400/10 text-yellow-300' },
+    plata:  { icono: '🎁', label: 'Cofre de Plata',  color: 'border-slate-400/40 bg-slate-400/10 text-slate-200'   },
+    madera: { icono: '📦', label: 'Cofre de Madera', color: 'border-amber-600/40 bg-amber-600/10 text-amber-400'   },
+  };
+  const cofre = COFRE_INFO[tipoCofre] ?? COFRE_INFO.madera;
 
   return (
     <div className="min-h-screen bg-[#050b14] text-white font-sans flex flex-col items-center justify-center px-6 relative overflow-hidden">
@@ -156,7 +146,7 @@ const PantallaVictoria = ({ oracion, monedasGanadas, errores, totalVersos, escud
             <span className="text-2xl">🛡️</span>
             <div>
               <p className="text-yellow-400 font-black text-sm">Escudo de San Miguel</p>
-              <p className="text-white/40 text-xs">Absorbió {escudosUsados} error{escudosUsados > 1 ? 'es' : ''} en esta lección</p>
+              <p className="text-white/40 text-xs">Absorbió {escudosUsados} error{escudosUsados > 1 ? 'es' : ''}</p>
             </div>
           </div>
         )}
@@ -178,19 +168,34 @@ const PantallaVictoria = ({ oracion, monedasGanadas, errores, totalVersos, escud
           </div>
         </div>
 
-        {/* Mensaje */}
-        <p className="text-center text-white/40 text-sm leading-relaxed italic px-4">
+        {/* ── COFRE GANADO ── */}
+        <button
+          onClick={onAbrirCofre}
+          className={`w-full p-5 rounded-3xl border-2 flex items-center gap-4
+            transition-all hover:scale-[1.02] active:scale-95 animate-pulse
+            ${cofre.color}`}
+        >
+          <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-4xl shrink-0
+            shadow-lg">
+            {cofre.icono}
+          </div>
+          <div className="text-left flex-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.4em] opacity-60 mb-1">
+              ¡Recompensa desbloqueada!
+            </p>
+            <p className="font-black text-lg">{cofre.label}</p>
+            <p className="text-white/50 text-xs mt-0.5">Toca para abrir 👆</p>
+          </div>
+          <span className="text-2xl animate-bounce shrink-0">✨</span>
+        </button>
+
+        {/* Mensaje motivacional */}
+        <p className="text-center text-white/30 text-xs italic px-4">
           {esPerfecta
             ? `"${oracion.nombre}" grabada en tu corazón. ¡Sin errores!`
             : precision >= 80 ? `Casi memorizas toda la oración. ¡Sigue así!`
             : `Cada práctica te acerca más a memorizar "${oracion.nombre}".`}
         </p>
-
-        <button onClick={onContinuar}
-          className="w-full py-5 rounded-2xl bg-yellow-400 text-blue-900 font-black text-lg
-            uppercase tracking-widest shadow-xl shadow-yellow-400/20 hover:bg-yellow-300 active:scale-95 transition-all">
-          Continuar 🚀
-        </button>
       </div>
     </div>
   );
@@ -249,13 +254,11 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
 
   const agregar = (palabra, idx) => {
     if (resultado || usadas.includes(idx)) return;
-    setUsadas(p => [...p, idx]);
-    setArmada(p => [...p, palabra]);
+    setUsadas(p => [...p, idx]); setArmada(p => [...p, palabra]);
   };
   const quitarUltima = () => {
-    if (resultado || armada.length === 0) return;
-    setArmada(p => p.slice(0, -1));
-    setUsadas(p => p.slice(0, -1));
+    if (resultado || !armada.length) return;
+    setArmada(p => p.slice(0, -1)); setUsadas(p => p.slice(0, -1));
   };
 
   return (
@@ -350,6 +353,7 @@ const Leccion = () => {
     vidas, restarVida, sumarMonedas,
     setEnLeccion, completarNivel,
     oracionActual, inventario,
+    cofrePendiente, cerrarCofre,
   } = useGame();
 
   // ── TODOS LOS HOOKS PRIMERO ────────────────────────────────────────────
@@ -357,12 +361,9 @@ const Leccion = () => {
 
   const tiposPorVerso = useMemo(() => {
     if (!banco.length) return [];
-    const tipos = [];
-    let anterior = null;
+    const tipos = []; let anterior = null;
     for (let i = 0; i < banco.length; i++) {
-      const nuevo = elegirTipo(anterior);
-      tipos.push(nuevo);
-      anterior = nuevo;
+      const nuevo = elegirTipo(anterior); tipos.push(nuevo); anterior = nuevo;
     }
     return tipos;
   }, [oracionActual?.id]);
@@ -375,7 +376,6 @@ const Leccion = () => {
   const [errores, setErrores]             = useState(0);
   const [monedasAc, setMonedasAc]         = useState(0);
   const [mostrarVictoria, setMostrarVict] = useState(false);
-  // ── Escudo de San Miguel ───────────────────────────────────────────────
   const [escudoActivo, setEscudoActivo]   = useState(() => inventario.includes('escudo_miguel'));
   const [mostrarEscudo, setMostrarEscudo] = useState(false);
   const [escudosUsados, setEscudosUsados] = useState(0);
@@ -389,6 +389,8 @@ const Leccion = () => {
   const verso    = banco[paso];
   const tipo     = tiposPorVerso[paso];
   const progreso = ((paso + 1) / banco.length) * 100;
+  const esPerfecta = errores === 0;
+  const tipoCofre  = esPerfecta ? 'oro' : 'madera';
 
   // ── Validar ────────────────────────────────────────────────────────────
   const validar = () => {
@@ -400,21 +402,14 @@ const Leccion = () => {
     if (correcto) {
       setResultado('acierto');
       const xp = tipo === 'escritura' ? 40 : tipo === 'ordenar' ? 35 : 25;
-      sumarMonedas(xp);
-      setMonedasAc(prev => prev + xp);
+      sumarMonedas(xp); setMonedasAc(prev => prev + xp);
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.75 }, colors: ['#facc15', '#fff', '#3b82f6'] });
     } else {
-      // ── ¿Tiene escudo activo? ────────────────────────────────────────
       if (escudoActivo) {
-        setEscudoActivo(false);        // consume el escudo
-        setEscudosUsados(p => p + 1);
-        setMostrarEscudo(true);        // lanza la animación
-        // El resultado se marca como error VISUAL pero no resta vida
+        setEscudoActivo(false); setEscudosUsados(p => p + 1); setMostrarEscudo(true);
         setResultado('escudo');
       } else {
-        setResultado('error');
-        setErrores(prev => prev + 1);
-        restarVida();
+        setResultado('error'); setErrores(prev => prev + 1); restarVida();
       }
     }
   };
@@ -422,31 +417,50 @@ const Leccion = () => {
   // ── Siguiente ──────────────────────────────────────────────────────────
   const siguiente = () => {
     if (paso < banco.length - 1) {
-      setPaso(p => p + 1);
-      setResultado(null);
-      setSeleccionada(null);
-      setRespOrden('');
-      setEscrito('');
+      setPaso(p => p + 1); setResultado(null);
+      setSeleccionada(null); setRespOrden(''); setEscrito('');
     } else {
+      // Muestra victoria primero — el cofre se activa desde ahí
       setMostrarVict(true);
     }
   };
 
-  const handleContinuarVictoria = () => {
-    completarNivel(errores === 0);
+  // ── Desde victoria: el usuario toca el cofre ───────────────────────────
+  // completarNivel genera el cofrePendiente en GameContext
+  const handleAbrirCofre = async () => {
+    await completarNivel(esPerfecta);
+    // No cerramos enLeccion aún — esperamos que cerrarCofre lo haga
+  };
+
+  // ── Cuando el cofre se cierra → volver al mapa ─────────────────────────
+  const handleCerrarCofre = () => {
+    cerrarCofre();
     setEnLeccion(false);
   };
 
+  // ── Pantalla de victoria ───────────────────────────────────────────────
   if (mostrarVictoria) {
     return (
-      <PantallaVictoria
-        oracion={oracionActual}
-        monedasGanadas={monedasAc}
-        errores={errores}
-        totalVersos={banco.length}
-        escudosUsados={escudosUsados}
-        onContinuar={handleContinuarVictoria}
-      />
+      <>
+        <PantallaVictoria
+          oracion={oracionActual}
+          monedasGanadas={monedasAc}
+          errores={errores}
+          totalVersos={banco.length}
+          escudosUsados={escudosUsados}
+          esPerfecta={esPerfecta}
+          tipoCofre={tipoCofre}
+          onAbrirCofre={handleAbrirCofre}
+        />
+        {/* Cofre aparece encima de la victoria */}
+        {cofrePendiente && (
+          <CofreGracia
+            tipoCofre={cofrePendiente.tipo}
+            recompensa={cofrePendiente.recompensa}
+            onCerrar={handleCerrarCofre}
+          />
+        )}
+      </>
     );
   }
 
@@ -460,18 +474,11 @@ const Leccion = () => {
   const tipoLabel = { seleccion: '🔤 Completar', ordenar: '🔀 Ordenar', escritura: '✍️ Escribir' }[tipo];
   const monedaXP  = { seleccion: '+25', ordenar: '+35', escritura: '+40' }[tipo];
 
-  // Resultado visual para el footer — escudo se muestra como protegido
-  const resultadoFooter = resultado === 'escudo' ? 'escudo' : resultado;
-
   return (
     <div className="min-h-screen bg-[#050b14] text-white font-sans flex flex-col relative overflow-hidden">
 
-      {/* Animación escudo — overlay completo */}
       {mostrarEscudo && (
-        <AnimacionEscudo onFin={() => {
-          setMostrarEscudo(false);
-          setResultado('escudo_visto'); // marca que ya se vio
-        }} />
+        <AnimacionEscudo onFin={() => { setMostrarEscudo(false); setResultado('escudo_visto'); }} />
       )}
 
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -486,10 +493,8 @@ const Leccion = () => {
             style={{ width: `${progreso}%` }} />
         </div>
         <div className="flex items-center gap-2">
-          {/* Escudo activo visible en header */}
           {escudoActivo && (
-            <div className="bg-yellow-400/10 border border-yellow-400/30 px-2 py-1.5 rounded-xl
-              flex items-center gap-1">
+            <div className="bg-yellow-400/10 border border-yellow-400/30 px-2 py-1.5 rounded-xl flex items-center gap-1">
               <span className="text-sm">🛡️</span>
             </div>
           )}
@@ -534,7 +539,6 @@ const Leccion = () => {
       {/* Footer */}
       <footer className="p-6 pb-10 max-w-2xl mx-auto w-full">
         {!resultado || resultado === 'escudo' ? (
-          // Mientras está la animación del escudo, ocultamos el botón
           resultado === 'escudo' ? null : (
             <button id="btn-comprobar" onClick={validar} disabled={!puedeComprobar}
               className={`w-full py-5 rounded-2xl font-black text-lg uppercase tracking-widest transition-all duration-300
@@ -551,9 +555,7 @@ const Leccion = () => {
             :                               'bg-red-500/20 border-red-500/30'}`}>
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-xl
-                ${resultado === 'acierto'      ? 'bg-green-500'
-                : resultado === 'escudo_visto' ? 'bg-yellow-500'
-                :                               'bg-red-500'}`}>
+                ${resultado === 'acierto' ? 'bg-green-500' : resultado === 'escudo_visto' ? 'bg-yellow-500' : 'bg-red-500'}`}>
                 {resultado === 'acierto' ? '⚡' : resultado === 'escudo_visto' ? '🛡️' : '🔥'}
               </div>
               <div>
@@ -561,11 +563,9 @@ const Leccion = () => {
                   {resultado === 'acierto' ? '¡Perfecto!' : resultado === 'escudo_visto' ? '¡Protegido!' : 'Casi…'}
                 </p>
                 <p className="text-base font-black">
-                  {resultado === 'acierto'
-                    ? `${monedaXP} Monedas ✨`
-                    : resultado === 'escudo_visto'
-                      ? 'El escudo absorbió el error'
-                      : `Era: "${verso.palabraFaltante}"`}
+                  {resultado === 'acierto' ? `${monedaXP} Monedas ✨`
+                  : resultado === 'escudo_visto' ? 'El escudo absorbió el error'
+                  : `Era: "${verso.palabraFaltante}"`}
                 </p>
               </div>
             </div>

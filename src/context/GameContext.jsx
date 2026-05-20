@@ -9,11 +9,12 @@ import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged,
 } from 'firebase/auth';
+import { sortearRecompensa } from '../views/CofreGracia';
 
 const GameContext = createContext();
 
-const MAX_VIDAS        = 5;
-const MS_REGEN_VIDA    = 4 * 60 * 60 * 1000;
+const MAX_VIDAS     = 5;
+const MS_REGEN_VIDA = 4 * 60 * 60 * 1000;
 
 export const MISIONES_DIARIAS = [
   { id: 'd1', icono: '📖', titulo: 'Estudiante Fiel',   descripcion: 'Completa 3 lecciones hoy',       tipo: 'lecciones', meta: 3,   recompensa: 50  },
@@ -31,23 +32,26 @@ export const MISIONES_SEMANALES = [
 
 const hoyStr    = () => new Date().toISOString().split('T')[0];
 const semanaStr = () => {
-  const d = new Date();
-  const dia = d.getDay() || 7;
-  d.setDate(d.getDate() - dia + 1);
-  return d.toISOString().split('T')[0];
+  const d = new Date(); const dia = d.getDay() || 7;
+  d.setDate(d.getDate() - dia + 1); return d.toISOString().split('T')[0];
 };
 const initProgreso = (m) => Object.fromEntries(m.map(x => [x.id, { progreso: 0, reclamada: false }]));
 
 export const GameProvider = ({ children }) => {
-  const [userDoc, setUserDoc]         = useState(null);
-  const [usuarioId, setUsuarioId]     = useState(null);
-  const [loading, setLoading]         = useState(true);
-  const [vidasMostradas, setVidasM]   = useState(MAX_VIDAS);
+  const [userDoc, setUserDoc]       = useState(null);
+  const [usuarioId, setUsuarioId]   = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [vidasMostradas, setVidasM] = useState(MAX_VIDAS);
 
   const [activeTab, setActiveTab]         = useState('mapa');
   const [enLeccion, setEnLeccion]         = useState(false);
   const [oracionActual, setOracionActual] = useState(null);
   const [misionesState, setMisionesState] = useState(null);
+
+  // ── Estado del cofre pendiente ─────────────────────────────────────────
+  // Cuando se gana un cofre, se guarda aquí para mostrarlo después
+  // { tipo: 'madera'|'plata'|'oro', recompensa: {...} }
+  const [cofrePendiente, setCofrePendiente] = useState(null);
 
   // ── Auth ───────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -66,110 +70,88 @@ export const GameProvider = ({ children }) => {
         });
         return () => unsubDoc();
       } else {
-        setUsuarioId(null);
-        setUserDoc(null);
-        setMisionesState(null);
-        setLoading(false);
+        setUsuarioId(null); setUserDoc(null);
+        setMisionesState(null); setLoading(false);
       }
     });
     return () => unsubAuth();
   }, []);
 
-  // ── Regen vidas ────────────────────────────────────────────────────────
+  // ── Vidas ──────────────────────────────────────────────────────────────
   const _aplicarRegenVidas = async (uid, data) => {
     const vp = data.vidasPerdidas ?? [];
-    if (vp.length === 0) { setVidasM(MAX_VIDAS); return; }
-    const ahora = Date.now();
+    if (!vp.length) { setVidasM(MAX_VIDAS); return; }
+    const ahora  = Date.now();
     const nuevas = vp.filter(ts => ahora - ts < MS_REGEN_VIDA);
-    if (nuevas.length !== vp.length) {
-      await updateDoc(doc(db, 'usuarios', uid), { vidasPerdidas: nuevas });
-    }
+    if (nuevas.length !== vp.length) await updateDoc(doc(db, 'usuarios', uid), { vidasPerdidas: nuevas });
     setVidasM(Math.min(MAX_VIDAS, MAX_VIDAS - nuevas.length));
   };
 
   useEffect(() => {
-    if (!usuarioId || !userDoc) return;
-    const vp = userDoc.vidasPerdidas ?? [];
-    if (vp.length === 0) return;
-    const interval = setInterval(() => _aplicarRegenVidas(usuarioId, userDoc), 60000);
-    return () => clearInterval(interval);
+    if (!usuarioId || !userDoc || !(userDoc.vidasPerdidas?.length)) return;
+    const t = setInterval(() => _aplicarRegenVidas(usuarioId, userDoc), 60000);
+    return () => clearInterval(t);
   }, [usuarioId, userDoc?.vidasPerdidas?.length]);
 
   // ── Racha ──────────────────────────────────────────────────────────────
   const _verificarRacha = async (uid, data) => {
-    const hoy      = hoyStr();
-    const jugóHoy  = data.jugóHoy ?? null;
-    if (jugóHoy === hoy) return;
-    const ayer = new Date();
-    ayer.setDate(ayer.getDate() - 1);
+    const hoy = hoyStr(); if (data.jugóHoy === hoy) return;
+    const ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
     const ayerStr = ayer.toISOString().split('T')[0];
-    const tieneSeguro = (data.inventario ?? []).includes('seguro_racha');
-    if (jugóHoy !== ayerStr && jugóHoy !== null) {
-      if (!tieneSeguro) {
-        await updateDoc(doc(db, 'usuarios', uid), { racha: 0 });
-      } else {
-        const inv = (data.inventario ?? []).filter(i => i !== 'seguro_racha');
-        await updateDoc(doc(db, 'usuarios', uid), { inventario: inv });
-      }
+    const seguro  = (data.inventario ?? []).includes('seguro_racha');
+    if (data.jugóHoy !== ayerStr && data.jugóHoy !== null) {
+      if (!seguro) await updateDoc(doc(db, 'usuarios', uid), { racha: 0 });
+      else await updateDoc(doc(db, 'usuarios', uid), { inventario: (data.inventario ?? []).filter(i => i !== 'seguro_racha') });
     }
   };
 
   // ── Misiones ───────────────────────────────────────────────────────────
   const _sincronizarMisiones = async (uid, data) => {
-    const hoy    = hoyStr();
-    const semana = semanaStr();
-    const mis    = data.misiones ?? {};
-    let necesita = false;
-    const nuevo  = { ...mis };
+    const hoy = hoyStr(); const semana = semanaStr();
+    const mis = data.misiones ?? {}; let ok = false; const nuevo = { ...mis };
     if (!mis.diaActual) {
       nuevo.diaActual = hoy; nuevo.semanaActual = semana;
-      nuevo.diarias = initProgreso(MISIONES_DIARIAS);
-      nuevo.semanales = initProgreso(MISIONES_SEMANALES);
-      necesita = true;
+      nuevo.diarias = initProgreso(MISIONES_DIARIAS); nuevo.semanales = initProgreso(MISIONES_SEMANALES); ok = true;
     } else {
-      if (mis.diaActual !== hoy)    { nuevo.diaActual = hoy;       nuevo.diarias   = initProgreso(MISIONES_DIARIAS);   necesita = true; }
-      if (mis.semanaActual !== semana) { nuevo.semanaActual = semana; nuevo.semanales = initProgreso(MISIONES_SEMANALES); necesita = true; }
+      if (mis.diaActual !== hoy)       { nuevo.diaActual = hoy;       nuevo.diarias   = initProgreso(MISIONES_DIARIAS);   ok = true; }
+      if (mis.semanaActual !== semana) { nuevo.semanaActual = semana; nuevo.semanales = initProgreso(MISIONES_SEMANALES); ok = true; }
     }
-    if (necesita) await updateDoc(doc(db, 'usuarios', uid), { misiones: nuevo });
-    setMisionesState(necesita ? nuevo : mis);
+    if (ok) await updateDoc(doc(db, 'usuarios', uid), { misiones: nuevo });
+    setMisionesState(ok ? nuevo : mis);
   };
 
   const _avanzarMision = async (tipo, cantidad = 1) => {
     if (!usuarioId || !misionesState) return;
-    const nuevo = JSON.parse(JSON.stringify(misionesState));
-    let bonus = 0;
-    const act = (grupo, defs) => defs.forEach(def => {
-      const p = nuevo[grupo]?.[def.id];
+    const nuevo = JSON.parse(JSON.stringify(misionesState)); let bonus = 0;
+    const act = (g, defs) => defs.forEach(def => {
+      const p = nuevo[g]?.[def.id];
       if (!p || p.reclamada || def.tipo !== tipo) return;
       p.progreso = Math.min(p.progreso + cantidad, def.meta);
       if (p.progreso >= def.meta && !p.reclamada) { p.reclamada = true; bonus += def.recompensa; }
     });
-    act('diarias', MISIONES_DIARIAS);
-    act('semanales', MISIONES_SEMANALES);
+    act('diarias', MISIONES_DIARIAS); act('semanales', MISIONES_SEMANALES);
     setMisionesState(nuevo);
     await updateDoc(doc(db, 'usuarios', usuarioId), { misiones: nuevo });
     if (bonus > 0) await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(bonus) });
   };
 
-  const reclamarMision = async (grupoMision, misionId, recompensa) => {
+  const reclamarMision = async (g, id, recompensa) => {
     if (!usuarioId || !misionesState) return false;
-    const prog = misionesState[grupoMision]?.[misionId];
-    if (!prog || prog.reclamada) return false;
-    const nuevo = JSON.parse(JSON.stringify(misionesState));
-    nuevo[grupoMision][misionId].reclamada = true;
+    const prog = misionesState[g]?.[id]; if (!prog || prog.reclamada) return false;
+    const nuevo = JSON.parse(JSON.stringify(misionesState)); nuevo[g][id].reclamada = true;
     setMisionesState(nuevo);
     await updateDoc(doc(db, 'usuarios', usuarioId), { misiones: nuevo });
     await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(recompensa) });
     return true;
   };
 
-  // ── Auth funciones ─────────────────────────────────────────────────────
-  const _docBase = (extra = {}) => ({
+  // ── Auth ───────────────────────────────────────────────────────────────
+  const _base = (extra = {}) => ({
     vidas: MAX_VIDAS, monedas: 100, nivelActual: 1,
     rango: 'Iniciado', racha: 0, rol: 'estudiante',
     fechaRegistro: new Date().toISOString(),
     misiones: {}, inventario: [], vidasPerdidas: [],
-    jugóHoy: null, examenesAprobados: [],
+    jugóHoy: null, examenesAprobados: [], cofresAbiertos: 0,
     ...extra,
   });
 
@@ -177,9 +159,7 @@ export const GameProvider = ({ children }) => {
     setLoading(true);
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, 'usuarios', user.uid), {
-        ..._docBase(), nombre: nombre.toUpperCase(), grupo, uid: user.uid,
-      });
+      await setDoc(doc(db, 'usuarios', user.uid), { ..._base(), nombre: nombre.toUpperCase(), grupo, uid: user.uid });
     } catch (e) { throw e; } finally { setLoading(false); }
   };
 
@@ -188,7 +168,7 @@ export const GameProvider = ({ children }) => {
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       await setDoc(doc(db, 'usuarios', user.uid), {
-        ..._docBase({ vidas: 99, monedas: 0, nivelActual: 0, rango: 'Catequista', rol: 'catequista' }),
+        ..._base({ vidas: 99, monedas: 0, nivelActual: 0, rango: 'Catequista', rol: 'catequista' }),
         nombre: nombre.toUpperCase(), grupo, uid: user.uid,
       });
     } catch (e) { throw e; } finally { setLoading(false); }
@@ -200,24 +180,19 @@ export const GameProvider = ({ children }) => {
     catch (e) { throw e; } finally { setLoading(false); }
   };
 
-  const cerrarSesion = async () => {
-    try { await signOut(auth); } catch (e) { console.error(e); }
-  };
+  const cerrarSesion = async () => { try { await signOut(auth); } catch (e) { console.error(e); } };
 
   // ── Juego ──────────────────────────────────────────────────────────────
   const restarVida = async () => {
     if (!usuarioId || vidasMostradas <= 0) return;
-    const vp = [...(userDoc?.vidasPerdidas ?? []), Date.now()];
-    await updateDoc(doc(db, 'usuarios', usuarioId), { vidasPerdidas: vp });
+    await updateDoc(doc(db, 'usuarios', usuarioId), { vidasPerdidas: [...(userDoc?.vidasPerdidas ?? []), Date.now()] });
     setVidasM(p => Math.max(0, p - 1));
   };
 
   const añadirVida = async () => {
     if (!usuarioId) return;
-    const vp = userDoc?.vidasPerdidas ?? [];
-    if (vp.length === 0) return;
-    const nuevas = [...vp].sort((a, b) => a - b).slice(1);
-    await updateDoc(doc(db, 'usuarios', usuarioId), { vidasPerdidas: nuevas });
+    const vp = userDoc?.vidasPerdidas ?? []; if (!vp.length) return;
+    await updateDoc(doc(db, 'usuarios', usuarioId), { vidasPerdidas: [...vp].sort((a,b)=>a-b).slice(1) });
     setVidasM(p => Math.min(MAX_VIDAS, p + 1));
   };
 
@@ -227,55 +202,95 @@ export const GameProvider = ({ children }) => {
     if (cantidad > 0) await _avanzarMision('monedas', Number(cantidad));
   };
 
+  // ── Cofres ─────────────────────────────────────────────────────────────
+  const _entregarCofre = async (tipoCofre) => {
+    const recompensa = sortearRecompensa(tipoCofre);
+
+    // Aplicar recompensa en Firestore
+    if (recompensa.tipo === 'monedas') {
+      await updateDoc(doc(db, 'usuarios', usuarioId), {
+        monedas: increment(recompensa.cantidad),
+        cofresAbiertos: increment(1),
+      });
+    } else if (recompensa.tipo === 'item') {
+      const inv = userDoc?.inventario ?? [];
+      // Si ya tiene el item, compensar con monedas
+      if (inv.includes(recompensa.id)) {
+        await updateDoc(doc(db, 'usuarios', usuarioId), {
+          monedas: increment(100),
+          cofresAbiertos: increment(1),
+        });
+        // Cambiar recompensa mostrada a monedas
+        return { tipo: 'monedas', cantidad: 100, label: '+100 Monedas (duplicado)', icono: '🪙' };
+      }
+      await updateDoc(doc(db, 'usuarios', usuarioId), {
+        inventario: arrayUnion(recompensa.id),
+        cofresAbiertos: increment(1),
+      });
+      // Efectos inmediatos de títulos
+      if (recompensa.id === 'titulo_guardian') await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Guardián del Credo' });
+      if (recompensa.id === 'titulo_maestro')  await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Maestro de la Fe' });
+    }
+
+    return recompensa;
+  };
+
+  // ── Completar nivel → cofre de madera ─────────────────────────────────
   const completarNivel = async (fueConPerfecta = false) => {
     if (!usuarioId) return;
-    const hoy       = hoyStr();
-    const jugóHoy   = userDoc?.jugóHoy ?? null;
-    const rachaAct  = userDoc?.racha   ?? 0;
-    let nuevaRacha  = rachaAct;
+    const hoy      = hoyStr();
+    const jugóHoy  = userDoc?.jugóHoy ?? null;
+    const rachaAct = userDoc?.racha   ?? 0;
+    let nuevaRacha = rachaAct;
 
     if (jugóHoy !== hoy) {
-      const ayer = new Date();
-      ayer.setDate(ayer.getDate() - 1);
+      const ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
       const ayerStr = ayer.toISOString().split('T')[0];
       if (jugóHoy === ayerStr || jugóHoy === null) nuevaRacha = rachaAct + 1;
       else nuevaRacha = 1;
-      await updateDoc(doc(db, 'usuarios', usuarioId), {
-        nivelActual: increment(1), racha: nuevaRacha, jugóHoy: hoy,
-      });
+      await updateDoc(doc(db, 'usuarios', usuarioId), { nivelActual: increment(1), racha: nuevaRacha, jugóHoy: hoy });
     } else {
       await updateDoc(doc(db, 'usuarios', usuarioId), { nivelActual: increment(1) });
     }
+
     await _avanzarMision('lecciones', 1);
     await _avanzarMision('niveles', 1);
     await _avanzarMision('racha', 1);
     if (fueConPerfecta) await _avanzarMision('perfectas', 1);
+
+    // ── Entregar cofre ────────────────────────────────────────────────────
+    // Oro si fue perfecta, Madera si no
+    const tipoCofre = fueConPerfecta ? 'oro' : 'madera';
+    const recompensa = await _entregarCofre(tipoCofre);
+    setCofrePendiente({ tipo: tipoCofre, recompensa });
   };
 
-  // ── Examen aprobado ────────────────────────────────────────────────────
+  // ── Aprobar examen → cofre de plata ────────────────────────────────────
   const aprobarExamen = async (claveUnidad) => {
     if (!usuarioId) return;
-    // Guarda la clave del examen aprobado en el array (arrayUnion evita duplicados)
     await updateDoc(doc(db, 'usuarios', usuarioId), {
       examenesAprobados: arrayUnion(claveUnidad),
+      monedas: increment(200),
     });
-    // Bonus de monedas por aprobar el examen
-    await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(200) });
+    // Cofre de plata al aprobar examen
+    const recompensa = await _entregarCofre('plata');
+    setCofrePendiente({ tipo: 'plata', recompensa });
   };
 
-  // ── Inventario / Tienda ────────────────────────────────────────────────
+  // ── Cerrar cofre y aplicar recompensa ──────────────────────────────────
+  const cerrarCofre = () => setCofrePendiente(null);
+
+  // ── Inventario ─────────────────────────────────────────────────────────
   const comprarItem = async (item) => {
     if (!usuarioId) return false;
     const inv = userDoc?.inventario ?? [];
     if (item.id === 'corazon_extra') {
       if ((userDoc?.monedas ?? 0) < item.precio) return false;
-      await sumarMonedas(-item.precio);
-      await añadirVida();
-      return true;
+      await sumarMonedas(-item.precio); await añadirVida(); return true;
     }
     if (inv.includes(item.id) || (userDoc?.monedas ?? 0) < item.precio) return false;
     await sumarMonedas(-item.precio);
-    await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: [...inv, item.id] });
+    await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: arrayUnion(item.id) });
     if (item.id === 'titulo_guardian') await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Guardián del Credo' });
     if (item.id === 'titulo_maestro')  await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Maestro de la Fe' });
     return true;
@@ -284,38 +299,36 @@ export const GameProvider = ({ children }) => {
   // ── Ranking ────────────────────────────────────────────────────────────
   const obtenerRanking = async (grupo) => {
     const q = query(collection(db, 'usuarios'), where('grupo', '==', grupo), orderBy('monedas', 'desc'));
-    const snap = await getDocs(q);
-    return snap.docs.map((d, i) => ({ ...d.data(), posicion: i + 1 }));
+    const snap = await getDocs(q); return snap.docs.map((d, i) => ({ ...d.data(), posicion: i + 1 }));
   };
 
   const obtenerEstudiantesGrupo = async (grupo) => {
     const q = query(collection(db, 'usuarios'), where('grupo', '==', grupo), where('rol', '==', 'estudiante'));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => d.data());
+    const snap = await getDocs(q); return snap.docs.map(d => d.data());
   };
 
   const iniciarLeccion = (oracion) => { setOracionActual(oracion); setEnLeccion(true); };
 
   const minutosHastaVida = () => {
-    const vp = userDoc?.vidasPerdidas ?? [];
-    if (vp.length === 0) return 0;
-    const masAntigua = Math.min(...vp);
-    return Math.max(0, Math.ceil((MS_REGEN_VIDA - (Date.now() - masAntigua)) / 60000));
+    const vp = userDoc?.vidasPerdidas ?? []; if (!vp.length) return 0;
+    return Math.max(0, Math.ceil((MS_REGEN_VIDA - (Date.now() - Math.min(...vp))) / 60000));
   };
 
   // ── Valores expuestos ──────────────────────────────────────────────────
   const value = {
     usuarioId,
-    nombre:           userDoc?.nombre           ?? 'Guardián',
-    grupo:            userDoc?.grupo            ?? 'Sin Grupo',
-    rol:              userDoc?.rol              ?? 'estudiante',
-    vidas:            vidasMostradas,
-    monedas:          userDoc?.monedas          ?? 0,
-    nivelActual:      userDoc?.nivelActual      ?? 1,
-    rango:            userDoc?.rango            ?? 'Iniciado',
-    racha:            userDoc?.racha            ?? 0,
-    inventario:       userDoc?.inventario       ?? [],
-    examenesAprobados:userDoc?.examenesAprobados ?? [],
+    nombre:            userDoc?.nombre            ?? 'Guardián',
+    grupo:             userDoc?.grupo             ?? 'Sin Grupo',
+    rol:               userDoc?.rol               ?? 'estudiante',
+    vidas:             vidasMostradas,
+    monedas:           userDoc?.monedas           ?? 0,
+    nivelActual:       userDoc?.nivelActual       ?? 1,
+    rango:             userDoc?.rango             ?? 'Iniciado',
+    racha:             userDoc?.racha             ?? 0,
+    inventario:        userDoc?.inventario        ?? [],
+    examenesAprobados: userDoc?.examenesAprobados ?? [],
+    cofresAbiertos:    userDoc?.cofresAbiertos    ?? 0,
+    cofrePendiente,
 
     loading, activeTab, setActiveTab,
     enLeccion, setEnLeccion,
@@ -328,7 +341,7 @@ export const GameProvider = ({ children }) => {
     comprarItem, iniciarLeccion,
     obtenerRanking, obtenerEstudiantesGrupo,
     reclamarMision, aprobarExamen,
-    minutosHastaVida,
+    cerrarCofre, minutosHastaVida,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
