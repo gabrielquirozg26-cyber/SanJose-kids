@@ -1,0 +1,256 @@
+{
+  "unidad1": {
+    "titulo": "Semillas de Fe",
+    "oraciones": [
+      {
+        "id": "u1_padre_nuestro",
+        "nombre": "Padre Nuestro",
+        "icono": "🙏",
+        "versos": [
+          { "id": "pn_01", "texto": "Padre nuestro que estás en el cielo", "palabraFaltante": "cielo", "opcionesSeleccion": ["cielo", "mundo", "mar", "tiempo"], "palabrasOrdenar": ["Padre", "nuestro", "que", "estás", "en", "el", "cielo"] },
+          { "id": "pn_02", "texto": "santificado sea tu nombre", "palabraFaltante": "santificado", "opcionesSeleccion": ["santificado", "bendito", "glorioso", "honrado"], "palabrasOrdenar": ["santificado", "sea", "tu", "nombre"] },
+          { "id": "pn_03", "texto": "venga a nosotros tu reino", "palabraFaltante": "reino", "opcionesSeleccion": ["reino", "gracia", "gloria", "poder"], "palabrasOrdenar": ["venga", "a", "nosotros", "tu", "reino"] },
+          { "id": "pn_04", "texto": "hágase tu voluntad en la tierra como en el cielo", "palabraFaltante": "voluntad", "opcionesSeleccion": ["voluntad", "nombre", "paz", "obra"], "palabrasOrdenar": ["hágase", "tu", "voluntad", "en", "la", "tierra", "como", "en", "el", "cielo"] },
+          { "id": "pn_05", "texto": "danos hoy nuestro pan de cada día", "palabraFaltante": "pan", "opcionesSeleccion": ["pan", "don", "bien", "fruto"], "palabrasOrdenar": ["danos", "hoy", "nuestro", "pan", "de", "cada", "día"] },
+          { "id": "pn_06", "texto": "perdona nuestras ofensas como nosotros perdonamos a los que nos ofenden", "palabraFaltante": "ofensas", "opcionesSeleccion": ["ofensas", "deudas", "faltas", "pecados"], "palabrasOrdenar": ["perdona", "nuestras", "ofensas", "como", "nosotros", "perdonamos", "a", "los", "que", "nos", "ofenden"] },
+          { "id": "pn_07", "texto": "no nos dejes caer en la tentación", "palabraFaltante": "tentación", "opcionesSeleccion": ["tentación", "oscuridad", "tristeza", "duda"], "palabrasOrdenar": ["no", "nos", "dejes", "caer", "en", "la", "tentación"] },
+          { "id": "pn_08", "texto": "y líbranos del mal", "palabraFaltante": "mal", "opcionesSeleccion": ["mal", "dolor", "miedo", "pecado"], "palabrasOrdenar": ["y", "líbranos", "del", "mal"] }
+        ]
+      },
+      {
+        "id": "u1_ave_maria",
+        "nombre": "Ave María",
+        "icono": "🌹",
+        "versos": [
+          { "id": "am_01", "texto": "Dios te salve María llena eres de gracia", "palabraFaltante": "gracia", "opcionesSeleccion": ["gracia", "gloria", "luz", "amor"], "palabrasOrdenar": ["Dios", "te", "salve", "María", "llena", "eres", "de", "gracia"] },
+          { "id": "am_02", "texto": "el Señor es contigo", "palabraFaltante": "contigo", "opcionesSeleccion": ["contigo", "en ti", "junto a ti", "con tigo"], "palabrasOrdenar": ["el", "Señor", "es", "contigo"] },
+          { "id": "am_03", "texto": "bendita tú eres entre todas las mujeres", "palabraFaltante": "mujeres", "opcionesSeleccion": ["mujeres", "almas", "personas", "criaturas"], "palabrasOrdenar": ["bendita", "tú", "eres", "entre", "todas", "las", "mujeres"] },
+          { "id": "am_04", "texto": "y bendito es el fruto de tu vientre Jesús", "palabraFaltante": "vientre", "opcionesSeleccion": ["vientre", "amor", "gracia", "ser"], "palabrasOrdenar": ["y", "bendito", "es", "el", "fruto", "de", "tu", "vientre", "Jesús"] },
+          { "id": "am_05", "texto": "Santa María Madre de Dios", "palabraFaltante": "Madre", "opcionesSeleccion": ["Madre", "Reina", "Virgen", "Sierva"], "palabrasOrdenar": ["Santa", "María", "Madre", "de", "Dios"] },
+          { "id": "am_06", "texto": "ruega por nosotros los pecadores", "palabraFaltante": "pecadores", "opcionesSeleccion": ["pecadores", "fieles", "hijos", "creyentes"], "palabrasOrdenar": ["ruega", "por", "nosotros", "los", "pecadores"] },
+          { "id": "am_07", "texto": "ahora y en la hora de nuestra muerte amén", "palabraFaltante": "muerte", "opcionesSeleccion": ["muerte", "vida", "hora", "partida"], "palabrasOrdenar": ["ahora", "y", "en", "la", "hora", "de", "nuestra", "muerte", "amén"] }
+        ]
+      },
+      {
+        "id": "u1_gloria",
+        "nombre": "Gloria",
+        "icono": "✨",
+        "versos": [
+          { "id": "gl_01", "texto": "Gloria al Padre y al Hijo y al Espíritu Santo", "palabraFaltante": "Espíritu", "opcionesSeleccion": ["Espíritu", "Señor", "Dios", "Ángel"], "palabrasOrdenar": ["Gloria", "al", "Padre", "y", "al", "Hijo", "y", "al", "Espíritu", "Santo"] },
+          { "id": "gl_02", "texto": "como era en el principio ahora y siempre", "palabraFaltante": "principio", "opcionesSeleccion": ["principio", "inicio", "origen", "comienzo"], "palabrasOrdenar": ["como", "era", "en", "el", "principio", "ahora", "y", "siempre"] },
+          { "id": "gl_03", "texto": "y por los siglos de los siglos amén", "palabraFaltante": "siglos", "opcionesSeleccion": ["siglos", "tiempos", "años", "días"], "palabrasOrdenar": ["y", "por", "los", "siglos", "de", "los", "siglos", "amén"] }
+        ]
+      },
+      {
+        "id": "u1_angel_guarda",
+        "nombre": "Ángel de la Guarda",
+        "icono": "👼",
+        "versos": [
+          { "id": "ag_01", "texto": "Ángel de Dios que eres mi custodio", "palabraFaltante": "custodio", "opcionesSeleccion": ["custodio", "amigo", "guía", "pastor"], "palabrasOrdenar": ["Ángel", "de", "Dios", "que", "eres", "mi", "custodio"] },
+          { "id": "ag_02", "texto": "pues la bondad divina me ha encomendado a ti", "palabraFaltante": "encomendado", "opcionesSeleccion": ["encomendado", "enviado", "confiado", "entregado"], "palabrasOrdenar": ["pues", "la", "bondad", "divina", "me", "ha", "encomendado", "a", "ti"] },
+          { "id": "ag_03", "texto": "ilumíname guárdame y gobiérname", "palabraFaltante": "ilumíname", "opcionesSeleccion": ["ilumíname", "ayúdame", "cuídame", "sálvame"], "palabrasOrdenar": ["ilumíname", "guárdame", "y", "gobiérname"] },
+          { "id": "ag_04", "texto": "en este día amén", "palabraFaltante": "día", "opcionesSeleccion": ["día", "tiempo", "momento", "instante"], "palabrasOrdenar": ["en", "este", "día", "amén"] }
+        ]
+      }
+    ]
+  },
+  "unidad2": {
+    "titulo": "Corazón Limpio",
+    "oraciones": [
+      {
+        "id": "u2_yo_confieso",
+        "nombre": "Yo Confieso",
+        "icono": "😔",
+        "versos": [
+          { "id": "yc_01", "texto": "Yo confieso ante Dios todopoderoso", "palabraFaltante": "todopoderoso", "opcionesSeleccion": ["todopoderoso", "misericordioso", "eterno", "santo"], "palabrasOrdenar": ["Yo", "confieso", "ante", "Dios", "todopoderoso"] },
+          { "id": "yc_02", "texto": "y ante vosotros hermanos", "palabraFaltante": "hermanos", "opcionesSeleccion": ["hermanos", "santos", "fieles", "amigos"], "palabrasOrdenar": ["y", "ante", "vosotros", "hermanos"] },
+          { "id": "yc_03", "texto": "que he pecado mucho de pensamiento palabra obra y omisión", "palabraFaltante": "omisión", "opcionesSeleccion": ["omisión", "acción", "intención", "corazón"], "palabrasOrdenar": ["que", "he", "pecado", "mucho", "de", "pensamiento", "palabra", "obra", "y", "omisión"] },
+          { "id": "yc_04", "texto": "por mi culpa por mi culpa por mi grandísima culpa", "palabraFaltante": "grandísima", "opcionesSeleccion": ["grandísima", "grande", "enorme", "terrible"], "palabrasOrdenar": ["por", "mi", "culpa", "por", "mi", "culpa", "por", "mi", "grandísima", "culpa"] },
+          { "id": "yc_05", "texto": "por eso ruego a Santa María siempre Virgen", "palabraFaltante": "Virgen", "opcionesSeleccion": ["Virgen", "Madre", "Reina", "Santa"], "palabrasOrdenar": ["por", "eso", "ruego", "a", "Santa", "María", "siempre", "Virgen"] },
+          { "id": "yc_06", "texto": "a los ángeles a los santos y a vosotros hermanos", "palabraFaltante": "ángeles", "opcionesSeleccion": ["ángeles", "santos", "apóstoles", "profetas"], "palabrasOrdenar": ["a", "los", "ángeles", "a", "los", "santos", "y", "a", "vosotros", "hermanos"] },
+          { "id": "yc_07", "texto": "que rueguen por mí a Dios nuestro Señor", "palabraFaltante": "rueguen", "opcionesSeleccion": ["rueguen", "pidan", "oren", "intercedan"], "palabrasOrdenar": ["que", "rueguen", "por", "mí", "a", "Dios", "nuestro", "Señor"] }
+        ]
+      },
+      {
+        "id": "u2_acto_contricion",
+        "nombre": "Acto de Contrición",
+        "icono": "🕊️",
+        "versos": [
+          { "id": "ac_01", "texto": "Señor mío Jesucristo Dios y hombre verdadero", "palabraFaltante": "verdadero", "opcionesSeleccion": ["verdadero", "eterno", "bendito", "santo"], "palabrasOrdenar": ["Señor", "mío", "Jesucristo", "Dios", "y", "hombre", "verdadero"] },
+          { "id": "ac_02", "texto": "me pesa de todo corazón haberte ofendido", "palabraFaltante": "corazón", "opcionesSeleccion": ["corazón", "alma", "ser", "espíritu"], "palabrasOrdenar": ["me", "pesa", "de", "todo", "corazón", "haberte", "ofendido"] },
+          { "id": "ac_03", "texto": "propongo firmemente con tu gracia enmendarme", "palabraFaltante": "enmendarme", "opcionesSeleccion": ["enmendarme", "mejorarme", "convertirme", "cambiarme"], "palabrasOrdenar": ["propongo", "firmemente", "con", "tu", "gracia", "enmendarme"] },
+          { "id": "ac_04", "texto": "y no pecar más y alejarme de las ocasiones de pecado", "palabraFaltante": "alejarme", "opcionesSeleccion": ["alejarme", "apartarme", "librarme", "huir"], "palabrasOrdenar": ["y", "no", "pecar", "más", "y", "alejarme", "de", "las", "ocasiones", "de", "pecado"] }
+        ]
+      },
+      {
+        "id": "u2_dulce_madre",
+        "nombre": "Dulce Madre",
+        "icono": "💙",
+        "versos": [
+          { "id": "dm_01", "texto": "Dulce Madre no te alejes", "palabraFaltante": "alejes", "opcionesSeleccion": ["alejes", "apartes", "olvides", "vayas"], "palabrasOrdenar": ["Dulce", "Madre", "no", "te", "alejes"] },
+          { "id": "dm_02", "texto": "tu presencia es mi alegría", "palabraFaltante": "alegría", "opcionesSeleccion": ["alegría", "consuelo", "fuerza", "paz"], "palabrasOrdenar": ["tu", "presencia", "es", "mi", "alegría"] },
+          { "id": "dm_03", "texto": "y en las penas de esta vida", "palabraFaltante": "penas", "opcionesSeleccion": ["penas", "horas", "noches", "cruces"], "palabrasOrdenar": ["y", "en", "las", "penas", "de", "esta", "vida"] },
+          { "id": "dm_04", "texto": "tú eres mi consolación", "palabraFaltante": "consolación", "opcionesSeleccion": ["consolación", "guía", "fortaleza", "esperanza"], "palabrasOrdenar": ["tú", "eres", "mi", "consolación"] }
+        ]
+      }
+    ]
+  },
+  "unidad3": {
+    "titulo": "La Roca de la Iglesia",
+    "oraciones": [
+      {
+        "id": "u3_credo_apostolico",
+        "nombre": "Credo Apostólico",
+        "icono": "⛪",
+        "versos": [
+          { "id": "ca_01", "texto": "Creo en Dios Padre todopoderoso creador del cielo y de la tierra", "palabraFaltante": "creador", "opcionesSeleccion": ["creador", "señor", "padre", "rey"], "palabrasOrdenar": ["Creo", "en", "Dios", "Padre", "todopoderoso", "creador", "del", "cielo", "y", "de", "la", "tierra"] },
+          { "id": "ca_02", "texto": "y en Jesucristo su único Hijo nuestro Señor", "palabraFaltante": "único", "opcionesSeleccion": ["único", "amado", "eterno", "santo"], "palabrasOrdenar": ["y", "en", "Jesucristo", "su", "único", "Hijo", "nuestro", "Señor"] },
+          { "id": "ca_03", "texto": "que fue concebido por obra y gracia del Espíritu Santo", "palabraFaltante": "concebido", "opcionesSeleccion": ["concebido", "formado", "nacido", "enviado"], "palabrasOrdenar": ["que", "fue", "concebido", "por", "obra", "y", "gracia", "del", "Espíritu", "Santo"] },
+          { "id": "ca_04", "texto": "nació de Santa María Virgen", "palabraFaltante": "Virgen", "opcionesSeleccion": ["Virgen", "Santa", "Madre", "pura"], "palabrasOrdenar": ["nació", "de", "Santa", "María", "Virgen"] },
+          { "id": "ca_05", "texto": "padeció bajo el poder de Poncio Pilato", "palabraFaltante": "Poncio", "opcionesSeleccion": ["Poncio", "Herodes", "César", "Barrabás"], "palabrasOrdenar": ["padeció", "bajo", "el", "poder", "de", "Poncio", "Pilato"] },
+          { "id": "ca_06", "texto": "fue crucificado muerto y sepultado", "palabraFaltante": "sepultado", "opcionesSeleccion": ["sepultado", "enterrado", "guardado", "puesto"], "palabrasOrdenar": ["fue", "crucificado", "muerto", "y", "sepultado"] },
+          { "id": "ca_07", "texto": "al tercer día resucitó de entre los muertos", "palabraFaltante": "resucitó", "opcionesSeleccion": ["resucitó", "volvió", "nació", "partió"], "palabrasOrdenar": ["al", "tercer", "día", "resucitó", "de", "entre", "los", "muertos"] },
+          { "id": "ca_08", "texto": "subió a los cielos y está sentado a la derecha de Dios Padre todopoderoso", "palabraFaltante": "derecha", "opcionesSeleccion": ["derecha", "gloria", "diestra", "altura"], "palabrasOrdenar": ["subió", "a", "los", "cielos", "y", "está", "sentado", "a", "la", "derecha", "de", "Dios", "Padre", "todopoderoso"] },
+          { "id": "ca_09", "texto": "creo en el Espíritu Santo la santa Iglesia Católica", "palabraFaltante": "Católica", "opcionesSeleccion": ["Católica", "Apostólica", "Universal", "Romana"], "palabrasOrdenar": ["creo", "en", "el", "Espíritu", "Santo", "la", "santa", "Iglesia", "Católica"] },
+          { "id": "ca_10", "texto": "la comunión de los santos el perdón de los pecados", "palabraFaltante": "comunión", "opcionesSeleccion": ["comunión", "unión", "gracia", "fuerza"], "palabrasOrdenar": ["la", "comunión", "de", "los", "santos", "el", "perdón", "de", "los", "pecados"] },
+          { "id": "ca_11", "texto": "la resurrección de la carne y la vida eterna amén", "palabraFaltante": "resurrección", "opcionesSeleccion": ["resurrección", "ascensión", "glorificación", "elevación"], "palabrasOrdenar": ["la", "resurrección", "de", "la", "carne", "y", "la", "vida", "eterna", "amén"] }
+        ]
+      },
+      {
+        "id": "u3_salve",
+        "nombre": "La Salve",
+        "icono": "🌊",
+        "versos": [
+          { "id": "sv_01", "texto": "Dios te salve Reina y Madre de misericordia", "palabraFaltante": "misericordia", "opcionesSeleccion": ["misericordia", "compasión", "amor", "gracia"], "palabrasOrdenar": ["Dios", "te", "salve", "Reina", "y", "Madre", "de", "misericordia"] },
+          { "id": "sv_02", "texto": "vida dulzura y esperanza nuestra", "palabraFaltante": "dulzura", "opcionesSeleccion": ["dulzura", "guía", "luz", "fuerza"], "palabrasOrdenar": ["vida", "dulzura", "y", "esperanza", "nuestra"] },
+          { "id": "sv_03", "texto": "a ti clamamos los desterrados hijos de Eva", "palabraFaltante": "desterrados", "opcionesSeleccion": ["desterrados", "pecadores", "humildes", "pobres"], "palabrasOrdenar": ["a", "ti", "clamamos", "los", "desterrados", "hijos", "de", "Eva"] },
+          { "id": "sv_04", "texto": "a ti suspiramos gimiendo y llorando en este valle de lágrimas", "palabraFaltante": "lágrimas", "opcionesSeleccion": ["lágrimas", "penas", "sombras", "tristezas"], "palabrasOrdenar": ["a", "ti", "suspiramos", "gimiendo", "y", "llorando", "en", "este", "valle", "de", "lágrimas"] },
+          { "id": "sv_05", "texto": "ea pues señora abogada nuestra vuelve a nosotros esos tus ojos misericordiosos", "palabraFaltante": "abogada", "opcionesSeleccion": ["abogada", "mediadora", "intercesora", "protectora"], "palabrasOrdenar": ["ea", "pues", "señora", "abogada", "nuestra", "vuelve", "a", "nosotros", "esos", "tus", "ojos", "misericordiosos"] },
+          { "id": "sv_06", "texto": "y después de este destierro muéstranos a Jesús fruto bendito de tu vientre", "palabraFaltante": "destierro", "opcionesSeleccion": ["destierro", "camino", "exilio", "viaje"], "palabrasOrdenar": ["y", "después", "de", "este", "destierro", "muéstranos", "a", "Jesús", "fruto", "bendito", "de", "tu", "vientre"] }
+        ]
+      }
+    ]
+  },
+  "unidad4": {
+    "titulo": "Camino de Vida",
+    "oraciones": [
+      {
+        "id": "u4_mandamientos",
+        "nombre": "10 Mandamientos",
+        "icono": "📜",
+        "versos": [
+          { "id": "mn_01", "texto": "Amarás a Dios sobre todas las cosas", "palabraFaltante": "Amarás", "opcionesSeleccion": ["Amarás", "Honrarás", "Servirás", "Adorarás"], "palabrasOrdenar": ["Amarás", "a", "Dios", "sobre", "todas", "las", "cosas"] },
+          { "id": "mn_02", "texto": "no tomarás el nombre de Dios en vano", "palabraFaltante": "vano", "opcionesSeleccion": ["vano", "mentira", "burla", "ofensa"], "palabrasOrdenar": ["no", "tomarás", "el", "nombre", "de", "Dios", "en", "vano"] },
+          { "id": "mn_03", "texto": "santificarás las fiestas", "palabraFaltante": "santificarás", "opcionesSeleccion": ["santificarás", "guardarás", "celebrarás", "honrarás"], "palabrasOrdenar": ["santificarás", "las", "fiestas"] },
+          { "id": "mn_04", "texto": "honrarás a tu padre y a tu madre", "palabraFaltante": "honrarás", "opcionesSeleccion": ["honrarás", "amarás", "obedecerás", "respetarás"], "palabrasOrdenar": ["honrarás", "a", "tu", "padre", "y", "a", "tu", "madre"] },
+          { "id": "mn_05", "texto": "no matarás", "palabraFaltante": "matarás", "opcionesSeleccion": ["matarás", "robarás", "mentirás", "pecarás"], "palabrasOrdenar": ["no", "matarás"] },
+          { "id": "mn_06", "texto": "no cometerás actos impuros", "palabraFaltante": "impuros", "opcionesSeleccion": ["impuros", "malos", "injustos", "graves"], "palabrasOrdenar": ["no", "cometerás", "actos", "impuros"] },
+          { "id": "mn_07", "texto": "no robarás", "palabraFaltante": "robarás", "opcionesSeleccion": ["robarás", "mentirás", "pecarás", "engañarás"], "palabrasOrdenar": ["no", "robarás"] },
+          { "id": "mn_08", "texto": "no darás falso testimonio ni mentirás", "palabraFaltante": "testimonio", "opcionesSeleccion": ["testimonio", "juicio", "juramento", "consejo"], "palabrasOrdenar": ["no", "darás", "falso", "testimonio", "ni", "mentirás"] },
+          { "id": "mn_09", "texto": "no consentirás pensamientos ni deseos impuros", "palabraFaltante": "consentirás", "opcionesSeleccion": ["consentirás", "tendrás", "guardarás", "alimentarás"], "palabrasOrdenar": ["no", "consentirás", "pensamientos", "ni", "deseos", "impuros"] },
+          { "id": "mn_10", "texto": "no codiciarás los bienes ajenos", "palabraFaltante": "codiciarás", "opcionesSeleccion": ["codiciarás", "robarás", "desearás", "envidiarás"], "palabrasOrdenar": ["no", "codiciarás", "los", "bienes", "ajenos"] }
+        ]
+      },
+      {
+        "id": "u4_bienaventuranzas",
+        "nombre": "Bienaventuranzas",
+        "icono": "🕊️",
+        "versos": [
+          { "id": "bv_01", "texto": "bienaventurados los pobres de espíritu porque de ellos es el reino de los cielos", "palabraFaltante": "espíritu", "opcionesSeleccion": ["espíritu", "corazón", "alma", "fe"], "palabrasOrdenar": ["bienaventurados", "los", "pobres", "de", "espíritu", "porque", "de", "ellos", "es", "el", "reino", "de", "los", "cielos"] },
+          { "id": "bv_02", "texto": "bienaventurados los que lloran porque ellos serán consolados", "palabraFaltante": "consolados", "opcionesSeleccion": ["consolados", "bendecidos", "salvados", "premiados"], "palabrasOrdenar": ["bienaventurados", "los", "que", "lloran", "porque", "ellos", "serán", "consolados"] },
+          { "id": "bv_03", "texto": "bienaventurados los mansos porque ellos heredarán la tierra", "palabraFaltante": "mansos", "opcionesSeleccion": ["mansos", "justos", "puros", "humildes"], "palabrasOrdenar": ["bienaventurados", "los", "mansos", "porque", "ellos", "heredarán", "la", "tierra"] },
+          { "id": "bv_04", "texto": "bienaventurados los misericordiosos porque ellos alcanzarán misericordia", "palabraFaltante": "misericordiosos", "opcionesSeleccion": ["misericordiosos", "generosos", "caritativos", "bondadosos"], "palabrasOrdenar": ["bienaventurados", "los", "misericordiosos", "porque", "ellos", "alcanzarán", "misericordia"] },
+          { "id": "bv_05", "texto": "bienaventurados los limpios de corazón porque ellos verán a Dios", "palabraFaltante": "corazón", "opcionesSeleccion": ["corazón", "alma", "espíritu", "mente"], "palabrasOrdenar": ["bienaventurados", "los", "limpios", "de", "corazón", "porque", "ellos", "verán", "a", "Dios"] },
+          { "id": "bv_06", "texto": "bienaventurados los que trabajan por la paz porque serán llamados hijos de Dios", "palabraFaltante": "paz", "opcionesSeleccion": ["paz", "bien", "fe", "amor"], "palabrasOrdenar": ["bienaventurados", "los", "que", "trabajan", "por", "la", "paz", "porque", "serán", "llamados", "hijos", "de", "Dios"] },
+          { "id": "bv_07", "texto": "bienaventurados los perseguidos por causa de la justicia porque de ellos es el reino de los cielos", "palabraFaltante": "justicia", "opcionesSeleccion": ["justicia", "fe", "verdad", "paz"], "palabrasOrdenar": ["bienaventurados", "los", "perseguidos", "por", "causa", "de", "la", "justicia", "porque", "de", "ellos", "es", "el", "reino", "de", "los", "cielos"] }
+        ]
+      }
+    ]
+  },
+  "unidad5": {
+    "titulo": "Gracia y Virtud",
+    "oraciones": [
+      {
+        "id": "u5_sacramentos",
+        "nombre": "7 Sacramentos",
+        "icono": "✝️",
+        "versos": [
+          { "id": "sc_01", "texto": "Bautismo el sacramento que nos hace hijos de Dios", "palabraFaltante": "Bautismo", "opcionesSeleccion": ["Bautismo", "Confirmación", "Eucaristía", "Matrimonio"], "palabrasOrdenar": ["Bautismo", "el", "sacramento", "que", "nos", "hace", "hijos", "de", "Dios"] },
+          { "id": "sc_02", "texto": "Confirmación el sacramento que fortalece nuestra fe", "palabraFaltante": "fortalece", "opcionesSeleccion": ["fortalece", "confirma", "renueva", "aumenta"], "palabrasOrdenar": ["Confirmación", "el", "sacramento", "que", "fortalece", "nuestra", "fe"] },
+          { "id": "sc_03", "texto": "Eucaristía el sacramento del Cuerpo y la Sangre de Cristo", "palabraFaltante": "Eucaristía", "opcionesSeleccion": ["Eucaristía", "Bautismo", "Reconciliación", "Unción"], "palabrasOrdenar": ["Eucaristía", "el", "sacramento", "del", "Cuerpo", "y", "la", "Sangre", "de", "Cristo"] },
+          { "id": "sc_04", "texto": "Penitencia el sacramento del perdón de los pecados", "palabraFaltante": "perdón", "opcionesSeleccion": ["perdón", "amor", "paz", "gracia"], "palabrasOrdenar": ["Penitencia", "el", "sacramento", "del", "perdón", "de", "los", "pecados"] },
+          { "id": "sc_05", "texto": "Unción de los enfermos el sacramento de la sanación", "palabraFaltante": "sanación", "opcionesSeleccion": ["sanación", "unción", "paz", "fuerza"], "palabrasOrdenar": ["Unción", "de", "los", "enfermos", "el", "sacramento", "de", "la", "sanación"] },
+          { "id": "sc_06", "texto": "Orden Sacerdotal el sacramento del ministerio ordenado", "palabraFaltante": "Sacerdotal", "opcionesSeleccion": ["Sacerdotal", "Sagrado", "Santo", "Divino"], "palabrasOrdenar": ["Orden", "Sacerdotal", "el", "sacramento", "del", "ministerio", "ordenado"] },
+          { "id": "sc_07", "texto": "Matrimonio el sacramento de la unión entre el hombre y la mujer", "palabraFaltante": "Matrimonio", "opcionesSeleccion": ["Matrimonio", "Confirmación", "Bautismo", "Eucaristía"], "palabrasOrdenar": ["Matrimonio", "el", "sacramento", "de", "la", "unión", "entre", "el", "hombre", "y", "la", "mujer"] }
+        ]
+      },
+      {
+        "id": "u5_obras_misericordia",
+        "nombre": "Obras de Misericordia",
+        "icono": "🤲",
+        "versos": [
+          { "id": "om_01", "texto": "dar de comer al hambriento", "palabraFaltante": "hambriento", "opcionesSeleccion": ["hambriento", "sediento", "enfermo", "pobre"], "palabrasOrdenar": ["dar", "de", "comer", "al", "hambriento"] },
+          { "id": "om_02", "texto": "dar de beber al sediento", "palabraFaltante": "sediento", "opcionesSeleccion": ["sediento", "hambriento", "triste", "enfermo"], "palabrasOrdenar": ["dar", "de", "beber", "al", "sediento"] },
+          { "id": "om_03", "texto": "vestir al desnudo", "palabraFaltante": "desnudo", "opcionesSeleccion": ["desnudo", "pobre", "frío", "triste"], "palabrasOrdenar": ["vestir", "al", "desnudo"] },
+          { "id": "om_04", "texto": "visitar a los enfermos", "palabraFaltante": "enfermos", "opcionesSeleccion": ["enfermos", "presos", "pobres", "tristes"], "palabrasOrdenar": ["visitar", "a", "los", "enfermos"] },
+          { "id": "om_05", "texto": "visitar a los presos", "palabraFaltante": "presos", "opcionesSeleccion": ["presos", "enfermos", "pobres", "solos"], "palabrasOrdenar": ["visitar", "a", "los", "presos"] },
+          { "id": "om_06", "texto": "dar posada al peregrino", "palabraFaltante": "posada", "opcionesSeleccion": ["posada", "comida", "ayuda", "ropa"], "palabrasOrdenar": ["dar", "posada", "al", "peregrino"] },
+          { "id": "om_07", "texto": "enterrar a los muertos", "palabraFaltante": "enterrar", "opcionesSeleccion": ["enterrar", "llorar", "rezar", "honrar"], "palabrasOrdenar": ["enterrar", "a", "los", "muertos"] }
+        ]
+      }
+    ]
+  },
+  "unidad6": {
+    "titulo": "El Jardín de María",
+    "oraciones": [
+      {
+        "id": "u6_misterios_gozosos",
+        "nombre": "Misterios Gozosos",
+        "icono": "📿",
+        "versos": [
+          { "id": "mg_01", "texto": "La Anunciación del Ángel a María", "palabraFaltante": "Anunciación", "opcionesSeleccion": ["Anunciación", "Visitación", "Natividad", "Presentación"], "palabrasOrdenar": ["La", "Anunciación", "del", "Ángel", "a", "María"] },
+          { "id": "mg_02", "texto": "La Visitación de María a su prima Isabel", "palabraFaltante": "Visitación", "opcionesSeleccion": ["Visitación", "Anunciación", "Presentación", "Natividad"], "palabrasOrdenar": ["La", "Visitación", "de", "María", "a", "su", "prima", "Isabel"] },
+          { "id": "mg_03", "texto": "La Natividad de Nuestro Señor Jesucristo", "palabraFaltante": "Natividad", "opcionesSeleccion": ["Natividad", "Resurrección", "Ascensión", "Presentación"], "palabrasOrdenar": ["La", "Natividad", "de", "Nuestro", "Señor", "Jesucristo"] },
+          { "id": "mg_04", "texto": "La Presentación del Niño Jesús en el templo", "palabraFaltante": "Presentación", "opcionesSeleccion": ["Presentación", "Visitación", "Circuncisión", "Coronación"], "palabrasOrdenar": ["La", "Presentación", "del", "Niño", "Jesús", "en", "el", "templo"] },
+          { "id": "mg_05", "texto": "El Niño Jesús perdido y hallado en el templo", "palabraFaltante": "hallado", "opcionesSeleccion": ["hallado", "buscado", "encontrado", "visto"], "palabrasOrdenar": ["El", "Niño", "Jesús", "perdido", "y", "hallado", "en", "el", "templo"] }
+        ]
+      },
+      {
+        "id": "u6_misterios_dolorosos",
+        "nombre": "Misterios Dolorosos",
+        "icono": "✝️",
+        "versos": [
+          { "id": "md_01", "texto": "La oración de Jesús en el huerto de Getsemaní", "palabraFaltante": "Getsemaní", "opcionesSeleccion": ["Getsemaní", "Calvario", "Nazaret", "Belén"], "palabrasOrdenar": ["La", "oración", "de", "Jesús", "en", "el", "huerto", "de", "Getsemaní"] },
+          { "id": "md_02", "texto": "La flagelación de Nuestro Señor Jesucristo", "palabraFaltante": "flagelación", "opcionesSeleccion": ["flagelación", "coronación", "crucifixión", "presentación"], "palabrasOrdenar": ["La", "flagelación", "de", "Nuestro", "Señor", "Jesucristo"] },
+          { "id": "md_03", "texto": "La coronación de espinas de Nuestro Señor", "palabraFaltante": "espinas", "opcionesSeleccion": ["espinas", "gloria", "dolor", "cruz"], "palabrasOrdenar": ["La", "coronación", "de", "espinas", "de", "Nuestro", "Señor"] },
+          { "id": "md_04", "texto": "Jesús con la cruz a cuestas camino al Calvario", "palabraFaltante": "Calvario", "opcionesSeleccion": ["Calvario", "Gólgota", "templo", "Jordán"], "palabrasOrdenar": ["Jesús", "con", "la", "cruz", "a", "cuestas", "camino", "al", "Calvario"] },
+          { "id": "md_05", "texto": "La crucifixión y muerte de Nuestro Señor Jesucristo", "palabraFaltante": "crucifixión", "opcionesSeleccion": ["crucifixión", "resurrección", "ascensión", "transfiguración"], "palabrasOrdenar": ["La", "crucifixión", "y", "muerte", "de", "Nuestro", "Señor", "Jesucristo"] }
+        ]
+      },
+      {
+        "id": "u6_misterios_gloriosos",
+        "nombre": "Misterios Gloriosos",
+        "icono": "👑",
+        "versos": [
+          { "id": "mgl_01", "texto": "La Resurrección de Nuestro Señor Jesucristo", "palabraFaltante": "Resurrección", "opcionesSeleccion": ["Resurrección", "Ascensión", "Transfiguración", "Natividad"], "palabrasOrdenar": ["La", "Resurrección", "de", "Nuestro", "Señor", "Jesucristo"] },
+          { "id": "mgl_02", "texto": "La Ascensión de Jesús a los cielos", "palabraFaltante": "Ascensión", "opcionesSeleccion": ["Ascensión", "Resurrección", "Transfiguración", "Presentación"], "palabrasOrdenar": ["La", "Ascensión", "de", "Jesús", "a", "los", "cielos"] },
+          { "id": "mgl_03", "texto": "La venida del Espíritu Santo sobre los apóstoles", "palabraFaltante": "apóstoles", "opcionesSeleccion": ["apóstoles", "discípulos", "profetas", "santos"], "palabrasOrdenar": ["La", "venida", "del", "Espíritu", "Santo", "sobre", "los", "apóstoles"] },
+          { "id": "mgl_04", "texto": "La Asunción de María Santísima a los cielos", "palabraFaltante": "Asunción", "opcionesSeleccion": ["Asunción", "Ascensión", "Coronación", "Visitación"], "palabrasOrdenar": ["La", "Asunción", "de", "María", "Santísima", "a", "los", "cielos"] },
+          { "id": "mgl_05", "texto": "La Coronación de María como Reina del cielo y de la tierra", "palabraFaltante": "Coronación", "opcionesSeleccion": ["Coronación", "Glorificación", "Asunción", "Ascensión"], "palabrasOrdenar": ["La", "Coronación", "de", "María", "como", "Reina", "del", "cielo", "y", "de", "la", "tierra"] }
+        ]
+      },
+      {
+        "id": "u6_misterios_luminosos",
+        "nombre": "Misterios Luminosos",
+        "icono": "💫",
+        "versos": [
+          { "id": "ml_01", "texto": "El Bautismo de Jesús en el Jordán", "palabraFaltante": "Jordán", "opcionesSeleccion": ["Jordán", "Nilo", "Siloé", "Galilea"], "palabrasOrdenar": ["El", "Bautismo", "de", "Jesús", "en", "el", "Jordán"] },
+          { "id": "ml_02", "texto": "La manifestación de Jesús en las bodas de Caná", "palabraFaltante": "Caná", "opcionesSeleccion": ["Caná", "Galilea", "Belén", "Nazaret"], "palabrasOrdenar": ["La", "manifestación", "de", "Jesús", "en", "las", "bodas", "de", "Caná"] },
+          { "id": "ml_03", "texto": "El anuncio del reino de Dios y llamada a la conversión", "palabraFaltante": "conversión", "opcionesSeleccion": ["conversión", "salvación", "oración", "penitencia"], "palabrasOrdenar": ["El", "anuncio", "del", "reino", "de", "Dios", "y", "llamada", "a", "la", "conversión"] },
+          { "id": "ml_04", "texto": "La Transfiguración de Nuestro Señor Jesucristo", "palabraFaltante": "Transfiguración", "opcionesSeleccion": ["Transfiguración", "Resurrección", "Ascensión", "Glorificación"], "palabrasOrdenar": ["La", "Transfiguración", "de", "Nuestro", "Señor", "Jesucristo"] },
+          { "id": "ml_05", "texto": "La institución de la Eucaristía en la Última Cena", "palabraFaltante": "Eucaristía", "opcionesSeleccion": ["Eucaristía", "Penitencia", "Confirmación", "Unción"], "palabrasOrdenar": ["La", "institución", "de", "la", "Eucaristía", "en", "la", "Última", "Cena"] }
+        ]
+      }
+    ]
+  }
+}

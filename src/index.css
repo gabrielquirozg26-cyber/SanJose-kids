@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* 1. Ajustes Globales */
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  /* Fondo negro de seguridad para que no haya destellos blancos */
+  background-color: #0c1a2b; 
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* 2. El Efecto Glassmorphism de SAN JOSÉKIDS */
+/* Usamos !important para asegurar que el efecto se aplique sobre cualquier fondo */
+.glass-card {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 3. Animaciones para la Mascota (Angelito) y Feedback */
+@keyframes slideUp {
+  from { 
+    transform: translateY(100%); 
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0); 
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Animación de pulso suave para los niveles completados */
+@keyframes glow {
+  0% { box-shadow: 0 0 5px rgba(250, 204, 21, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.6); }
+  100% { box-shadow: 0 0 5px rgba(250, 204, 21, 0.2); }
+}
+
+.level-glow {
+  animation: glow 2s infinite;
+}
+
+/* 4. Corrección para la barra de navegación (Navbar) */
+/* Esto asegura que los iconos y textos dentro de la barra se vean bien */
+nav button {
+  transition: all 0.2s ease;
+}
+
+nav button:active {
+  transform: scale(0.9);
+}

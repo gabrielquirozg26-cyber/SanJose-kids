@@ -1,0 +1,714 @@
+{
+  "unidad1": {
+    "titulo": "Semillas de Fe",
+    "oraciones": [
+      {
+        "id": "ex_padre_nuestro",
+        "oracion": "Padre Nuestro",
+        "preguntas": [
+          {
+            "id": "pn_e1",
+            "pregunta": "¿A quién está dirigida la oración del Padre Nuestro?",
+            "opciones": ["A Dios Padre", "A la Virgen María", "Al Espíritu Santo", "A los ángeles"],
+            "correcta": "A Dios Padre",
+            "explicacion": "Jesús nos enseñó a dirigirnos directamente a Dios llamándolo 'Padre', mostrando la relación filial que tenemos con Él."
+          },
+          {
+            "id": "pn_e2",
+            "pregunta": "¿Quién enseñó el Padre Nuestro a sus discípulos?",
+            "opciones": ["Jesucristo", "San Pedro", "San Pablo", "Moisés"],
+            "correcta": "Jesucristo",
+            "explicacion": "Jesús enseñó esta oración cuando sus discípulos le pidieron que les enseñara a orar, según el Evangelio de San Mateo."
+          },
+          {
+            "id": "pn_e3",
+            "pregunta": "¿Qué significa 'santificado sea tu nombre'?",
+            "opciones": ["Que el nombre de Dios sea reconocido como santo y glorioso", "Que usemos el nombre de Dios correctamente", "Que recemos en voz alta", "Que Dios nos escuche"],
+            "correcta": "Que el nombre de Dios sea reconocido como santo y glorioso",
+            "explicacion": "Pedimos que todos reconozcan y honren a Dios como el ser supremo y santo que es."
+          },
+          {
+            "id": "pn_e4",
+            "pregunta": "Cuando decimos 'venga a nosotros tu reino', ¿qué estamos pidiendo?",
+            "opciones": ["Que el amor y la justicia de Dios reine en nuestros corazones y en el mundo", "Que Dios venga físicamente a la tierra", "Que la Iglesia tenga más poder", "Que tengamos bienes materiales"],
+            "correcta": "Que el amor y la justicia de Dios reine en nuestros corazones y en el mundo",
+            "explicacion": "El reino de Dios es donde reina su amor, su paz y su justicia. Pedimos que ese reino comience en nosotros."
+          },
+          {
+            "id": "pn_e5",
+            "pregunta": "¿Qué nos enseña la frase 'perdona nuestras ofensas como nosotros perdonamos'?",
+            "opciones": ["Que debemos perdonar a los demás para recibir el perdón de Dios", "Que Dios nos perdona sin condiciones", "Que solo Dios puede perdonar", "Que debemos confesarnos todos los días"],
+            "correcta": "Que debemos perdonar a los demás para recibir el perdón de Dios",
+            "explicacion": "Jesús nos enseña que el perdón es recíproco: si queremos que Dios nos perdone, también nosotros debemos perdonar."
+          },
+          {
+            "id": "pn_e6",
+            "pregunta": "¿Cuántas peticiones contiene el Padre Nuestro?",
+            "opciones": ["7", "5", "10", "12"],
+            "correcta": "7",
+            "explicacion": "El Padre Nuestro tiene 7 peticiones: 3 dirigidas a Dios y 4 para nuestras necesidades."
+          },
+          {
+            "id": "pn_e7",
+            "pregunta": "¿Qué significa pedir el 'pan de cada día'?",
+            "opciones": ["Pedir a Dios todo lo necesario para vivir, incluyendo el alimento espiritual", "Pedir solo comida material", "Pedir riquezas", "Pedir salud únicamente"],
+            "correcta": "Pedir a Dios todo lo necesario para vivir, incluyendo el alimento espiritual",
+            "explicacion": "El 'pan' representa todo lo que necesitamos: alimento, salud, gracia y la Eucaristía, que es el pan espiritual."
+          },
+          {
+            "id": "pn_e8",
+            "pregunta": "¿En qué Evangelios aparece el Padre Nuestro?",
+            "opciones": ["Mateo y Lucas", "Marcos y Juan", "Solo en Mateo", "Solo en Lucas"],
+            "correcta": "Mateo y Lucas",
+            "explicacion": "El Padre Nuestro aparece en Mateo 6:9-13 y Lucas 11:2-4, con pequeñas diferencias entre ambas versiones."
+          }
+        ]
+      },
+      {
+        "id": "ex_ave_maria",
+        "oracion": "Ave María",
+        "preguntas": [
+          {
+            "id": "am_e1",
+            "pregunta": "¿Qué significa 'Dios te salve María'?",
+            "opciones": ["Es el saludo del ángel Gabriel a María anunciándole que sería la Madre de Dios", "Es una despedida dirigida a María", "Es una petición de ayuda a María", "Es un título honorífico de la Iglesia"],
+            "correcta": "Es el saludo del ángel Gabriel a María anunciándole que sería la Madre de Dios",
+            "explicacion": "Este saludo es el mismo que el ángel Gabriel le dirigió a María en la Anunciación, según el Evangelio de Lucas 1:28."
+          },
+          {
+            "id": "am_e2",
+            "pregunta": "¿Qué significa que María está 'llena de gracia'?",
+            "opciones": ["Que Dios la eligió y llenó de dones especiales desde su concepción para ser Madre de Jesús", "Que María es muy amable y gentil", "Que María reza mucho", "Que María vivió sin problemas"],
+            "correcta": "Que Dios la eligió y llenó de dones especiales desde su concepción para ser Madre de Jesús",
+            "explicacion": "La plenitud de gracia de María significa que fue preservada del pecado original (Inmaculada Concepción) para ser digna Madre de Cristo."
+          },
+          {
+            "id": "am_e3",
+            "pregunta": "¿Quién dijo 'bendita tú eres entre todas las mujeres'?",
+            "opciones": ["Santa Isabel, prima de María", "El ángel Gabriel", "San José", "La propia María"],
+            "correcta": "Santa Isabel, prima de María",
+            "explicacion": "Estas palabras las dijo Santa Isabel cuando María la visitó, inspirada por el Espíritu Santo, según Lucas 1:42."
+          },
+          {
+            "id": "am_e4",
+            "pregunta": "¿Por qué pedimos a María que 'ruegue por nosotros los pecadores'?",
+            "opciones": ["Porque María intercede ante Dios por nosotros como madre y mediadora", "Porque María tiene más poder que Dios", "Porque no podemos hablarle a Dios directamente", "Porque María fue pecadora también"],
+            "correcta": "Porque María intercede ante Dios por nosotros como madre y mediadora",
+            "explicacion": "María es nuestra madre espiritual. Como hizo en las bodas de Caná, presenta nuestras necesidades ante su Hijo Jesús."
+          },
+          {
+            "id": "am_e5",
+            "pregunta": "¿Qué misterio de fe celebra el Ave María?",
+            "opciones": ["La Anunciación e Incarnación del Hijo de Dios", "La Resurrección de Cristo", "La Última Cena", "El Bautismo de Jesús"],
+            "correcta": "La Anunciación e Incarnación del Hijo de Dios",
+            "explicacion": "El Ave María celebra el momento en que el ángel anunció a María que sería la Madre de Dios, y ella aceptó."
+          },
+          {
+            "id": "am_e6",
+            "pregunta": "¿Cuál es el fruto del vientre de María mencionado en el Ave María?",
+            "opciones": ["Jesús, el Hijo de Dios", "Juan el Bautista", "El Espíritu Santo", "Un regalo de Dios"],
+            "correcta": "Jesús, el Hijo de Dios",
+            "explicacion": "El 'fruto bendito del vientre' es Jesucristo, el Hijo de Dios encarnado que nació de la Virgen María."
+          },
+          {
+            "id": "am_e7",
+            "pregunta": "¿Por qué el Ave María termina pidiendo la intercesión de María 'en la hora de nuestra muerte'?",
+            "opciones": ["Porque la muerte es el momento más importante donde necesitamos la ayuda de María", "Porque María da vida eterna", "Porque María puede salvarnos del infierno", "Porque así lo mandó la Iglesia sin razón especial"],
+            "correcta": "Porque la muerte es el momento más importante donde necesitamos la ayuda de María",
+            "explicacion": "La hora de la muerte es el momento decisivo de la vida. Pedimos a María que nos acompañe y nos presente ante Dios."
+          },
+          {
+            "id": "am_e8",
+            "pregunta": "¿En qué oración colectiva se repite muchas veces el Ave María?",
+            "opciones": ["El Santo Rosario", "La Novena", "El Vía Crucis", "Las Letanías del Santísimo"],
+            "correcta": "El Santo Rosario",
+            "explicacion": "En el Rosario se rezan 53 Ave Marías distribuidas en los distintos misterios de la vida de Jesús y María."
+          }
+        ]
+      },
+      {
+        "id": "ex_gloria",
+        "oracion": "Gloria",
+        "preguntas": [
+          {
+            "id": "gl_e1",
+            "pregunta": "¿A quiénes glorifica la oración del Gloria?",
+            "opciones": ["A las tres Personas de la Santísima Trinidad: Padre, Hijo y Espíritu Santo", "Solo a Dios Padre", "A los santos y ángeles", "A la Virgen María"],
+            "correcta": "A las tres Personas de la Santísima Trinidad: Padre, Hijo y Espíritu Santo",
+            "explicacion": "El Gloria es una doxología (oración de alabanza) dirigida a las tres personas de la Santísima Trinidad."
+          },
+          {
+            "id": "gl_e2",
+            "pregunta": "¿Qué significa 'Gloria al Padre, al Hijo y al Espíritu Santo'?",
+            "opciones": ["Es una alabanza que reconoce la grandeza y majestad de Dios uno y trino", "Es un pedido de favores a Dios", "Es una oración de perdón", "Es una promesa que hacemos a Dios"],
+            "correcta": "Es una alabanza que reconoce la grandeza y majestad de Dios uno y trino",
+            "explicacion": "Glorificar a Dios significa reconocer y proclamar su infinita grandeza, perfección y majestad."
+          },
+          {
+            "id": "gl_e3",
+            "pregunta": "¿Qué doctrina de la fe expresa el Gloria?",
+            "opciones": ["La Santísima Trinidad: un solo Dios en tres personas", "La Encarnación de Cristo", "La Resurrección", "La Inmaculada Concepción"],
+            "correcta": "La Santísima Trinidad: un solo Dios en tres personas",
+            "explicacion": "Al nombrar al Padre, al Hijo y al Espíritu Santo, el Gloria profesa la fe en el misterio central del cristianismo: la Trinidad."
+          },
+          {
+            "id": "gl_e4",
+            "pregunta": "¿Cuándo se suele rezar el Gloria en el Rosario?",
+            "opciones": ["Al final de cada decena, después de los 10 Ave Marías", "Al inicio del Rosario", "Solo en Navidad", "Cada vez que mencionamos a María"],
+            "correcta": "Al final de cada decena, después de los 10 Ave Marías",
+            "explicacion": "En el Rosario, cada decena termina con un Gloria como alabanza a la Trinidad al concluir la meditación de cada misterio."
+          },
+          {
+            "id": "gl_e5",
+            "pregunta": "¿Qué significa 'como era en el principio, ahora y siempre'?",
+            "opciones": ["Que Dios es eterno: existió antes de la creación, existe ahora y existirá para siempre", "Que la Iglesia no cambia", "Que debemos rezar siempre igual", "Que el tiempo no importa para Dios"],
+            "correcta": "Que Dios es eterno: existió antes de la creación, existe ahora y existirá para siempre",
+            "explicacion": "Esta frase proclama la eternidad de Dios, que no tiene principio ni fin y siempre ha sido glorioso."
+          },
+          {
+            "id": "gl_e6",
+            "pregunta": "¿Qué tipo de oración es el Gloria?",
+            "opciones": ["Una oración de alabanza y adoración", "Una oración de petición", "Una oración de arrepentimiento", "Una oración de acción de gracias por favores recibidos"],
+            "correcta": "Una oración de alabanza y adoración",
+            "explicacion": "El Gloria es una doxología, es decir, una oración cuyo único propósito es alabar y glorificar a Dios sin pedir nada."
+          },
+          {
+            "id": "gl_e7",
+            "pregunta": "¿Qué significa la palabra 'Amén' al final de las oraciones?",
+            "opciones": ["'Así sea' o 'así es verdad': confirma y une nuestra voluntad a lo rezado", "Fin de la oración", "Gracias a Dios", "Una palabra en hebreo sin traducción"],
+            "correcta": "'Así sea' o 'así es verdad': confirma y une nuestra voluntad a lo rezado",
+            "explicacion": "Amén es una palabra hebrea que significa 'verdaderamente' o 'así sea'. Al decirla, hacemos nuestra la oración."
+          },
+          {
+            "id": "gl_e8",
+            "pregunta": "¿En qué parte de la Misa también se canta o recita una forma del Gloria?",
+            "opciones": ["En el Ordinario de la Misa, después del Kyrie", "En la Homilía", "En la Comunión", "En la Consagración"],
+            "correcta": "En el Ordinario de la Misa, después del Kyrie",
+            "explicacion": "El Gloria in Excelsis Deo es un himno del Ordinario de la Misa que se canta en domingos y solemnidades."
+          }
+        ]
+      },
+      {
+        "id": "ex_angel_guarda",
+        "oracion": "Ángel de la Guarda",
+        "preguntas": [
+          {
+            "id": "ag_e1",
+            "pregunta": "¿Qué son los ángeles según la fe católica?",
+            "opciones": ["Seres espirituales creados por Dios para servirle y proteger a las personas", "Almas de personas fallecidas", "Figuras simbólicas sin existencia real", "Solo personajes de cuentos"],
+            "correcta": "Seres espirituales creados por Dios para servirle y proteger a las personas",
+            "explicacion": "Los ángeles son seres espirituales, inteligentes y personales, creados por Dios antes que los hombres para su servicio y nuestra protección."
+          },
+          {
+            "id": "ag_e2",
+            "pregunta": "¿Qué es un ángel custodio o de la guarda?",
+            "opciones": ["Un ángel asignado por Dios a cada persona para protegerla y guiarla", "Un ángel que vive en el cielo sin función específica", "El ángel más poderoso del cielo", "Un ángel que solo protege a los santos"],
+            "correcta": "Un ángel asignado por Dios a cada persona para protegerla y guiarla",
+            "explicacion": "La Iglesia enseña que Dios asigna a cada persona un ángel guardian desde su nacimiento para protegerla del mal."
+          },
+          {
+            "id": "ag_e3",
+            "pregunta": "¿Qué pedimos al Ángel de la Guarda en la oración?",
+            "opciones": ["Que nos ilumine, dirija, guarde y gobierne", "Que nos dé dinero y salud", "Que aleje a nuestros enemigos", "Que nos lleve directamente al cielo"],
+            "correcta": "Que nos ilumine, dirija, guarde y gobierne",
+            "explicacion": "Le pedimos cuatro cosas: iluminación para conocer el bien, dirección para seguirlo, custodia del mal y gobierno de nuestra vida."
+          },
+          {
+            "id": "ag_e4",
+            "pregunta": "¿En qué pasaje del Evangelio Jesús habla de los ángeles de los niños?",
+            "opciones": ["Mateo 18:10, cuando dice que sus ángeles contemplan el rostro del Padre", "Juan 3:16", "Lucas 15:11", "Marcos 12:30"],
+            "correcta": "Mateo 18:10, cuando dice que sus ángeles contemplan el rostro del Padre",
+            "explicacion": "Jesús dijo: 'No despreciéis a ninguno de estos pequeños, porque os digo que sus ángeles en los cielos están viendo siempre el rostro de mi Padre'."
+          },
+          {
+            "id": "ag_e5",
+            "pregunta": "¿Cuáles son los tres arcángeles que menciona la Biblia?",
+            "opciones": ["Miguel, Rafael y Gabriel", "Miguel, Uriel y Zadkiel", "Gabriel, Uriel y Metatrón", "Rafael, Barachiel y Jehudiel"],
+            "correcta": "Miguel, Rafael y Gabriel",
+            "explicacion": "San Miguel, San Gabriel y San Rafael son los únicos ángeles mencionados por nombre en las Escrituras canónicas."
+          },
+          {
+            "id": "ag_e6",
+            "pregunta": "¿Qué significa que el ángel 'ilumine' según la oración?",
+            "opciones": ["Que nos ayude a conocer la verdad, el bien y los caminos de Dios", "Que haga brillar una luz física", "Que nos haga más inteligentes en los estudios", "Que nos muestre el futuro"],
+            "correcta": "Que nos ayude a conocer la verdad, el bien y los caminos de Dios",
+            "explicacion": "La iluminación del ángel es espiritual: nos ayuda a discernir el bien del mal y a conocer la voluntad de Dios."
+          },
+          {
+            "id": "ag_e7",
+            "pregunta": "¿Cuándo se celebra la fiesta de los Ángeles de la Guarda en la Iglesia?",
+            "opciones": ["El 2 de octubre", "El 29 de septiembre", "El 8 de diciembre", "El 1 de noviembre"],
+            "correcta": "El 2 de octubre",
+            "explicacion": "El 2 de octubre la Iglesia celebra a los Santos Ángeles Custodios, mientras que el 29 de septiembre se celebra a los tres arcángeles."
+          },
+          {
+            "id": "ag_e8",
+            "pregunta": "¿Qué función tiene San Miguel Arcángel según la fe católica?",
+            "opciones": ["Proteger a la Iglesia y combatir el mal y al demonio", "Anunciar los mensajes de Dios", "Curar a los enfermos", "Guiar las almas al cielo"],
+            "correcta": "Proteger a la Iglesia y combatir el mal y al demonio",
+            "explicacion": "San Miguel es el príncipe de los ángeles y protector de la Iglesia. Su nombre significa '¿Quién como Dios?' y venció al demonio en el cielo."
+          }
+        ]
+      }
+    ]
+  },
+  "unidad2": {
+    "titulo": "Corazón Limpio",
+    "oraciones": [
+      {
+        "id": "ex_yo_confieso",
+        "oracion": "Yo Confieso",
+        "preguntas": [
+          {
+            "id": "yc_e1",
+            "pregunta": "¿En qué momento de la Misa se reza el Yo Confieso?",
+            "opciones": ["Al inicio, en el Acto Penitencial", "Durante la Comunión", "Antes de la Homilía", "Al final de la Misa"],
+            "correcta": "Al inicio, en el Acto Penitencial",
+            "explicacion": "El Yo Confieso forma parte del Acto Penitencial al comienzo de la Misa, para disponernos con corazón limpio a celebrar los misterios."
+          },
+          {
+            "id": "yc_e2",
+            "pregunta": "¿Por qué confesamos nuestros pecados 'ante Dios todopoderoso y ante vosotros hermanos'?",
+            "opciones": ["Porque el pecado ofende a Dios y daña a la comunidad; la confesión pública nos une como Iglesia", "Porque solo los hombres pueden perdonar", "Porque Dios no escucha las oraciones privadas", "Por tradición sin significado profundo"],
+            "correcta": "Porque el pecado ofende a Dios y daña a la comunidad; la confesión pública nos une como Iglesia",
+            "explicacion": "El pecado tiene dimensión personal (ofende a Dios) y comunitaria (daña al cuerpo de Cristo). La confesión pública reconoce ambas dimensiones."
+          },
+          {
+            "id": "yc_e3",
+            "pregunta": "¿Qué significa pecar 'de pensamiento, palabra, obra y omisión'?",
+            "opciones": ["Que podemos pecar en la mente, con lo que decimos, con lo que hacemos y con lo que dejamos de hacer", "Solo con acciones físicas graves", "Solo con palabras ofensivas", "Solo con pensamientos malos"],
+            "correcta": "Que podemos pecar en la mente, con lo que decimos, con lo que hacemos y con lo que dejamos de hacer",
+            "explicacion": "La omisión es muy importante: también pecamos cuando debemos hacer el bien y no lo hacemos."
+          },
+          {
+            "id": "yc_e4",
+            "pregunta": "¿Por qué se golpea el pecho al decir 'por mi culpa'?",
+            "opciones": ["Es un gesto de humildad que reconoce que el pecado viene de nuestro corazón", "Es solo una tradición sin significado", "Para llamar la atención de Dios", "Porque el corazón físico es donde peca el hombre"],
+            "correcta": "Es un gesto de humildad que reconoce que el pecado viene de nuestro corazón",
+            "explicacion": "Golpear el pecho es un gesto bíblico de contrición (Lucas 18:13). Reconocemos que el pecado surge de nuestra libertad y corazón."
+          },
+          {
+            "id": "yc_e5",
+            "pregunta": "¿Qué relación tiene el Yo Confieso con el Sacramento de la Confesión?",
+            "opciones": ["El Yo Confieso expresa arrepentimiento general; la Confesión es el sacramento que perdona los pecados graves", "Son exactamente lo mismo", "El Yo Confieso reemplaza a la Confesión sacramental", "No tienen ninguna relación"],
+            "correcta": "El Yo Confieso expresa arrepentimiento general; la Confesión es el sacramento que perdona los pecados graves",
+            "explicacion": "El Yo Confieso nos prepara y dispone, pero no reemplaza al Sacramento de la Reconciliación para los pecados mortales."
+          },
+          {
+            "id": "yc_e6",
+            "pregunta": "¿Por qué pedimos a Santa María y a los santos que rueguen por nosotros en el Yo Confieso?",
+            "opciones": ["Porque forman parte de la comunión de los santos y su intercesión nos ayuda ante Dios", "Porque ellos tienen más poder que nosotros", "Porque Dios nos ignora si oramos solos", "Por costumbre medieval"],
+            "correcta": "Porque forman parte de la comunión de los santos y su intercesión nos ayuda ante Dios",
+            "explicacion": "La comunión de los santos une a los vivos y los muertos en Cristo. Los santos glorificados interceden eficazmente ante Dios."
+          },
+          {
+            "id": "yc_e7",
+            "pregunta": "¿Qué es el pecado mortal según la doctrina católica?",
+            "opciones": ["Un pecado grave cometido con plena conciencia y libre consentimiento que destruye la caridad en el alma", "Cualquier falta pequeña", "Solo el asesinato y los pecados muy grandes", "Una ofensa que no puede perdonarse"],
+            "correcta": "Un pecado grave cometido con plena conciencia y libre consentimiento que destruye la caridad en el alma",
+            "explicacion": "Para que sea mortal se necesitan tres condiciones: materia grave, plena advertencia y deliberado consentimiento."
+          },
+          {
+            "id": "yc_e8",
+            "pregunta": "¿Cuál es la actitud interior que debe acompañar al Yo Confieso?",
+            "opciones": ["Arrepentimiento sincero y propósito de enmienda", "Solo recitarlo correctamente en voz alta", "Sentir vergüenza ante los demás", "Prometerse no volver a la Iglesia si uno peca"],
+            "correcta": "Arrepentimiento sincero y propósito de enmienda",
+            "explicacion": "Sin arrepentimiento real y voluntad de cambiar, la oración es solo palabras. La conversión del corazón es lo esencial."
+          }
+        ]
+      },
+      {
+        "id": "ex_acto_contricion",
+        "oracion": "Acto de Contrición",
+        "preguntas": [
+          {
+            "id": "ac_e1",
+            "pregunta": "¿Qué es la contrición según la fe católica?",
+            "opciones": ["El dolor y detestación del pecado cometido con propósito de no volver a pecar", "Un sentimiento de tristeza general", "El miedo al castigo de Dios", "La penitencia que impone el sacerdote"],
+            "correcta": "El dolor y detestación del pecado cometido con propósito de no volver a pecar",
+            "explicacion": "La contrición es el acto del alma que se duele del pecado porque ofendió a Dios y se propone no volver a cometerlo."
+          },
+          {
+            "id": "ac_e2",
+            "pregunta": "¿Cuándo se reza el Acto de Contrición?",
+            "opciones": ["Especialmente durante el Sacramento de la Reconciliación, después de la confesión de los pecados", "Solo en Semana Santa", "Solo los domingos en Misa", "Al despertar cada mañana obligatoriamente"],
+            "correcta": "Especialmente durante el Sacramento de la Reconciliación, después de la confesión de los pecados",
+            "explicacion": "El Acto de Contrición es parte esencial de la Confesión. Se reza después de confesar los pecados y antes de recibir la absolución."
+          },
+          {
+            "id": "ac_e3",
+            "pregunta": "¿Qué tipos de contrición existen según la teología católica?",
+            "opciones": ["Contrición perfecta (por amor a Dios) y contrición imperfecta o atrición (por miedo al castigo)", "Contrición mayor y menor", "Contrición pública y privada", "Contrición voluntaria e involuntaria"],
+            "correcta": "Contrición perfecta (por amor a Dios) y contrición imperfecta o atrición (por miedo al castigo)",
+            "explicacion": "La contrición perfecta surge del amor a Dios y perdona los pecados mortales inmediatamente. La imperfecta también es válida en la Confesión."
+          },
+          {
+            "id": "ac_e4",
+            "pregunta": "¿Qué significa decir 'me pesa de todo corazón haberte ofendido'?",
+            "opciones": ["Que el arrepentimiento debe ser interior y sincero, no solo de palabras", "Que físicamente nos duele el corazón", "Que lloramos por nuestros pecados", "Que somos perfectos en nuestra fe"],
+            "correcta": "Que el arrepentimiento debe ser interior y sincero, no solo de palabras",
+            "explicacion": "El dolor del corazón es la esencia de la contrición. Sin este dolor interior, las palabras son vacías."
+          },
+          {
+            "id": "ac_e5",
+            "pregunta": "¿Qué es el 'propósito de enmienda' en el Acto de Contrición?",
+            "opciones": ["La firme voluntad de no volver a pecar y evitar las ocasiones de pecado", "La promesa de rezar más", "El compromiso de hacer obras de caridad", "La decisión de ir a Misa más seguido"],
+            "correcta": "La firme voluntad de no volver a pecar y evitar las ocasiones de pecado",
+            "explicacion": "Sin propósito de enmienda no hay contrición verdadera. Deben evitarse también las ocasiones próximas de pecado."
+          },
+          {
+            "id": "ac_e6",
+            "pregunta": "¿Qué es la absolución en el Sacramento de la Confesión?",
+            "opciones": ["El perdón de los pecados que el sacerdote otorga en nombre de Cristo y la Iglesia", "La penitencia que el sacerdote impone", "La lectura de un pasaje bíblico", "La señal de la cruz que hace el sacerdote"],
+            "correcta": "El perdón de los pecados que el sacerdote otorga en nombre de Cristo y la Iglesia",
+            "explicacion": "Cristo dio a los apóstoles el poder de perdonar pecados (Juan 20:22-23). El sacerdote actúa in persona Christi al absolver."
+          },
+          {
+            "id": "ac_e7",
+            "pregunta": "¿Con qué frecuencia recomienda la Iglesia recibir el Sacramento de la Reconciliación?",
+            "opciones": ["Al menos una vez al año, y cuando se haya cometido pecado mortal", "Solo en peligro de muerte", "Solo en Semana Santa", "No hay recomendación específica"],
+            "correcta": "Al menos una vez al año, y cuando se haya cometido pecado mortal",
+            "explicacion": "El Precepto Pascual obliga a confesarse al menos una vez al año. Antes de recibir la Comunión en estado de pecado mortal es obligatorio confesarse."
+          },
+          {
+            "id": "ac_e8",
+            "pregunta": "¿Qué sacramento instituyó Jesús cuando sopló sobre los apóstoles y dijo 'recibid el Espíritu Santo, a quien perdonéis los pecados les son perdonados'?",
+            "opciones": ["El Sacramento de la Reconciliación o Confesión", "El Bautismo", "La Eucaristía", "La Confirmación"],
+            "correcta": "El Sacramento de la Reconciliación o Confesión",
+            "explicacion": "En Juan 20:22-23, Jesús resucitado instituyó el Sacramento de la Reconciliación dando a los apóstoles el poder de perdonar pecados."
+          }
+        ]
+      }
+    ]
+  },
+  "unidad3": {
+    "titulo": "La Roca de la Iglesia",
+    "oraciones": [
+      {
+        "id": "ex_credo",
+        "oracion": "Credo Apostólico",
+        "preguntas": [
+          {
+            "id": "cr_e1",
+            "pregunta": "¿Qué es el Credo?",
+            "opciones": ["Un resumen de las verdades fundamentales de la fe cristiana", "Una oración de petición a Dios", "Un saludo litúrgico", "Un listado de mandamientos"],
+            "correcta": "Un resumen de las verdades fundamentales de la fe cristiana",
+            "explicacion": "El Credo (del latín 'credo': creo) es la profesión de fe que resume las verdades reveladas que los católicos creemos."
+          },
+          {
+            "id": "cr_e2",
+            "pregunta": "¿Qué significa 'Creo en la Santa Iglesia Católica'?",
+            "opciones": ["Que la Iglesia fue fundada por Cristo, es santa por su origen divino, y en ella se recibe la salvación", "Que el Papa siempre tiene razón", "Que todos los católicos son perfectos", "Que la Iglesia es la única organización del mundo"],
+            "correcta": "Que la Iglesia fue fundada por Cristo, es santa por su origen divino, y en ella se recibe la salvación",
+            "explicacion": "La Iglesia es santa no porque sus miembros sean perfectos, sino porque Cristo la santificó y en ella actúan los sacramentos."
+          },
+          {
+            "id": "cr_e3",
+            "pregunta": "¿Qué afirma el Credo sobre Jesucristo?",
+            "opciones": ["Que es verdadero Dios y verdadero hombre, concebido por el Espíritu Santo y nacido de la Virgen María", "Que es solo un profeta enviado por Dios", "Que fue adoptado como Hijo de Dios en el Bautismo", "Que es una manifestación del Espíritu Santo"],
+            "correcta": "Que es verdadero Dios y verdadero hombre, concebido por el Espíritu Santo y nacido de la Virgen María",
+            "explicacion": "El Concilio de Calcedonia (451 d.C.) definió que Cristo tiene dos naturalezas, divina y humana, en una sola persona divina."
+          },
+          {
+            "id": "cr_e4",
+            "pregunta": "¿Qué significa 'la resurrección de la carne' en el Credo?",
+            "opciones": ["Que al final de los tiempos nuestros cuerpos resucitarán para reunirse con el alma en el juicio final", "Que Jesús resucitó en su cuerpo", "Que los santos resucitan en vida", "Que el alma existe después de la muerte"],
+            "correcta": "Que al final de los tiempos nuestros cuerpos resucitarán para reunirse con el alma en el juicio final",
+            "explicacion": "La resurrección de la carne es una verdad de fe: al final de los tiempos, todos resucitaremos con nuestro propio cuerpo glorificado."
+          },
+          {
+            "id": "cr_e5",
+            "pregunta": "¿Qué es la 'comunión de los santos' mencionada en el Credo?",
+            "opciones": ["La unión espiritual entre los fieles vivos, las almas del purgatorio y los santos del cielo", "Recibir la Comunión con otros fieles", "Una reunión de santos canonizados", "El grupo de personas que reciben los sacramentos juntas"],
+            "correcta": "La unión espiritual entre los fieles vivos, las almas del purgatorio y los santos del cielo",
+            "explicacion": "La Iglesia tiene tres estados: militante (vivos), purgante (purgatorio) y triunfante (cielo), unidos en la oración y la caridad."
+          },
+          {
+            "id": "cr_e6",
+            "pregunta": "¿Por qué el Credo dice que Jesús 'descendió a los infiernos'?",
+            "opciones": ["Fue al lugar de los muertos justos que esperaban la redención, para anunciarles la salvación", "Fue castigado en el infierno", "Es una metáfora de su sufrimiento", "Visitó el purgatorio"],
+            "correcta": "Fue al lugar de los muertos justos que esperaban la redención, para anunciarles la salvación",
+            "explicacion": "El 'descenso a los infiernos' (sheol hebreo) significa que Jesús fue al lugar donde esperaban los justos del Antiguo Testamento para liberarlos."
+          },
+          {
+            "id": "cr_e7",
+            "pregunta": "¿Quiénes formularon el Credo Apostólico según la tradición?",
+            "opciones": ["Los doce apóstoles, contribuyendo cada uno con un artículo de fe", "El Papa Clemente I", "El Concilio de Nicea", "San Pablo y San Lucas"],
+            "correcta": "Los doce apóstoles, contribuyendo cada uno con un artículo de fe",
+            "explicacion": "La tradición atribuye el Credo Apostólico a los doce apóstoles antes de dispersarse a predicar. Aunque es una tradición piadosa, refleja la fe apostólica."
+          },
+          {
+            "id": "cr_e8",
+            "pregunta": "¿Cuándo se profesa el Credo durante la Misa?",
+            "opciones": ["Después de la Homilía, como respuesta de fe a la Palabra de Dios proclamada", "Antes de la Consagración", "Al inicio de la Misa", "Durante la Comunión"],
+            "correcta": "Después de la Homilía, como respuesta de fe a la Palabra de Dios proclamada",
+            "explicacion": "El Credo en la Misa es la respuesta de la asamblea a la Palabra proclamada. Profesamos lo que creemos tras escuchar a Dios."
+          }
+        ]
+      }
+    ]
+  },
+  "unidad4": {
+    "titulo": "Camino de Vida",
+    "oraciones": [
+      {
+        "id": "ex_mandamientos",
+        "oracion": "10 Mandamientos",
+        "preguntas": [
+          {
+            "id": "mn_e1",
+            "pregunta": "¿A quién entregó Dios los 10 Mandamientos y dónde?",
+            "opciones": ["A Moisés en el Monte Sinaí", "A Abraham en Canaán", "A David en Jerusalén", "A Salomón en el Templo"],
+            "correcta": "A Moisés en el Monte Sinaí",
+            "explicacion": "Dios entregó las Tablas de la Ley a Moisés en el Monte Sinaí, como alianza entre Dios y el pueblo de Israel (Éxodo 20)."
+          },
+          {
+            "id": "mn_e2",
+            "pregunta": "¿En cuántos grupos se dividen los 10 Mandamientos?",
+            "opciones": ["Dos: los primeros 3 sobre el amor a Dios y los últimos 7 sobre el amor al prójimo", "Tres grupos de distinta importancia", "Cinco para hombres y cinco para mujeres", "No tienen división, son todos iguales"],
+            "correcta": "Dos: los primeros 3 sobre el amor a Dios y los últimos 7 sobre el amor al prójimo",
+            "explicacion": "Jesús resumió los mandamientos en dos: amar a Dios sobre todas las cosas y amar al prójimo como a uno mismo (Mt 22:37-40)."
+          },
+          {
+            "id": "mn_e3",
+            "pregunta": "¿Qué nos pide el cuarto mandamiento 'honrarás a tu padre y a tu madre'?",
+            "opciones": ["Respetar, obedecer y cuidar a nuestros padres y a toda autoridad legítima", "Solo obedecer cuando nos conviene", "Hacer todo lo que nos pidan sin cuestionarlo", "Solo aplica a niños menores de 18 años"],
+            "correcta": "Respetar, obedecer y cuidar a nuestros padres y a toda autoridad legítima",
+            "explicacion": "El cuarto mandamiento se extiende a todas las relaciones de autoridad: familia, sociedad y Estado. Es el único con una promesa: 'para que vivas muchos años'."
+          },
+          {
+            "id": "mn_e4",
+            "pregunta": "¿Qué prohíbe el quinto mandamiento 'no matarás'?",
+            "opciones": ["Todo atentado contra la vida humana: aborto, eutanasia, suicidio, asesinato y la violencia injusta", "Solo el asesinato directo con armas", "Solo matar animales sin razón", "La pena de muerte en todos los casos"],
+            "correcta": "Todo atentado contra la vida humana: aborto, eutanasia, suicidio, asesinato y la violencia injusta",
+            "explicacion": "El quinto mandamiento protege la vida humana desde la concepción hasta la muerte natural, ya que la vida es don de Dios."
+          },
+          {
+            "id": "mn_e5",
+            "pregunta": "¿Qué significa 'no tomarás el nombre de Dios en vano'?",
+            "opciones": ["No usar el nombre de Dios de manera irrespetuosa, en juramentos falsos o blasfemias", "No hablar de Dios en público", "No decir 'Dios mío' cuando te sorprendes", "No nombrar a Dios más de lo necesario"],
+            "correcta": "No usar el nombre de Dios de manera irrespetuosa, en juramentos falsos o blasfemias",
+            "explicacion": "El nombre de Dios es sagrado. Usarlo en vano incluye blasfemias, perjurios (jurar en falso) y el uso frívolo o irrespetuoso."
+          },
+          {
+            "id": "mn_e6",
+            "pregunta": "¿Qué día manda la Iglesia santificar y por qué?",
+            "opciones": ["El domingo, porque es el día de la Resurrección de Cristo y de la asamblea eucarística", "El sábado, como en el Antiguo Testamento", "Cualquier día de la semana a elección del fiel", "El viernes en memoria de la Pasión"],
+            "correcta": "El domingo, porque es el día de la Resurrección de Cristo y de la asamblea eucarística",
+            "explicacion": "Los cristianos santifican el domingo (Dies Domini) desde la primera generación, porque Cristo resucitó el primer día de la semana."
+          },
+          {
+            "id": "mn_e7",
+            "pregunta": "¿Qué prohíbe el séptimo mandamiento 'no robarás'?",
+            "opciones": ["Todo lo que toma injustamente los bienes del prójimo: robo, fraude, corrupción y no pagar deudas", "Solo el robo con violencia física", "Solo tomar dinero en efectivo", "Solo aplica a bienes materiales costosos"],
+            "correcta": "Todo lo que toma injustamente los bienes del prójimo: robo, fraude, corrupción y no pagar deudas",
+            "explicacion": "El séptimo mandamiento exige justicia en las relaciones económicas y sociales, incluyendo la restitución de lo injustamente tomado."
+          },
+          {
+            "id": "mn_e8",
+            "pregunta": "¿Jesús abolió los 10 Mandamientos con el Nuevo Testamento?",
+            "opciones": ["No, los perfeccionó. Dijo 'No vine a abolir la Ley sino a darle cumplimiento' (Mt 5:17)", "Sí, los reemplazó por dos mandamientos", "Solo abolió los referentes a Dios", "Los convirtió en simples sugerencias"],
+            "correcta": "No, los perfeccionó. Dijo 'No vine a abolir la Ley sino a darle cumplimiento' (Mt 5:17)",
+            "explicacion": "Jesús llevó los mandamientos a su perfección, exigiendo no solo acciones externas sino la conversión del corazón."
+          }
+        ]
+      },
+      {
+        "id": "ex_bienaventuranzas",
+        "oracion": "Bienaventuranzas",
+        "preguntas": [
+          {
+            "id": "bv_e1",
+            "pregunta": "¿Dónde proclamó Jesús las Bienaventuranzas?",
+            "opciones": ["En el Sermón del Monte, según el Evangelio de Mateo", "En el Templo de Jerusalén", "Durante la Última Cena", "En la Sinagoga de Nazaret"],
+            "correcta": "En el Sermón del Monte, según el Evangelio de Mateo",
+            "explicacion": "Las Bienaventuranzas se encuentran en Mateo 5:3-12, al inicio del Sermón del Monte, el gran discurso moral de Jesús."
+          },
+          {
+            "id": "bv_e2",
+            "pregunta": "¿Qué son las Bienaventuranzas en la enseñanza cristiana?",
+            "opciones": ["El retrato del estilo de vida cristiano y las promesas de felicidad verdadera que Dios ofrece", "Una lista de cosas prohibidas", "Los premios que Dios da a los buenos", "Consejos opcionales para vivir mejor"],
+            "correcta": "El retrato del estilo de vida cristiano y las promesas de felicidad verdadera que Dios ofrece",
+            "explicacion": "Las Bienaventuranzas describen las actitudes y valores del Reino de Dios, y prometen la bienaventuranza eterna."
+          },
+          {
+            "id": "bv_e3",
+            "pregunta": "¿Qué significa ser 'pobre de espíritu'?",
+            "opciones": ["Reconocer que dependemos totalmente de Dios y no en las riquezas o el poder humano", "Ser económicamente pobre", "No tener ambiciones en la vida", "Ser humilde en el hablar"],
+            "correcta": "Reconocer que dependemos totalmente de Dios y no en las riquezas o el poder humano",
+            "explicacion": "La pobreza de espíritu es la humildad ante Dios, reconocer nuestra pequeñez y necesidad de Él. No es pobreza material sino disposición del corazón."
+          },
+          {
+            "id": "bv_e4",
+            "pregunta": "¿Por qué 'bienaventurados los que lloran' si el llanto parece negativo?",
+            "opciones": ["Porque llorar por el pecado y el sufrimiento ajeno es señal de amor y compasión; Dios promete consolarlos", "Porque Dios quiere que suframos", "Porque el dolor nos purifica mágicamente", "Porque llorar mucho es señal de santidad"],
+            "correcta": "Porque llorar por el pecado y el sufrimiento ajeno es señal de amor y compasión; Dios promete consolarlos",
+            "explicacion": "Este llanto es de compasión y de dolor por el pecado. Dios no abandona al que sufre sino que lo consuela con su presencia."
+          },
+          {
+            "id": "bv_e5",
+            "pregunta": "¿Qué diferencia las Bienaventuranzas de los 10 Mandamientos?",
+            "opciones": ["Los mandamientos son normas de mínimos; las bienaventuranzas son el ideal de perfección del amor cristiano", "Las bienaventuranzas son más fáciles de cumplir", "Los mandamientos son del Antiguo Testamento y las bienaventuranzas los reemplazaron", "No hay diferencia real entre ambos"],
+            "correcta": "Los mandamientos son normas de mínimos; las bienaventuranzas son el ideal de perfección del amor cristiano",
+            "explicacion": "Los mandamientos dicen lo que no hacer; las bienaventuranzas describen el modo de vivir de quien ama como Cristo."
+          },
+          {
+            "id": "bv_e6",
+            "pregunta": "¿Qué significa 'bienaventurados los misericordiosos'?",
+            "opciones": ["Los que perdonan y ayudan al prójimo recibirán misericordia de Dios en el juicio", "Los que se compadecen pero no actúan", "Solo los sacerdotes que dan absolución", "Los que tienen sentimientos buenos pero no los manifiestan"],
+            "correcta": "Los que perdonan y ayudan al prójimo recibirán misericordia de Dios en el juicio",
+            "explicacion": "La misericordia es activa: perdonar al que ofende, socorrer al necesitado. Refleja el corazón de Dios y abre el corazón a su misericordia."
+          },
+          {
+            "id": "bv_e7",
+            "pregunta": "¿Qué promete Jesús a los 'perseguidos por causa de la justicia'?",
+            "opciones": ["El reino de los cielos, la misma promesa que a los pobres de espíritu", "Venganza divina sobre sus perseguidores", "Liberación inmediata de su sufrimiento", "Fama y reconocimiento en este mundo"],
+            "correcta": "El reino de los cielos, la misma promesa que a los pobres de espíritu",
+            "explicacion": "La primera y última bienaventuranza tienen la misma promesa: el reino de los cielos, formando un marco que abarca todas las demás."
+          },
+          {
+            "id": "bv_e8",
+            "pregunta": "¿Cuántas bienaventuranzas hay en el Evangelio de Mateo?",
+            "opciones": ["8", "7", "10", "12"],
+            "correcta": "8",
+            "explicacion": "Mateo 5:3-10 recoge 8 bienaventuranzas. Lucas 6:20-22 recoge 4 bienaventuranzas con sus correspondientes 'ayes'."
+          }
+        ]
+      }
+    ]
+  },
+  "unidad5": {
+    "titulo": "Gracia y Virtud",
+    "oraciones": [
+      {
+        "id": "ex_sacramentos",
+        "oracion": "7 Sacramentos",
+        "preguntas": [
+          {
+            "id": "sc_e1",
+            "pregunta": "¿Qué es un sacramento según la fe católica?",
+            "opciones": ["Un signo eficaz instituido por Cristo que confiere la gracia que significa", "Una ceremonia religiosa bonita", "Una tradición de la Iglesia que puede cambiar", "Una oración especial para momentos importantes"],
+            "correcta": "Un signo eficaz instituido por Cristo que confiere la gracia que significa",
+            "explicacion": "Los sacramentos no son solo símbolos: realmente producen la gracia que significan, porque Cristo actúa en ellos."
+          },
+          {
+            "id": "sc_e2",
+            "pregunta": "¿Cuántos sacramentos instituyó Jesucristo?",
+            "opciones": ["7", "5", "10", "3"],
+            "correcta": "7",
+            "explicacion": "El Concilio de Trento definió que Cristo instituyó exactamente 7 sacramentos: Bautismo, Confirmación, Eucaristía, Penitencia, Unción de Enfermos, Orden Sacerdotal y Matrimonio."
+          },
+          {
+            "id": "sc_e3",
+            "pregunta": "¿Cuál es el sacramento de la iniciación cristiana que borra el pecado original?",
+            "opciones": ["El Bautismo", "La Confirmación", "La Eucaristía", "La Penitencia"],
+            "correcta": "El Bautismo",
+            "explicacion": "El Bautismo es el primer sacramento, que nos hace hijos de Dios, borra el pecado original y nos incorpora a la Iglesia."
+          },
+          {
+            "id": "sc_e4",
+            "pregunta": "¿Qué sacramento fortalece la fe recibida en el Bautismo?",
+            "opciones": ["La Confirmación, que sella con el Espíritu Santo al cristiano", "La Eucaristía", "El Orden Sacerdotal", "La Unción de Enfermos"],
+            "correcta": "La Confirmación, que sella con el Espíritu Santo al cristiano",
+            "explicacion": "La Confirmación completa el Bautismo: el confirmado recibe los dones del Espíritu Santo para ser testigo de Cristo."
+          },
+          {
+            "id": "sc_e5",
+            "pregunta": "¿Cuál es el sacramento central de la vida cristiana?",
+            "opciones": ["La Eucaristía, que es la fuente y cumbre de la vida de la Iglesia", "El Bautismo", "La Confirmación", "El Matrimonio"],
+            "correcta": "La Eucaristía, que es la fuente y cumbre de la vida de la Iglesia",
+            "explicacion": "El Concilio Vaticano II declaró que la Eucaristía es 'fuente y cumbre de la vida cristiana'. En ella Cristo se hace presente de manera real."
+          },
+          {
+            "id": "sc_e6",
+            "pregunta": "¿Para qué está destinado el sacramento del Matrimonio?",
+            "opciones": ["Para santificar el amor entre un hombre y una mujer y ordenarlo a la familia y la transmisión de la vida", "Solo para tener hijos", "Para evitar el pecado de la carne", "Para cumplir con la tradición social"],
+            "correcta": "Para santificar el amor entre un hombre y una mujer y ordenarlo a la familia y la transmisión de la vida",
+            "explicacion": "El Matrimonio cristiano es signo del amor de Cristo por la Iglesia. Sus fines son el bien de los cónyuges y la procreación."
+          },
+          {
+            "id": "sc_e7",
+            "pregunta": "¿Qué es la Unción de los Enfermos?",
+            "opciones": ["El sacramento que da fuerza espiritual a los enfermos graves y puede conllevar la remisión de pecados", "Solo para personas en agonía", "Una bendición para cualquier enfermedad leve", "Un rito de despedida sin efectos espirituales"],
+            "correcta": "El sacramento que da fuerza espiritual a los enfermos graves y puede conllevar la remisión de pecados",
+            "explicacion": "La Unción no es solo para los moribundos. Da gracia, fuerza, paz y puede conllevar la remisión de pecados y la curación si Dios lo quiere."
+          },
+          {
+            "id": "sc_e8",
+            "pregunta": "¿Cuáles son los tres sacramentos de iniciación cristiana?",
+            "opciones": ["Bautismo, Confirmación y Eucaristía", "Bautismo, Confesión y Matrimonio", "Confirmación, Eucaristía y Orden", "Bautismo, Confirmación y Matrimonio"],
+            "correcta": "Bautismo, Confirmación y Eucaristía",
+            "explicacion": "Estos tres sacramentos forman la iniciación cristiana completa: nacemos (Bautismo), crecemos (Confirmación) y nos alimentamos (Eucaristía)."
+          }
+        ]
+      }
+    ]
+  },
+  "unidad6": {
+    "titulo": "El Jardín de María",
+    "oraciones": [
+      {
+        "id": "ex_rosario",
+        "oracion": "Misterios del Rosario",
+        "preguntas": [
+          {
+            "id": "rs_e1",
+            "pregunta": "¿Qué es el Santo Rosario?",
+            "opciones": ["Una oración meditativa que repasa los principales misterios de la vida de Jesús y María", "Solo una cadena con cuentas religiosas", "Una oración solo para mujeres mayores", "Un sustituto de la Misa"],
+            "correcta": "Una oración meditativa que repasa los principales misterios de la vida de Jesús y María",
+            "explicacion": "El Rosario es una oración vocal y contemplativa que nos invita a meditar la vida de Cristo junto a María."
+          },
+          {
+            "id": "rs_e2",
+            "pregunta": "¿Cuántos grupos de misterios tiene el Rosario completo?",
+            "opciones": ["4: Gozosos, Dolorosos, Gloriosos y Luminosos", "3: Gozosos, Dolorosos y Gloriosos", "5 grupos con 4 misterios cada uno", "2 grupos: vida y muerte de Jesús"],
+            "correcta": "4: Gozosos, Dolorosos, Gloriosos y Luminosos",
+            "explicacion": "San Juan Pablo II añadió los Misterios Luminosos en 2002 con la carta Rosarium Virginis Mariae."
+          },
+          {
+            "id": "rs_e3",
+            "pregunta": "¿Cuál es el primer Misterio Gozoso del Rosario?",
+            "opciones": ["La Anunciación del Ángel a María", "La Natividad de Jesús", "La Visitación de María a Isabel", "El hallazgo de Jesús en el templo"],
+            "correcta": "La Anunciación del Ángel a María",
+            "explicacion": "El primer Misterio Gozoso es la Anunciación, cuando el ángel Gabriel anunció a María que concebiría al Hijo de Dios."
+          },
+          {
+            "id": "rs_e4",
+            "pregunta": "¿Qué misterios meditamos los viernes?",
+            "opciones": ["Los Misterios Dolorosos, que recuerdan la Pasión y muerte de Cristo", "Los Misterios Gloriosos", "Los Misterios Gozosos", "Los Misterios Luminosos"],
+            "correcta": "Los Misterios Dolorosos, que recuerdan la Pasión y muerte de Cristo",
+            "explicacion": "Los viernes se meditan los Misterios Dolorosos en memoria de la Pasión de Cristo. Miércoles también. Los demás días varían."
+          },
+          {
+            "id": "rs_e5",
+            "pregunta": "¿Qué misterio celebra la glorificación final de María?",
+            "opciones": ["La Coronación de María como Reina del cielo y de la tierra", "La Asunción de María", "La Anunciación", "La Visitación"],
+            "correcta": "La Coronación de María como Reina del cielo y de la tierra",
+            "explicacion": "El quinto Misterio Glorioso es la Coronación de María como Reina del universo, su glorificación definitiva junto a su Hijo."
+          },
+          {
+            "id": "rs_e6",
+            "pregunta": "¿Qué misterio luminoso añadió San Juan Pablo II al Rosario?",
+            "opciones": ["La Transfiguración de Nuestro Señor", "La Resurrección", "La Ascensión", "La Anunciación"],
+            "correcta": "La Transfiguración de Nuestro Señor",
+            "explicacion": "Los cuatro Misterios Luminosos son: Bautismo de Jesús, bodas de Caná, anuncio del reino, Transfiguración e institución de la Eucaristía."
+          },
+          {
+            "id": "rs_e7",
+            "pregunta": "¿A quién se atribuye popularmente la propagación del Rosario?",
+            "opciones": ["A Santo Domingo de Guzmán, por aparición de la Virgen en el siglo XIII", "A San Francisco de Asís", "Al Papa Pío V", "A Santa Teresa de Ávila"],
+            "correcta": "A Santo Domingo de Guzmán, por aparición de la Virgen en el siglo XIII",
+            "explicacion": "La tradición atribuye a Santo Domingo de Guzmán el inicio del Rosario como lo conocemos, aunque la forma actual se desarrolló gradualmente."
+          },
+          {
+            "id": "rs_e8",
+            "pregunta": "¿Qué batalla histórica se atribuye a la victoria obtenida por el Rosario?",
+            "opciones": ["La batalla de Lepanto en 1571, donde la flota cristiana venció al Imperio Otomano", "La batalla de Covadonga", "La Reconquista de Granada", "Las Cruzadas de Jerusalén"],
+            "correcta": "La batalla de Lepanto en 1571, donde la flota cristiana venció al Imperio Otomano",
+            "explicacion": "El Papa Pío V atribuyó la victoria de Lepanto a la intercesión de María por el Rosario, instituyendo la fiesta de Nuestra Señora del Rosario el 7 de octubre."
+          }
+        ]
+      }
+    ]
+  }
+}
