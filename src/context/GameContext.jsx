@@ -238,6 +238,7 @@ export const GameProvider = ({ children }) => {
   // ── Completar nivel → cofre de madera ─────────────────────────────────
   const completarNivel = async (fueConPerfecta = false) => {
     if (!usuarioId) return;
+    if (cofrePendiente) return;
     const hoy      = hoyStr();
     const jugóHoy  = userDoc?.jugóHoy ?? null;
     const rachaAct = userDoc?.racha   ?? 0;

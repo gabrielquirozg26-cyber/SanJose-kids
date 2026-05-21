@@ -203,19 +203,7 @@ const AppShell = () => {
   const { activeTab, enLeccion, cofrePendiente, cerrarCofre } = useGame();
   const [examenActivo, setExamenActivo] = useState(null);
 
-  if (enLeccion) return (
-    <>
-      <Leccion />
-      {/* Cofre aparece encima de la lección al terminarla */}
-      {cofrePendiente && (
-        <CofreGracia
-          tipoCofre={cofrePendiente.tipo}
-          recompensa={cofrePendiente.recompensa}
-          onCerrar={cerrarCofre}
-        />
-      )}
-    </>
-  );
+  if (enLeccion) return <Leccion />;
 
   if (examenActivo) return (
     <>
@@ -224,13 +212,6 @@ const AppShell = () => {
         unidadNombre={examenActivo.nombre}
         onCerrar={() => setExamenActivo(null)}
       />
-      {cofrePendiente && (
-        <CofreGracia
-          tipoCofre={cofrePendiente.tipo}
-          recompensa={cofrePendiente.recompensa}
-          onCerrar={cerrarCofre}
-        />
-      )}
     </>
   );
 
@@ -245,7 +226,7 @@ const AppShell = () => {
       </main>
       <Navbar />
 
-      {/* Cofre global — puede aparecer desde cualquier pestaña */}
+      {/* Cofre global: aparece cuando existe cofrePendiente */}
       {cofrePendiente && (
         <CofreGracia
           tipoCofre={cofrePendiente.tipo}
