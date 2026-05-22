@@ -177,7 +177,7 @@ const Mapa = ({ onIniciarExamen }) => {
       {/* Aviso sin vidas */}
       {vidas <= 0 && (
         <div className="w-full glass-card rounded-2xl p-4 mb-6 border border-red-500/30 text-center">
-          <p className="text-red-400 font-black text-sm">❤️ Sin vidas — regresa en unas horas</p>
+          <p className="text-red-400 font-black text-sm animate-pulse">❤️ Sin vidas — regresa en unas horas</p>
         </div>
       )}
 

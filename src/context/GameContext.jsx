@@ -16,7 +16,7 @@ const GameContext = createContext();
 const MAX_VIDAS     = 5;
 const MS_REGEN_VIDA = 4 * 60 * 60 * 1000;
 
-// ── Misiones diarias y semanales (igual que antes) ──
+// ── Misiones diarias y semanales ──
 export const MISIONES_DIARIAS = [
   { id: 'd1', icono: '📖', titulo: 'Estudiante Fiel',   descripcion: 'Completa 3 lecciones hoy',       tipo: 'lecciones', meta: 3,   recompensa: 50  },
   { id: 'd2', icono: '🪙', titulo: 'Coleccionista',     descripcion: 'Gana 100 monedas en un día',      tipo: 'monedas',   meta: 100, recompensa: 30  },
@@ -76,9 +76,9 @@ export const GameProvider = ({ children }) => {
   const [oracionActual, setOracionActual] = useState(null);
   const [misionesState, setMisionesState] = useState(null);
   const [cofrePendiente, setCofrePendiente] = useState(null);
-  const [coleccion, setColeccion]         = useState([]); // Array de IDs de santos
+  const [coleccion, setColeccion]         = useState([]);
 
-  // ── Sincronización con Firebase ─────────────────────────────────────────
+  // ── Sincronización con Firebase ──
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -86,11 +86,18 @@ export const GameProvider = ({ children }) => {
         const unsubDoc = onSnapshot(doc(db, 'usuarios', user.uid), (snap) => {
           if (snap.exists()) {
             const data = snap.data();
+            // Asegurar que avatar siempre tenga valor (si no existe, '😇')
+            if (!data.avatar) {
+              data.avatar = '😇';
+            }
             setUserDoc(data);
             setColeccion(data.coleccion ?? []);
             _sincronizarMisiones(user.uid, data);
             _aplicarRegenVidas(user.uid, data);
             _verificarRacha(user.uid, data);
+          } else {
+            // Si no existe documento, crearlo (esto no debería pasar porque se crea al registrar)
+            console.warn('Documento de usuario no encontrado');
           }
           setLoading(false);
         });
@@ -104,7 +111,7 @@ export const GameProvider = ({ children }) => {
     return () => unsubAuth();
   }, []);
 
-  // ── Regen de vidas ─────────────────────────────────────────────────────
+  // ── Regen de vidas ──
   const _aplicarRegenVidas = async (uid, data) => {
     const vp = data.vidasPerdidas ?? [];
     if (!vp.length) { setVidasM(MAX_VIDAS); return; }
@@ -120,7 +127,7 @@ export const GameProvider = ({ children }) => {
     return () => clearInterval(t);
   }, [usuarioId, userDoc?.vidasPerdidas?.length]);
 
-  // ── Racha ─────────────────────────────────────────────────────────────
+  // ── Racha ──
   const _verificarRacha = async (uid, data) => {
     const hoy = hoyStr(); if (data.jugóHoy === hoy) return;
     const ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
@@ -132,7 +139,7 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // ── Misiones ──────────────────────────────────────────────────────────
+  // ── Misiones ──
   const _sincronizarMisiones = async (uid, data) => {
     const hoy = hoyStr(); const semana = semanaStr();
     const mis = data.misiones ?? {}; let ok = false; const nuevo = { ...mis };
@@ -172,14 +179,15 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // ── Autenticación y registro ──────────────────────────────────────────
+  // ── Autenticación y registro ──
   const _base = (extra = {}) => ({
     vidas: MAX_VIDAS, monedas: 100, nivelActual: 1,
     rango: 'Iniciado', racha: 0, rol: 'estudiante',
     fechaRegistro: new Date().toISOString(),
     misiones: {}, inventario: [], vidasPerdidas: [],
     jugóHoy: null, examenesAprobados: [], cofresAbiertos: 0,
-    coleccion: [],  // <-- nuevo campo
+    coleccion: [],
+    avatar: '😇',  // Avatar por defecto emoji
     ...extra,
   });
 
@@ -210,7 +218,7 @@ export const GameProvider = ({ children }) => {
 
   const cerrarSesion = async () => { try { await signOut(auth); } catch (e) { console.error(e); } };
 
-  // ── Juego: vidas, monedas ────────────────────────────────────────────
+  // ── Juego: vidas, monedas ──
   const restarVida = async () => {
     if (!usuarioId || vidasMostradas <= 0) return;
     await updateDoc(doc(db, 'usuarios', usuarioId), { vidasPerdidas: [...(userDoc?.vidasPerdidas ?? []), Date.now()] });
@@ -230,7 +238,7 @@ export const GameProvider = ({ children }) => {
     if (cantidad > 0) await _avanzarMision('monedas', Number(cantidad));
   };
 
-  // ── SISTEMA DE SANTOS (núcleo nuevo) ───────────────────────────────────
+  // ── SISTEMA DE SANTOS ──
   const entregarSanto = async (tipoCofre) => {
     const santo = obtenerSantoPorRareza(tipoCofre);
     if (!santo) return null;
@@ -261,7 +269,7 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // ── Completar nivel (genera cofre de madera/oro) ──
+  // ── Completar nivel (cofre) ──
   const completarNivel = async (fueConPerfecta = false) => {
     if (!usuarioId) return;
     const hoy      = hoyStr();
@@ -302,7 +310,7 @@ export const GameProvider = ({ children }) => {
 
   const cerrarCofre = () => setCofrePendiente(null);
 
-  // ── Inventario y tienda (sin cambios) ──
+  // ── Inventario y tienda ──
   const comprarItem = async (item) => {
     if (!usuarioId) return false;
     const inv = userDoc?.inventario ?? [];
@@ -385,9 +393,25 @@ export const GameProvider = ({ children }) => {
     return Math.max(0, Math.ceil((MS_REGEN_VIDA - (Date.now() - Math.min(...vp))) / 60000));
   };
 
-  // ── Valores expuestos ──────────────────────────────────────────────────
+  // ── Función para actualizar avatar (con mejora de persistencia) ──
+  const actualizarAvatar = async (nuevoAvatar) => {
+    if (!usuarioId) return false;
+    try {
+      await updateDoc(doc(db, 'usuarios', usuarioId), { avatar: nuevoAvatar });
+      // Actualizar estado local inmediatamente para reflejar el cambio visual
+      setUserDoc(prev => ({ ...prev, avatar: nuevoAvatar }));
+      console.log('Avatar actualizado en Firestore y estado local:', nuevoAvatar);
+      return true;
+    } catch (error) {
+      console.error('Error al actualizar avatar:', error);
+      return false;
+    }
+  };
+
+  // ── Valores expuestos ──
   const value = {
     usuarioId,
+    userDoc,  // exponemos userDoc completo para acceder a avatar directamente
     nombre:            userDoc?.nombre            ?? 'Guardián',
     grupo:             userDoc?.grupo             ?? 'Sin Grupo',
     rol:               userDoc?.rol               ?? 'estudiante',
@@ -402,6 +426,7 @@ export const GameProvider = ({ children }) => {
     cofrePendiente,
     coleccion,
     catalogoSantos:    santosData.santos,
+    actualizarAvatar,
 
     loading, activeTab, setActiveTab,
     enLeccion, setEnLeccion,
@@ -414,7 +439,7 @@ export const GameProvider = ({ children }) => {
     comprarItem, iniciarLeccion,
     obtenerRanking, obtenerEstudiantesGrupo,
     obtenerRankingGlobal,
-    obtenerRankingGrupos,   // ✅ AGREGADO: ahora disponible en useGame()
+    obtenerRankingGrupos,
     reclamarMision, aprobarExamen,
     cerrarCofre, minutosHastaVida,
   };
