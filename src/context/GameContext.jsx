@@ -9,13 +9,14 @@ import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, onAuthStateChanged,
 } from 'firebase/auth';
-import { sortearRecompensa } from '../views/CofreGracia';
+import santosData from '../data/santos.json';
 
 const GameContext = createContext();
 
 const MAX_VIDAS     = 5;
 const MS_REGEN_VIDA = 4 * 60 * 60 * 1000;
 
+// ── Misiones diarias y semanales (igual que antes) ──
 export const MISIONES_DIARIAS = [
   { id: 'd1', icono: '📖', titulo: 'Estudiante Fiel',   descripcion: 'Completa 3 lecciones hoy',       tipo: 'lecciones', meta: 3,   recompensa: 50  },
   { id: 'd2', icono: '🪙', titulo: 'Coleccionista',     descripcion: 'Gana 100 monedas en un día',      tipo: 'monedas',   meta: 100, recompensa: 30  },
@@ -37,6 +38,33 @@ const semanaStr = () => {
 };
 const initProgreso = (m) => Object.fromEntries(m.map(x => [x.id, { progreso: 0, reclamada: false }]));
 
+// ── Helper para sortear santo según rareza del cofre ──
+const obtenerSantoPorRareza = (tipoCofre) => {
+  let prob = { comun: 0, raro: 0, legendario: 0 };
+  switch (tipoCofre) {
+    case 'madera':
+      prob = { comun: 0.85, raro: 0.15, legendario: 0 };
+      break;
+    case 'plata':
+      prob = { comun: 0.4, raro: 0.5, legendario: 0.1 };
+      break;
+    case 'oro':
+      prob = { comun: 0.2, raro: 0.5, legendario: 0.3 };
+      break;
+    default:
+      prob = { comun: 0.7, raro: 0.3, legendario: 0 };
+  }
+  const rand = Math.random();
+  let rarezaElegida = 'comun';
+  if (rand < prob.legendario) rarezaElegida = 'legendario';
+  else if (rand < prob.legendario + prob.raro) rarezaElegida = 'raro';
+  
+  const posibles = santosData.santos.filter(s => s.rareza === rarezaElegida);
+  if (posibles.length === 0) return null;
+  const idx = Math.floor(Math.random() * posibles.length);
+  return posibles[idx];
+};
+
 export const GameProvider = ({ children }) => {
   const [userDoc, setUserDoc]       = useState(null);
   const [usuarioId, setUsuarioId]   = useState(null);
@@ -47,13 +75,10 @@ export const GameProvider = ({ children }) => {
   const [enLeccion, setEnLeccion]         = useState(false);
   const [oracionActual, setOracionActual] = useState(null);
   const [misionesState, setMisionesState] = useState(null);
-
-  // ── Estado del cofre pendiente ─────────────────────────────────────────
-  // Cuando se gana un cofre, se guarda aquí para mostrarlo después
-  // { tipo: 'madera'|'plata'|'oro', recompensa: {...} }
   const [cofrePendiente, setCofrePendiente] = useState(null);
+  const [coleccion, setColeccion]         = useState([]); // Array de IDs de santos
 
-  // ── Auth ───────────────────────────────────────────────────────────────
+  // ── Sincronización con Firebase ─────────────────────────────────────────
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -62,6 +87,7 @@ export const GameProvider = ({ children }) => {
           if (snap.exists()) {
             const data = snap.data();
             setUserDoc(data);
+            setColeccion(data.coleccion ?? []);
             _sincronizarMisiones(user.uid, data);
             _aplicarRegenVidas(user.uid, data);
             _verificarRacha(user.uid, data);
@@ -72,12 +98,13 @@ export const GameProvider = ({ children }) => {
       } else {
         setUsuarioId(null); setUserDoc(null);
         setMisionesState(null); setLoading(false);
+        setColeccion([]);
       }
     });
     return () => unsubAuth();
   }, []);
 
-  // ── Vidas ──────────────────────────────────────────────────────────────
+  // ── Regen de vidas ─────────────────────────────────────────────────────
   const _aplicarRegenVidas = async (uid, data) => {
     const vp = data.vidasPerdidas ?? [];
     if (!vp.length) { setVidasM(MAX_VIDAS); return; }
@@ -93,7 +120,7 @@ export const GameProvider = ({ children }) => {
     return () => clearInterval(t);
   }, [usuarioId, userDoc?.vidasPerdidas?.length]);
 
-  // ── Racha ──────────────────────────────────────────────────────────────
+  // ── Racha ─────────────────────────────────────────────────────────────
   const _verificarRacha = async (uid, data) => {
     const hoy = hoyStr(); if (data.jugóHoy === hoy) return;
     const ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
@@ -105,7 +132,7 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // ── Misiones ───────────────────────────────────────────────────────────
+  // ── Misiones ──────────────────────────────────────────────────────────
   const _sincronizarMisiones = async (uid, data) => {
     const hoy = hoyStr(); const semana = semanaStr();
     const mis = data.misiones ?? {}; let ok = false; const nuevo = { ...mis };
@@ -145,13 +172,14 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // ── Auth ───────────────────────────────────────────────────────────────
+  // ── Autenticación y registro ──────────────────────────────────────────
   const _base = (extra = {}) => ({
     vidas: MAX_VIDAS, monedas: 100, nivelActual: 1,
     rango: 'Iniciado', racha: 0, rol: 'estudiante',
     fechaRegistro: new Date().toISOString(),
     misiones: {}, inventario: [], vidasPerdidas: [],
     jugóHoy: null, examenesAprobados: [], cofresAbiertos: 0,
+    coleccion: [],  // <-- nuevo campo
     ...extra,
   });
 
@@ -182,7 +210,7 @@ export const GameProvider = ({ children }) => {
 
   const cerrarSesion = async () => { try { await signOut(auth); } catch (e) { console.error(e); } };
 
-  // ── Juego ──────────────────────────────────────────────────────────────
+  // ── Juego: vidas, monedas ────────────────────────────────────────────
   const restarVida = async () => {
     if (!usuarioId || vidasMostradas <= 0) return;
     await updateDoc(doc(db, 'usuarios', usuarioId), { vidasPerdidas: [...(userDoc?.vidasPerdidas ?? []), Date.now()] });
@@ -202,43 +230,40 @@ export const GameProvider = ({ children }) => {
     if (cantidad > 0) await _avanzarMision('monedas', Number(cantidad));
   };
 
-  // ── Cofres ─────────────────────────────────────────────────────────────
-  const _entregarCofre = async (tipoCofre) => {
-    const recompensa = sortearRecompensa(tipoCofre);
-
-    // Aplicar recompensa en Firestore
-    if (recompensa.tipo === 'monedas') {
+  // ── SISTEMA DE SANTOS (núcleo nuevo) ───────────────────────────────────
+  const entregarSanto = async (tipoCofre) => {
+    const santo = obtenerSantoPorRareza(tipoCofre);
+    if (!santo) return null;
+    const yaTiene = coleccion.includes(santo.id);
+    if (yaTiene) {
+      let compensacion = 50;
+      if (santo.rareza === 'raro') compensacion = 100;
+      if (santo.rareza === 'legendario') compensacion = 200;
       await updateDoc(doc(db, 'usuarios', usuarioId), {
-        monedas: increment(recompensa.cantidad),
+        monedas: increment(compensacion),
         cofresAbiertos: increment(1),
       });
-    } else if (recompensa.tipo === 'item') {
-      const inv = userDoc?.inventario ?? [];
-      // Si ya tiene el item, compensar con monedas
-      if (inv.includes(recompensa.id)) {
-        await updateDoc(doc(db, 'usuarios', usuarioId), {
-          monedas: increment(100),
-          cofresAbiertos: increment(1),
-        });
-        // Cambiar recompensa mostrada a monedas
-        return { tipo: 'monedas', cantidad: 100, label: '+100 Monedas (duplicado)', icono: '🪙' };
-      }
+      return {
+        tipo: 'repetido',
+        santo: santo,
+        compensacion: compensacion,
+      };
+    } else {
       await updateDoc(doc(db, 'usuarios', usuarioId), {
-        inventario: arrayUnion(recompensa.id),
+        coleccion: arrayUnion(santo.id),
         cofresAbiertos: increment(1),
       });
-      // Efectos inmediatos de títulos
-      if (recompensa.id === 'titulo_guardian') await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Guardián del Credo' });
-      if (recompensa.id === 'titulo_maestro')  await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Maestro de la Fe' });
+      setColeccion(prev => [...prev, santo.id]);
+      return {
+        tipo: 'nuevo',
+        santo: santo,
+      };
     }
-
-    return recompensa;
   };
 
-  // ── Completar nivel → cofre de madera ─────────────────────────────────
+  // ── Completar nivel (genera cofre de madera/oro) ──
   const completarNivel = async (fueConPerfecta = false) => {
     if (!usuarioId) return;
-    if (cofrePendiente) return;
     const hoy      = hoyStr();
     const jugóHoy  = userDoc?.jugóHoy ?? null;
     const rachaAct = userDoc?.racha   ?? 0;
@@ -259,29 +284,25 @@ export const GameProvider = ({ children }) => {
     await _avanzarMision('racha', 1);
     if (fueConPerfecta) await _avanzarMision('perfectas', 1);
 
-    // ── Entregar cofre ────────────────────────────────────────────────────
-    // Oro si fue perfecta, Madera si no
     const tipoCofre = fueConPerfecta ? 'oro' : 'madera';
-    const recompensa = await _entregarCofre(tipoCofre);
+    const recompensa = await entregarSanto(tipoCofre);
     setCofrePendiente({ tipo: tipoCofre, recompensa });
   };
 
-  // ── Aprobar examen → cofre de plata ────────────────────────────────────
+  // ── Aprobar examen (cofre de plata) ──
   const aprobarExamen = async (claveUnidad) => {
     if (!usuarioId) return;
     await updateDoc(doc(db, 'usuarios', usuarioId), {
       examenesAprobados: arrayUnion(claveUnidad),
       monedas: increment(200),
     });
-    // Cofre de plata al aprobar examen
-    const recompensa = await _entregarCofre('plata');
+    const recompensa = await entregarSanto('plata');
     setCofrePendiente({ tipo: 'plata', recompensa });
   };
 
-  // ── Cerrar cofre y aplicar recompensa ──────────────────────────────────
   const cerrarCofre = () => setCofrePendiente(null);
 
-  // ── Inventario ─────────────────────────────────────────────────────────
+  // ── Inventario y tienda (sin cambios) ──
   const comprarItem = async (item) => {
     if (!usuarioId) return false;
     const inv = userDoc?.inventario ?? [];
@@ -297,10 +318,59 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // ── Ranking ────────────────────────────────────────────────────────────
+  // ── Ranking y estudiantes ──
   const obtenerRanking = async (grupo) => {
     const q = query(collection(db, 'usuarios'), where('grupo', '==', grupo), orderBy('monedas', 'desc'));
     const snap = await getDocs(q); return snap.docs.map((d, i) => ({ ...d.data(), posicion: i + 1 }));
+  };
+
+  const obtenerRankingGlobal = async () => {
+    const q = query(collection(db, 'usuarios'), where('rol', '==', 'estudiante'), orderBy('monedas', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map((d, i) => ({ ...d.data(), posicionGlobal: i + 1 }));
+  };
+
+  const obtenerRankingGrupos = async () => {
+    const q = query(collection(db, 'usuarios'), where('rol', '==', 'estudiante'));
+    const snap = await getDocs(q);
+    const estudiantes = snap.docs.map(d => d.data());
+
+    const gruposMap = new Map();
+    estudiantes.forEach(est => {
+      const grupo = est.grupo || 'Sin Grupo';
+      if (!gruposMap.has(grupo)) {
+        gruposMap.set(grupo, {
+          nombre: grupo,
+          monedasTotal: 0,
+          estudiantes: []
+        });
+      }
+      const grupoObj = gruposMap.get(grupo);
+      grupoObj.monedasTotal += (est.monedas || 0);
+      grupoObj.estudiantes.push({
+        uid: est.uid,
+        nombre: est.nombre,
+        monedas: est.monedas || 0,
+        nivelActual: est.nivelActual || 1,
+        racha: est.racha || 0,
+        rango: est.rango || 'Iniciado',
+        inventario: est.inventario || [],
+      });
+    });
+
+    const grupos = Array.from(gruposMap.values())
+      .map(g => {
+        const estudiantesOrdenados = [...g.estudiantes].sort((a,b) => b.monedas - a.monedas);
+        return {
+          ...g,
+          estudiantes: estudiantesOrdenados,
+          top3: estudiantesOrdenados.slice(0,3)
+        };
+      })
+      .sort((a,b) => b.monedasTotal - a.monedasTotal)
+      .map((g, idx) => ({ ...g, posicion: idx + 1 }));
+
+    return grupos;
   };
 
   const obtenerEstudiantesGrupo = async (grupo) => {
@@ -330,6 +400,8 @@ export const GameProvider = ({ children }) => {
     examenesAprobados: userDoc?.examenesAprobados ?? [],
     cofresAbiertos:    userDoc?.cofresAbiertos    ?? 0,
     cofrePendiente,
+    coleccion,
+    catalogoSantos:    santosData.santos,
 
     loading, activeTab, setActiveTab,
     enLeccion, setEnLeccion,
@@ -341,6 +413,8 @@ export const GameProvider = ({ children }) => {
     sumarMonedas, completarNivel,
     comprarItem, iniciarLeccion,
     obtenerRanking, obtenerEstudiantesGrupo,
+    obtenerRankingGlobal,
+    obtenerRankingGrupos,   // ✅ AGREGADO: ahora disponible en useGame()
     reclamarMision, aprobarExamen,
     cerrarCofre, minutosHastaVida,
   };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 
-// ── Configuración de cofres ────────────────────────────────────────────────
+// ── Configuración de cofres (mismo estilo) ────────────────────────────────
 export const TIPOS_COFRE = {
   madera: {
     id: 'madera',
@@ -11,7 +11,7 @@ export const TIPOS_COFRE = {
     border: 'border-amber-600/60',
     glow: 'shadow-[0_0_30px_rgba(180,83,9,0.4)]',
     particulas: ['#92400e', '#d97706', '#fbbf24', '#ffffff'],
-    descripcion: 'Recompensa básica de fe',
+    descripcion: 'Santo común',
   },
   plata: {
     id: 'plata',
@@ -21,7 +21,7 @@ export const TIPOS_COFRE = {
     border: 'border-slate-400/60',
     glow: 'shadow-[0_0_40px_rgba(148,163,184,0.5)]',
     particulas: ['#94a3b8', '#cbd5e1', '#ffffff', '#facc15'],
-    descripcion: 'Recompensa de conocimiento',
+    descripcion: 'Santo raro o común',
   },
   oro: {
     id: 'oro',
@@ -31,56 +31,23 @@ export const TIPOS_COFRE = {
     border: 'border-yellow-400/80',
     glow: 'shadow-[0_0_60px_rgba(250,204,21,0.7)]',
     particulas: ['#facc15', '#fbbf24', '#ffffff', '#a78bfa'],
-    descripcion: '¡Recompensa legendaria!',
+    descripcion: '¡Santo legendario!',
   },
 };
 
-// ── Tabla de recompensas por tipo de cofre ─────────────────────────────────
-// peso: probabilidad relativa (mayor = más probable)
-const RECOMPENSAS = {
-  madera: [
-    { tipo: 'monedas', cantidad: 50,  peso: 40, label: '+50 Monedas',  icono: '🪙' },
-    { tipo: 'monedas', cantidad: 75,  peso: 30, label: '+75 Monedas',  icono: '🪙' },
-    { tipo: 'monedas', cantidad: 100, peso: 20, label: '+100 Monedas', icono: '🪙' },
-    { tipo: 'item',    id: 'pocion_sabiduria', peso: 7,  label: 'Poción de Sabiduría', icono: '🧪' },
-    { tipo: 'item',    id: 'reloj_arena',      peso: 3,  label: 'Reloj de Arena',       icono: '⏳' },
-  ],
-  plata: [
-    { tipo: 'monedas', cantidad: 150, peso: 30, label: '+150 Monedas', icono: '🪙' },
-    { tipo: 'monedas', cantidad: 200, peso: 25, label: '+200 Monedas', icono: '🪙' },
-    { tipo: 'item',    id: 'escudo_miguel',   peso: 20, label: 'Escudo de San Miguel', icono: '🛡️' },
-    { tipo: 'item',    id: 'seguro_racha',    peso: 15, label: 'Seguro de Racha',       icono: '🔥' },
-    { tipo: 'item',    id: 'marco_vitral_azul', peso: 10, label: 'Marco Vitral Azul',  icono: '🔵' },
-  ],
-  oro: [
-    { tipo: 'monedas', cantidad: 300, peso: 25, label: '+300 Monedas', icono: '🪙' },
-    { tipo: 'monedas', cantidad: 500, peso: 15, label: '+500 Monedas', icono: '🪙' },
-    { tipo: 'item',    id: 'aura_santidad',      peso: 20, label: 'Aura de Santidad',     icono: '✨' },
-    { tipo: 'item',    id: 'marco_vitral_dorado', peso: 15, label: 'Marco Vitral Dorado', icono: '🟡' },
-    { tipo: 'item',    id: 'titulo_guardian',    peso: 15, label: 'Guardián del Credo',   icono: '⚜️' },
-    { tipo: 'item',    id: 'titulo_maestro',     peso: 10, label: 'Maestro de la Fe',     icono: '👑' },
-  ],
+// ── Colores según rareza para mostrar en la tarjeta ───────────────────────
+const RAREZA_CLASE = {
+  comun:      'bg-slate-500/30 text-slate-300 border-slate-500/30',
+  raro:       'bg-blue-500/30 text-blue-300 border-blue-500/30',
+  legendario: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/30',
 };
 
-// ── Función para sortear recompensa ───────────────────────────────────────
-export const sortearRecompensa = (tipoCofre) => {
-  const tabla = RECOMPENSAS[tipoCofre] ?? RECOMPENSAS.madera;
-  const total = tabla.reduce((s, r) => s + r.peso, 0);
-  let rand = Math.random() * total;
-  for (const r of tabla) {
-    rand -= r.peso;
-    if (rand <= 0) return r;
-  }
-  return tabla[0];
-};
-
-// ── Fases de la animación ──────────────────────────────────────────────────
-// idle → sacudiendo → abriendo → revelando → listo
-const FASES = ['idle', 'sacudiendo', 'abriendo', 'revelando', 'listo'];
+// ── Funcion de sorteo (ya no se usa directamente, pero se mantiene por si acaso) ──
+export const sortearRecompensa = () => null; // Ya no se usa
 
 // ── Componente principal ───────────────────────────────────────────────────
 const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
-  const [fase, setFase] = useState('idle');
+  const [fase, setFase] = useState('idle'); // idle → sacudiendo → abriendo → revelando → listo
   const config = TIPOS_COFRE[tipoCofre] ?? TIPOS_COFRE.madera;
 
   // Secuencia de animación automática al tocar el cofre
@@ -90,7 +57,7 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
     setTimeout(() => setFase('abriendo'), 800);
     setTimeout(() => {
       setFase('revelando');
-      // Confetti al revelar
+      // Confeti al revelar
       const boom = () => confetti({
         particleCount: 180,
         spread: 120,
@@ -108,9 +75,11 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
     setTimeout(() => setFase('listo'), 2600);
   };
 
+  // Si no hay recompensa (por seguridad) no mostramos nada
+  if (!recompensa) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md px-6">
-
       {/* Fondos dinámicos por tipo */}
       <div className={`absolute inset-0 pointer-events-none transition-opacity duration-1000
         ${fase === 'revelando' || fase === 'listo' ? 'opacity-100' : 'opacity-0'}`}>
@@ -130,8 +99,7 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
       </div>
 
       <div className="w-full max-w-sm flex flex-col items-center gap-6 relative">
-
-        {/* ── Tipo y descripción ── */}
+        {/* Tipo y descripción */}
         <div className="text-center animate-slide-up">
           <p className={`text-[10px] font-black uppercase tracking-[0.5em] mb-1
             ${tipoCofre === 'oro' ? 'text-yellow-400' : tipoCofre === 'plata' ? 'text-slate-300' : 'text-amber-500'}`}>
@@ -140,35 +108,28 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
           <h2 className="text-2xl font-black text-white tracking-tighter">{config.nombre}</h2>
         </div>
 
-        {/* ── El cofre ── */}
+        {/* El cofre */}
         <div className="relative flex flex-col items-center">
-
-          {/* Anillos de luz */}
           {(fase === 'revelando' || fase === 'listo') && (
             <>
-              <div className={`absolute inset-[-20px] rounded-full opacity-30 animate-ping
-                bg-gradient-to-br ${config.color}`} />
-              <div className={`absolute inset-[-8px] rounded-full opacity-20 animate-pulse
-                bg-gradient-to-br ${config.color}`} />
+              <div className={`absolute inset-[-20px] rounded-full opacity-30 animate-ping bg-gradient-to-br ${config.color}`} />
+              <div className={`absolute inset-[-8px] rounded-full opacity-20 animate-pulse bg-gradient-to-br ${config.color}`} />
             </>
           )}
 
-          {/* Cofre */}
           <div
             onClick={iniciarApertura}
             className={`
               relative w-40 h-40 rounded-3xl flex items-center justify-center cursor-pointer
               bg-gradient-to-br ${config.color} border-4 ${config.border} ${config.glow}
               transition-all duration-300 select-none
-              ${fase === 'idle'       ? 'hover:scale-105 active:scale-95' : ''}
+              ${fase === 'idle' ? 'hover:scale-105 active:scale-95' : ''}
               ${fase === 'sacudiendo' ? 'animate-[shake_0.15s_ease-in-out_infinite]' : ''}
-              ${fase === 'abriendo'   ? 'scale-110' : ''}
+              ${fase === 'abriendo' ? 'scale-110' : ''}
               ${fase === 'revelando' || fase === 'listo' ? 'scale-90 opacity-80' : ''}
             `}
             style={{
-              animation: fase === 'sacudiendo'
-                ? 'shake 0.15s ease-in-out infinite'
-                : undefined,
+              animation: fase === 'sacudiendo' ? 'shake 0.15s ease-in-out infinite' : undefined,
             }}
           >
             <span className={`text-7xl transition-all duration-500 drop-shadow-2xl select-none
@@ -177,33 +138,25 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
               {config.icono}
             </span>
 
-            {/* Tapas del cofre que se abren */}
             {fase === 'abriendo' && (
               <div className="absolute inset-0 flex items-start justify-center overflow-hidden rounded-3xl">
-                <div className={`w-full h-1/2 bg-gradient-to-br ${config.color}
-                  border-b-4 ${config.border} rounded-t-3xl
-                  animate-[openLid_0.6s_ease-out_forwards]`} />
+                <div className={`w-full h-1/2 bg-gradient-to-br ${config.color} border-b-4 ${config.border} rounded-t-3xl animate-[openLid_0.6s_ease-out_forwards]`} />
               </div>
             )}
           </div>
 
-          {/* Toque para abrir */}
           {fase === 'idle' && (
             <div className="mt-4 flex flex-col items-center gap-2 animate-bounce">
-              <p className="text-white/50 text-xs font-black uppercase tracking-widest">
-                Toca para abrir
-              </p>
+              <p className="text-white/50 text-xs font-black uppercase tracking-widest">Toca para abrir</p>
               <span className="text-white/30 text-lg">👆</span>
             </div>
           )}
 
-          {/* Partículas de luz al abrir */}
           {fase === 'abriendo' && (
             <div className="absolute inset-0 pointer-events-none">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i}
-                  className={`absolute w-2 h-2 rounded-full bg-gradient-to-br ${config.color}
-                    animate-[float_0.8s_ease-out_forwards]`}
+                  className={`absolute w-2 h-2 rounded-full bg-gradient-to-br ${config.color} animate-[float_0.8s_ease-out_forwards]`}
                   style={{
                     left: `${20 + (i * 10)}%`,
                     top: `${30 + (i % 3) * 15}%`,
@@ -216,23 +169,21 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
           )}
         </div>
 
-        {/* ── Recompensa revelada ── */}
+        {/* ── Recompensa revelada (Santo) ── */}
         {(fase === 'revelando' || fase === 'listo') && recompensa && (
           <div className="w-full animate-slide-up space-y-4">
-
-            {/* Tarjeta de recompensa */}
             <div className={`glass-card rounded-3xl p-6 border text-center space-y-3
               ${tipoCofre === 'oro'   ? 'border-yellow-400/50 bg-yellow-400/5'
               : tipoCofre === 'plata' ? 'border-slate-400/40 bg-slate-400/5'
               :                        'border-amber-600/40 bg-amber-600/5'}`}>
 
               <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.5em]">
-                Recompensa obtenida
+                {recompensa.tipo === 'nuevo' ? '✨ ¡Nuevo Santo! ✨' : '🪙 Santo repetido'}
               </p>
 
-              <div className={`w-20 h-20 rounded-2xl mx-auto flex items-center justify-center text-4xl
+              <div className={`w-24 h-24 rounded-2xl mx-auto flex items-center justify-center text-6xl
                 bg-gradient-to-br ${config.color} shadow-xl`}>
-                {recompensa.icono}
+                {recompensa.santo.icono}
               </div>
 
               <div>
@@ -240,28 +191,29 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
                   ${tipoCofre === 'oro' ? 'text-yellow-400'
                   : tipoCofre === 'plata' ? 'text-slate-200'
                   : 'text-amber-400'}`}>
-                  {recompensa.label}
+                  {recompensa.santo.nombre}
                 </p>
-                {recompensa.tipo === 'monedas' && (
-                  <p className="text-white/40 text-xs mt-1">Añadido a tu balance</p>
-                )}
-                {recompensa.tipo === 'item' && (
-                  <p className="text-white/40 text-xs mt-1">Añadido a tu inventario</p>
+                {recompensa.tipo === 'repetido' && (
+                  <p className="text-white/60 text-sm mt-1">
+                    🪙 +{recompensa.compensacion} monedas por duplicado
+                  </p>
                 )}
               </div>
 
-              {/* Rareza visual */}
-              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest
-                ${tipoCofre === 'oro'   ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300'
-                : tipoCofre === 'plata' ? 'bg-slate-500/20 border-slate-500/40 text-slate-300'
-                :                        'bg-amber-700/20 border-amber-700/40 text-amber-400'}`}>
-                {tipoCofre === 'oro' ? '⭐ Legendario' : tipoCofre === 'plata' ? '💫 Raro' : '✦ Común'}
-              </div>
+              <span className={`inline-block text-[10px] font-black uppercase px-3 py-1 rounded-full border ${RAREZA_CLASE[recompensa.santo.rareza]}`}>
+                {recompensa.santo.rareza.toUpperCase()}
+              </span>
+
+              {recompensa.tipo === 'nuevo' && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest bg-green-500/20 border-green-500/40 text-green-300">
+                  📖 Añadido al álbum
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* ── Botón cerrar ── */}
+        {/* Botón cerrar */}
         {fase === 'listo' && (
           <button onClick={onCerrar}
             className="w-full py-4 rounded-2xl bg-white text-black font-black text-base
@@ -283,7 +235,6 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
         )}
       </div>
 
-      {/* CSS para animaciones custom */}
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0) rotate(0deg); }

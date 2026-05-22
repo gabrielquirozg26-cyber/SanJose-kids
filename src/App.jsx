@@ -11,6 +11,9 @@ import Misiones from './views/Misiones';
 import Navbar   from './components/Navbar';
 import Examen   from './views/Examen';
 import CofreGracia from './views/CofreGracia';
+import Album from './views/Album';
+import DetalleSantos from './views/DetalleSantos';
+import PerfilPublico from './views/PerfilPublico';
 
 import LoginCatequista from './views/LoginCatequista';
 import PanelCatequista from './views/PanelCatequista';
@@ -20,7 +23,7 @@ const Cargando = () => (
   <div className="min-h-screen bg-[#050b14] flex flex-col items-center justify-center gap-4">
     <div className="w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
     <p className="text-blue-300 text-xs font-black uppercase tracking-widest animate-pulse">
-      Cargando misión…
+      Equipo de catequesis…
     </p>
   </div>
 );
@@ -202,7 +205,9 @@ const Perfil = () => {
 const AppShell = () => {
   const { activeTab, enLeccion, cofrePendiente, cerrarCofre } = useGame();
   const [examenActivo, setExamenActivo] = useState(null);
-
+  const [santoSeleccionado, setSantoSeleccionado] = useState(null);
+  const [perfilPublico, setPerfilPublico] = useState(null);
+  
   if (enLeccion) return <Leccion />;
 
   if (examenActivo) return (
@@ -219,7 +224,21 @@ const AppShell = () => {
     <div className="min-h-screen bg-[#050b14] text-white font-sans flex flex-col">
       <main className="flex-1 pb-24 pt-4 px-4 max-w-xl mx-auto w-full">
         {activeTab === 'mapa'     && <Mapa onIniciarExamen={(clave, nombre) => setExamenActivo({ clave, nombre })} />}
-        {activeTab === 'ranking'  && <Ranking />}
+        {activeTab === 'album' && (
+          santoSeleccionado ? (
+            <DetalleSantos santo={santoSeleccionado} onVolver={() => setSantoSeleccionado(null)} />
+          ) : (
+            <Album onSeleccionarSanto={setSantoSeleccionado} />
+          )
+        )}
+
+        {activeTab === 'ranking' && perfilPublico && (
+          <PerfilPublico usuario={perfilPublico} onVolver={() => setPerfilPublico(null)} />
+        )}
+        {activeTab === 'ranking' && !perfilPublico && (
+          <Ranking onSeleccionarUsuario={setPerfilPublico} />
+        )}
+      
         {activeTab === 'misiones' && <Misiones />}
         {activeTab === 'tienda'   && <Tienda />}
         {activeTab === 'perfil'   && <Perfil />}
