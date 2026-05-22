@@ -1,63 +1,233 @@
+/* Importa Tailwind usando la nueva sintaxis CSS-first */
 @import "tailwindcss";
 
-/* 1. Ajustes Globales */
-:root {
-  color-scheme: light;
+/* Define todas las variables de tu tema aquí */
+@theme {
+  /* Colores */
+  --color-background: #03050b;
+  --color-foreground: #f8fafc;
+  --color-primary: #facc15;
+  --color-primary-foreground: #000000;
+  --color-secondary: #3b82f6;
+  --color-secondary-foreground: #ffffff;
+  --color-border: rgba(255, 255, 255, 0.1);
+  
+  /* Tipografía */
+  --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Radio de bordes */
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  /* Fondo negro de seguridad para que no haya destellos blancos */
-  background-color: #0c1a2b; 
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
+/* Define aquí las clases personalizadas que luego usarás con @apply */
+@layer components {
+  /* Ahora definimos 'border-border' para que Tailwind la reconozca */
+  .border-border {
+    border-color: var(--color-border);
+  }
+  
+  .glass-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+  .glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(250, 204, 21, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .btn-primary {
+    background-image: linear-gradient(to right, var(--color-primary), #fbbf24);
+    color: var(--color-primary-foreground);
+    font-weight: 900;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(250, 204, 21, 0.2);
+    transition-property: all;
+    transition-duration: 300ms;
+  }
+  .btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 15px -3px rgba(250, 204, 21, 0.4);
+  }
+  .btn-primary:active {
+    transform: scale(0.95);
+  }
+
+  /* Agrega aquí el resto de tus clases personalizadas */
 }
 
-/* 2. El Efecto Glassmorphism de SAN JOSÉKIDS */
-/* Usamos !important para asegurar que el efecto se aplique sobre cualquier fondo */
-.glass-card {
-  background: rgba(255, 255, 255, 0.45) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1) !important;
+/* Estilos globales base. Aquí NO uses @apply con clases que no existan. */
+@layer base {
+  * {
+    /* Establecemos el color de borde para todos los elementos */
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-family-sans);
+    background-image:
+      radial-gradient(circle at 25% 0%, rgba(59,130,246,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 75% 100%, rgba(250,204,21,0.06) 0%, transparent 60%);
+    background-attachment: fixed;
+  }
+  /* Scrollbar personalizada */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(250, 204, 21, 0.5);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(250, 204, 21, 0.8);
+  }
 }
 
-/* 3. Animaciones para la Mascota (Angelito) y Feedback */
+/* Utilidades y animaciones adicionales */
+@utility animate-fade-in {
+  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@utility animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+@utility animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+@utility animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 @keyframes slideUp {
-  from { 
-    transform: translateY(100%); 
-    opacity: 0;
-  }
-  to { 
-    transform: translateY(0); 
-    opacity: 1;
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-.animate-slide-up {
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
-
-/* Animación de pulso suave para los niveles completados */
 @keyframes glow {
-  0% { box-shadow: 0 0 5px rgba(250, 204, 21, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.6); }
-  100% { box-shadow: 0 0 5px rgba(250, 204, 21, 0.2); }
+  from { box-shadow: 0 0 5px rgba(250,204,21,0.3); }
+  to { box-shadow: 0 0 20px rgba(250,204,21,0.6); }
+}
+/* Fondo principal */
+.bg-iglesia {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -2;
+  background-image: url('/fondo-iglesia.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(8px) brightness(0.7);
+  transform: scale(1.05); /* Evita bordes blancos por el blur */
 }
 
-.level-glow {
-  animation: glow 2s infinite;
+/* Overlay oscuro adicional */
+.bg-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 30%, rgba(0,0,0,0.4), rgba(0,0,0,0.85));
 }
 
-/* 4. Corrección para la barra de navegación (Navbar) */
-/* Esto asegura que los iconos y textos dentro de la barra se vean bien */
-nav button {
-  transition: all 0.2s ease;
+/* Aplica a body o al contenedor principal */
+body {
+  position: relative;
 }
 
-nav button:active {
-  transform: scale(0.9);
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/fondo-iglesia.jpeg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(12px) brightness(0.6);
+  z-index: -2;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.7) 100%);
+  z-index: -1;
+}
+
+/* Ajustes de tipografía responsive */
+html {
+  font-size: 14px;
+}
+@media (min-width: 640px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* Contenedor principal con padding-top seguro */
+.main-content {
+  padding-top: 4.5rem; /* Ajusta según altura del header en móvil */
+}
+@media (min-width: 640px) {
+  .main-content {
+    padding-top: 5rem;
+  }
+}
+
+/* Navbar inferior más compacta en móvil */
+@media (max-width: 480px) {
+  .bottom-nav {
+    padding: 0.5rem 0.25rem;
+  }
+  .bottom-nav button span:first-child {
+    font-size: 1.5rem;
+  }
+  .bottom-nav button span:last-child {
+    font-size: 0.65rem;
+  }
+}
+
+/* Grids adaptativos */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+@media (max-width: 480px) {
+  .grid-responsive {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.75rem;
+  }
 }
