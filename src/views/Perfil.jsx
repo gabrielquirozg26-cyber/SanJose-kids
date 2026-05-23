@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import AvatarSelector from '../components/AvatarSelector';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase';
 
+// Helpers para marcos decorativos (basado en inventario)
 const MARCOS = {
   marco_vitral_azul:   { border: 'border-blue-400',   shadow: 'shadow-[0_0_20px_rgba(96,165,250,0.5)]',  gradiente: 'from-blue-600 to-cyan-400'   },
   marco_vitral_dorado: { border: 'border-yellow-400', shadow: 'shadow-[0_0_20px_rgba(250,204,21,0.6)]',  gradiente: 'from-yellow-500 to-amber-300' },
@@ -11,6 +10,7 @@ const MARCOS = {
 const getMarco    = (inv) => inv.includes('marco_vitral_dorado') ? MARCOS.marco_vitral_dorado : inv.includes('marco_vitral_azul') ? MARCOS.marco_vitral_azul : null;
 const tieneAura   = (inv) => inv.includes('aura_santidad');
 
+// Nombres de niveles
 const NIVEL_NOMBRE = {
   1:'Padre Nuestro',2:'Ave María',3:'Gloria',4:'Ángel de la Guarda',
   5:'Yo Confieso',6:'Acto de Contrición',7:'Dulce Madre',
@@ -23,7 +23,6 @@ const NIVEL_NOMBRE = {
 const Perfil = () => {
   const {
     userDoc,
-    usuarioId,
     nombre,
     grupo,
     monedas,
@@ -38,39 +37,22 @@ const Perfil = () => {
     actualizarAvatar,
   } = useGame();
 
-  // Estado local para el avatar, inicializado con userDoc.avatar o '😇'
-  const [avatarLocal, setAvatarLocal] = useState(() => {
-    // Intento: 1) userDoc?.avatar, 2) localStorage, 3) '😇'
-    if (userDoc?.avatar && userDoc.avatar !== 'default') return userDoc.avatar;
-    const saved = localStorage.getItem('avatar_temp');
-    if (saved) return saved;
-    return '😇';
-  });
-
-  const [selectorAbierto, setSelectorAbierto] = useState(false);
   const marco = getMarco(inventario);
   const aura = tieneAura(inventario);
   const mins = minutosHastaVida();
   const tiempoVida = mins > 0 ? (mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`) : null;
 
-  // Sincronizar avatarLocal con userDoc.avatar cuando cambie (por snapshot de Firebase)
-  useEffect(() => {
-    if (userDoc?.avatar && userDoc.avatar !== 'default') {
-      setAvatarLocal(userDoc.avatar);
-      localStorage.setItem('avatar_temp', userDoc.avatar);
-    }
-  }, [userDoc?.avatar]);
+  const [selectorAbierto, setSelectorAbierto] = useState(false);
 
-  const esImagen = avatarLocal?.startsWith('data:image') || avatarLocal?.startsWith('http');
+  // Usar directamente el avatar del contexto (sin estado local)
+  const avatarActual = userDoc?.avatar || '😇';
+  // Detectar si es imagen (ruta absoluta que empiece con /, base64, http, etc.)
+  const esImagen = avatarActual?.startsWith('/') || 
+                   avatarActual?.startsWith('data:image') || 
+                   avatarActual?.startsWith('http');
 
   const handleSelectAvatar = async (nuevoAvatar) => {
-    setAvatarLocal(nuevoAvatar);
-    localStorage.setItem('avatar_temp', nuevoAvatar);
-    const ok = await actualizarAvatar(nuevoAvatar);
-    if (!ok) {
-      // revertir si falla
-      setAvatarLocal(userDoc?.avatar || '😇');
-    }
+    await actualizarAvatar(nuevoAvatar);
     setSelectorAbierto(false);
   };
 
@@ -94,9 +76,19 @@ const Perfil = () => {
           <div className={`relative w-28 h-28 rounded-full flex items-center justify-center overflow-hidden border-4
             ${marco ? `${marco.border} ${marco.shadow}` : aura ? 'border-yellow-400/60 shadow-[0_0_25px_rgba(250,204,21,0.4)]' : 'border-white/20 bg-white/5'}`}>
             {esImagen ? (
-              <img src={avatarLocal} alt="Avatar" className="w-full h-full object-cover" />
+              <img 
+                src={avatarActual} 
+                alt="Avatar" 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Si falla la imagen, mostrar emoji por defecto
+                  console.error('Error cargando avatar:', avatarActual);
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<span class="text-5xl">😇</span>';
+                }}
+              />
             ) : (
-              <span className="text-5xl">{avatarLocal}</span>
+              <span className="text-5xl">{avatarActual}</span>
             )}
           </div>
           <div className="absolute bottom-0 right-0 bg-yellow-400 rounded-full p-1 text-black text-xs shadow-lg">
@@ -125,7 +117,7 @@ const Perfil = () => {
         )}
       </div>
 
-      {/* Stats modernos */}
+      {/* Stats modernos (igual que antes) */}
       <div className="grid grid-cols-2 gap-3">
         <div className="glass-card rounded-2xl p-4 border border-white/10">
           <p className="text-white/40 text-[9px] font-black uppercase tracking-wider">🏅 Nivel</p>
@@ -154,6 +146,7 @@ const Perfil = () => {
         </div>
       </div>
 
+      {/* Cofres abiertos */}
       {cofresAbiertos > 0 && (
         <div className="glass-card rounded-2xl p-4 border border-amber-600/20 flex items-center gap-3">
           <span className="text-2xl">📦</span>
@@ -164,6 +157,7 @@ const Perfil = () => {
         </div>
       )}
 
+      {/* Inventario */}
       {inventario.length > 0 && (
         <div className="glass-card rounded-3xl p-5 border border-white/10">
           <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em] mb-3">Objetos equipados</p>

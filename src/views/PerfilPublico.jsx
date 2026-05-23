@@ -20,7 +20,9 @@ const PerfilPublico = ({ usuario, onVolver }) => {
   const marco = getMarco(usuario.inventario || []);
   const aura = tieneAura(usuario.inventario || []);
   const avatar = usuario.avatar || '😇';
-  const esImagen = avatar?.startsWith('data:image') || avatar?.startsWith('http');
+  const esImagen = avatar?.startsWith('data:image') || 
+                   avatar?.startsWith('http') ||
+                   avatar?.startsWith('/images/');
 
   return (
     <div className="py-6 animate-slide-up">
@@ -40,7 +42,15 @@ const PerfilPublico = ({ usuario, onVolver }) => {
           <div className={`relative w-28 h-28 rounded-full flex items-center justify-center overflow-hidden border-4
             ${marco ? `${marco.border} ${marco.shadow}` : aura ? 'border-yellow-400/60 shadow-[0_0_25px_rgba(250,204,21,0.4)]' : 'border-white/20 bg-white/5'}`}>
             {esImagen ? (
-              <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+              <img 
+                src={avatar} 
+                alt="Avatar" 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<span class="text-5xl">😇</span>';
+                }}
+              />
             ) : (
               <span className="text-5xl">{avatar}</span>
             )}

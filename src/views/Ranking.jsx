@@ -41,7 +41,7 @@ const Ranking = ({ onSeleccionarUsuario }) => {
   const UsuarioRow = ({ usuario, index }) => {
     const esMio = usuario.nombre === nombre;
     const avatar = usuario.avatar || '😇';
-    const esImagen = avatar?.startsWith('data:image') || avatar?.startsWith('http');
+    const esImagen = avatar?.startsWith('data:image') || avatar?.startsWith('http')|| avatar?.startsWith('/images/');;
 
     return (
       <button

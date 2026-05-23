@@ -10,7 +10,6 @@ const RAREZA_COLOR = {
 const Album = ({ onSeleccionarSanto }) => {
   const { coleccion, catalogoSantos } = useGame();
 
-  // Si no hay catálogo, mostrar carga
   if (!catalogoSantos || catalogoSantos.length === 0) {
     return (
       <div className="py-6 text-center">
@@ -43,6 +42,8 @@ const Album = ({ onSeleccionarSanto }) => {
             {santos.map(santo => {
               const desbloqueado = coleccion.includes(santo.id);
               const estilo = RAREZA_COLOR[santo.rareza];
+              const tieneImagen = santo.imagen && santo.imagen !== '';
+
               return (
                 <button
                   key={santo.id}
@@ -57,10 +58,27 @@ const Album = ({ onSeleccionarSanto }) => {
                     ${!desbloqueado ? 'bg-white/5' : `bg-gradient-to-b ${estilo.bg}`}`}
                   disabled={!desbloqueado}
                 >
-                  <div className={`relative w-20 h-20 mx-auto rounded-2xl flex items-center justify-center text-5xl
+                  <div className={`relative w-20 h-20 mx-auto rounded-2xl flex items-center justify-center overflow-hidden
                     ${desbloqueado ? '' : 'grayscale blur-[1px]'}`}
                   >
-                    {desbloqueado ? santo.icono : '❓'}
+                    {desbloqueado ? (
+                      tieneImagen ? (
+                        <img 
+                          src={santo.imagen} 
+                          alt={santo.nombre}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Si la imagen falla, mostrar emoji
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = `<span class="text-5xl">${santo.icono || '❓'}</span>`;
+                          }}
+                        />
+                      ) : (
+                        <span className="text-5xl">{santo.icono || '❓'}</span>
+                      )
+                    ) : (
+                      <span className="text-5xl">❓</span>
+                    )}
                     {!desbloqueado && (
                       <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
                         <span className="text-2xl">🔒</span>
@@ -74,7 +92,7 @@ const Album = ({ onSeleccionarSanto }) => {
                     {estilo.tag}
                   </span>
                   {desbloqueado && santo.rareza === 'legendario' && (
-                    <div className="mt-1 text-yellow-400 text-[10px]">✨</div>
+                    <div className="mt-1 text-yellow-400 text-[10px] animate-pulse">✨</div>
                   )}
                 </button>
               );
