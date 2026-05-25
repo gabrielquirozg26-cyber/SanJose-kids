@@ -1,56 +1,120 @@
 import React, { useState, useRef } from 'react';
 import { useGame } from '../context/GameContext';
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import santosData from '../data/santos.json';
 
+// Función de compresión
+const comprimirImagen = async (file, maxWidth = 500, maxHeight = 500, quality = 0.8) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(
+          (blob) => {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 const AvatarSelector = ({ isOpen, onClose, onSelectAvatar }) => {
-  const { actualizarAvatar, coleccion } = useGame();
+  const { actualizarAvatar, usuarioId, coleccion } = useGame();
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
 
   if (!isOpen) return null;
 
   const santos = santosData.santos;
-  // Mapa rápido para comprobar si está desbloqueado
   const coleccionSet = new Set(coleccion);
 
-  // Subir foto personal (Base64)
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file || !file.type.startsWith('image/')) {
       setError('Por favor selecciona una imagen válida');
       return;
     }
-    if (file.size > 500 * 1024) {
-      setError('La imagen es muy grande (máx 500KB). Elige una más pequeña.');
-      return;
-    }
 
     setUploading(true);
     setError(null);
-    setPreview(URL.createObjectURL(file));
+    setUploadProgress(0);
 
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = reader.result;
-        await actualizarAvatar(base64String);
-        onSelectAvatar(base64String);
-        onClose();
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
+      const previewUrl = URL.createObjectURL(file);
+      setPreview(previewUrl);
+
+      const compressedFile = await comprimirImagen(file, 500, 500, 0.8);
+      
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      const fileName = `${usuarioId}_${Date.now()}.jpg`;
+      const storageRef = ref(storage, `avatars/${fileName}`);
+      
+      await uploadBytes(storageRef, compressedFile);
+      const downloadURL = await getDownloadURL(storageRef);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      await actualizarAvatar(downloadURL);
+      onSelectAvatar(downloadURL);
+      onClose();
     } catch (err) {
-      console.error('Error al procesar imagen:', err);
-      setError('Error al procesar la imagen. Intenta de nuevo.');
+      console.error('Error al subir imagen:', err);
+      setError('Error al subir la imagen. Intenta de nuevo.');
+    } finally {
       setUploading(false);
+      setUploadProgress(0);
+      if (preview) URL.revokeObjectURL(preview);
     }
   };
 
-  // Seleccionar un santo desbloqueado
   const handleSelectSanto = async (santo) => {
-    // Guardamos la URL de la imagen si existe, si no, el emoji (fallback)
     const avatarValue = santo.imagen || santo.icono || '😇';
     await actualizarAvatar(avatarValue);
     onSelectAvatar(avatarValue);
@@ -69,7 +133,6 @@ const AvatarSelector = ({ isOpen, onClose, onSelectAvatar }) => {
           <button onClick={onClose} className="text-white/50 hover:text-white text-2xl">&times;</button>
         </div>
 
-        {/* Subir foto personal */}
         <div className="mb-6">
           <p className="text-white/60 text-xs font-black uppercase tracking-wider mb-2">Foto personal</p>
           <div className="flex items-center gap-4">
@@ -93,20 +156,25 @@ const AvatarSelector = ({ isOpen, onClose, onSelectAvatar }) => {
             />
             <div>
               <p className="text-white text-sm font-bold">Sube tu foto</p>
-              <p className="text-white/30 text-[10px]">JPG, PNG hasta 500KB</p>
-              {uploading && <p className="text-yellow-400 text-[10px] mt-1">Procesando...</p>}
+              <p className="text-white/30 text-[10px]">JPG, PNG, WebP · Se comprime automáticamente</p>
+              {uploading && (
+                <div className="mt-1">
+                  <p className="text-yellow-400 text-[10px]">Subiendo... {uploadProgress}%</p>
+                  <div className="w-24 h-1 bg-white/10 rounded-full overflow-hidden mt-1">
+                    <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${uploadProgress}%` }} />
+                  </div>
+                </div>
+              )}
               {error && <p className="text-red-400 text-[10px] mt-1">{error}</p>}
             </div>
           </div>
         </div>
 
-        {/* Separador */}
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
           <div className="relative flex justify-center text-xs"><span className="bg-black/50 px-2 text-white/40">Santos desbloqueados</span></div>
         </div>
 
-        {/* Grid de santos (solo los que has desbloqueado) */}
         <div className="grid grid-cols-3 gap-3">
           {santos.map(santo => {
             const desbloqueado = coleccionSet.has(santo.id);
@@ -127,7 +195,6 @@ const AvatarSelector = ({ isOpen, onClose, onSelectAvatar }) => {
                         alt={santo.nombre}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // Si la imagen falla, mostrar emoji
                           e.target.style.display = 'none';
                           e.target.parentElement.innerHTML = `<span class="text-3xl">${santo.icono || '😇'}</span>`;
                         }}

@@ -88,9 +88,9 @@
         "icono": "💙",
         "versos": [
           { "id": "dm_01", "texto": "Dulce Madre no te alejes", "palabraFaltante": "alejes", "opcionesSeleccion": ["alejes", "apartes", "olvides", "vayas"], "palabrasOrdenar": ["Dulce", "Madre", "no", "te", "alejes"] },
-          { "id": "dm_02", "texto": "tu presencia es mi alegría", "palabraFaltante": "alegría", "opcionesSeleccion": ["alegría", "consuelo", "fuerza", "paz"], "palabrasOrdenar": ["tu", "presencia", "es", "mi", "alegría"] },
-          { "id": "dm_03", "texto": "y en las penas de esta vida", "palabraFaltante": "penas", "opcionesSeleccion": ["penas", "horas", "noches", "cruces"], "palabrasOrdenar": ["y", "en", "las", "penas", "de", "esta", "vida"] },
-          { "id": "dm_04", "texto": "tú eres mi consolación", "palabraFaltante": "consolación", "opcionesSeleccion": ["consolación", "guía", "fortaleza", "esperanza"], "palabrasOrdenar": ["tú", "eres", "mi", "consolación"] }
+          { "id": "dm_02", "texto": "tu vista de mi no apartes", "palabraFaltante": "apartes", "opcionesSeleccion": ["vuelvas", "apartes", "alejes", "quites"], "palabrasOrdenar": ["tu", "vista", "de", "mi", "no", "apartes"] },
+          { "id": "dm_03", "texto": "ven conmigo a todas partes", "palabraFaltante": "partes", "opcionesSeleccion": ["partes", "horas", "noches", "cruces"], "palabrasOrdenar": ["ven", "conmigo", "a", "todas", "partes"] },
+          { "id": "dm_04", "texto": "y solo nunca me dejes", "palabraFaltante": "nunca", "opcionesSeleccion": ["no", "jamas", "siempre", "nunca"], "palabrasOrdenar": ["y", "solo", "nunca", "me", "dejes"] }
         ]
       }
     ]

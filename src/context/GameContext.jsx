@@ -363,6 +363,7 @@ export const GameProvider = ({ children }) => {
         racha: est.racha || 0,
         rango: est.rango || 'Iniciado',
         inventario: est.inventario || [],
+        avatar: est.avatar || '😇',
       });
     });
 
