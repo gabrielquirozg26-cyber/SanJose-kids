@@ -17,6 +17,7 @@ import PerfilPublico from './views/PerfilPublico';
 import Header from './components/Header';
 import LoadingScreen from './components/LoadingScreen';
 import Perfil from './views/perfil';
+import DailyStreakModal from './components/DailyStreakModal';
 
 import LoginCatequista from './views/LoginCatequista';
 import PanelCatequista from './views/PanelCatequista';
@@ -38,7 +39,7 @@ const tieneSeguro = (inv) => inv.includes('seguro_racha');
 
 // ── Shell estudiante ───────────────────────────────────────────────────────
 const AppShell = () => {
-  const { activeTab, enLeccion, cofrePendiente, cerrarCofre } = useGame();
+  const { activeTab, enLeccion, cofrePendiente, cerrarCofre, mostrarModalRacha, setMostrarModalRacha, racha, recompensaRacha } = useGame();
   const [examenActivo, setExamenActivo] = useState(null);
   const [santoSeleccionado, setSantoSeleccionado] = useState(null);
   const [perfilPublico, setPerfilPublico] = useState(null);
@@ -102,6 +103,12 @@ const AppShell = () => {
           onCerrar={cerrarCofre}
         />
       )}
+      <DailyStreakModal
+        isOpen={mostrarModalRacha}
+        onClose={() => setMostrarModalRacha(false)}
+        racha={racha}
+        recompensa={recompensaRacha?.monedas}
+      />
     </div>
   );  
 };

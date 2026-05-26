@@ -78,6 +78,12 @@ export const GameProvider = ({ children }) => {
   const [cofrePendiente, setCofrePendiente] = useState(null);
   const [coleccion, setColeccion]         = useState([]);
 
+  // Estados para nuevas funcionalidades
+  const [corazonesCompradosHoy, setCorazonesCompradosHoy] = useState(0);
+  const [ultimaFechaCompraCorazon, setUltimaFechaCompraCorazon] = useState(null);
+  const [mostrarModalRacha, setMostrarModalRacha] = useState(false);
+  const [recompensaRacha, setRecompensaRacha] = useState(null);
+
   // ── Sincronización con Firebase ──
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
@@ -86,26 +92,30 @@ export const GameProvider = ({ children }) => {
         const unsubDoc = onSnapshot(doc(db, 'usuarios', user.uid), (snap) => {
           if (snap.exists()) {
             const data = snap.data();
-            // Asegurar que avatar siempre tenga valor (si no existe, '😇')
-            if (!data.avatar) {
-              data.avatar = '😇';
-            }
+            if (!data.avatar) data.avatar = '😇';
             setUserDoc(data);
             setColeccion(data.coleccion ?? []);
+            setCorazonesCompradosHoy(data.corazonComprasHoy ?? 0);
+            setUltimaFechaCompraCorazon(data.ultimaCompraCorazon ?? null);
             _sincronizarMisiones(user.uid, data);
             _aplicarRegenVidas(user.uid, data);
             _verificarRacha(user.uid, data);
           } else {
-            // Si no existe documento, crearlo (esto no debería pasar porque se crea al registrar)
             console.warn('Documento de usuario no encontrado');
           }
           setLoading(false);
         });
         return () => unsubDoc();
       } else {
-        setUsuarioId(null); setUserDoc(null);
-        setMisionesState(null); setLoading(false);
+        setUsuarioId(null);
+        setUserDoc(null);
+        setMisionesState(null);
+        setLoading(false);
         setColeccion([]);
+        setCorazonesCompradosHoy(0);
+        setUltimaFechaCompraCorazon(null);
+        setMostrarModalRacha(false);
+        setRecompensaRacha(null);
       }
     });
     return () => unsubAuth();
@@ -181,13 +191,25 @@ export const GameProvider = ({ children }) => {
 
   // ── Autenticación y registro ──
   const _base = (extra = {}) => ({
-    vidas: MAX_VIDAS, monedas: 100, nivelActual: 1,
-    rango: 'Iniciado', racha: 0, rol: 'estudiante',
+    vidas: MAX_VIDAS,
+    monedas: 100,
+    nivelActual: 1,
+    rango: 'Iniciado',
+    racha: 0,
+    rol: 'estudiante',
     fechaRegistro: new Date().toISOString(),
-    misiones: {}, inventario: [], vidasPerdidas: [],
-    jugóHoy: null, examenesAprobados: [], cofresAbiertos: 0,
+    misiones: {},
+    inventario: [],
+    vidasPerdidas: [],
+    jugóHoy: null,
+    examenesAprobados: [],
+    cofresAbiertos: 0,
     coleccion: [],
-    avatar: '😇',  // Avatar por defecto emoji
+    avatar: '😇',
+    corazonComprasHoy: 0,
+    ultimaCompraCorazon: null,
+    ultimaPrimeraLeccion: null,
+    ultimoTiqueteOroUsado: null,
     ...extra,
   });
 
@@ -218,6 +240,97 @@ export const GameProvider = ({ children }) => {
 
   const cerrarSesion = async () => { try { await signOut(auth); } catch (e) { console.error(e); } };
 
+  // ── Función para consumir items (usada por la poción) ──
+  const consumirItem = async (itemId) => {
+    if (!usuarioId) return false;
+    const nuevoInventario = (userDoc?.inventario || []).filter(id => id !== itemId);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: nuevoInventario });
+    setUserDoc(prev => ({ ...prev, inventario: nuevoInventario }));
+    return true;
+  };
+  const usarTiqueteOro = async () => {
+    if (!usuarioId) return false;
+    const tieneTiquete = (userDoc?.inventario || []).includes('tiquete_oro');
+    if (!tieneTiquete) return false;
+    
+    // Consumir el tiquete
+    const nuevoInventario = (userDoc?.inventario || []).filter(id => id !== 'tiquete_oro');
+    await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: nuevoInventario });
+    setUserDoc(prev => ({ ...prev, inventario: nuevoInventario }));
+    
+    // Crear cofre de oro con un santo (rareza alta)
+    const santo = obtenerSantoPorRareza('oro');
+    if (!santo) return false;
+    
+    const yaTiene = coleccion.includes(santo.id);
+    let recompensa;
+    if (yaTiene) {
+      let compensacion = 200;
+      await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(compensacion), cofresAbiertos: increment(1) });
+      recompensa = { tipo: 'repetido', santo, compensacion };
+    } else {
+      await updateDoc(doc(db, 'usuarios', usuarioId), { coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
+      setColeccion(prev => [...prev, santo.id]);
+      recompensa = { tipo: 'nuevo', santo };
+    }
+    setCofrePendiente({ tipo: 'oro', recompensa });
+    return true;
+  };
+
+  const abrirCofreOro = async () => {
+    if (!usuarioId) return false;
+
+    const hoy = hoyStr();
+
+    // Verificar límite diario (1 uso por día)
+    if (userDoc?.ultimoTiqueteOroUsado === hoy) {
+      console.warn('Solo puedes usar un Tiquete de Oro por día');
+      // Si quieres un toast, puedes agregarlo, pero aquí solo retornamos false
+      return false;
+    }
+
+    // Verificar que tenga al menos 350 monedas
+    if ((userDoc?.monedas ?? 0) < 350) return false;
+
+    // Descontar 350 monedas
+    await sumarMonedas(-350);
+
+    // Obtener un santo de rareza "oro" (o la que corresponda)
+    const santo = obtenerSantoPorRareza('oro');
+    if (!santo) return false;
+
+    const yaTiene = coleccion.includes(santo.id);
+
+    if (yaTiene) {
+      let compensacion = 200; // compensación para rareza legendaria o alta
+      await updateDoc(doc(db, 'usuarios', usuarioId), {
+        monedas: increment(compensacion),
+        cofresAbiertos: increment(1),
+      });
+      setCofrePendiente({
+        tipo: 'oro',
+        recompensa: { tipo: 'repetido', santo, compensacion },
+      });
+    } else {
+      await updateDoc(doc(db, 'usuarios', usuarioId), {
+        coleccion: arrayUnion(santo.id),
+        cofresAbiertos: increment(1),
+      });
+      setColeccion(prev => [...prev, santo.id]);
+      setCofrePendiente({
+        tipo: 'oro',
+        recompensa: { tipo: 'nuevo', santo },
+      });
+    }
+
+    // Marcar que ya usó el tiquete hoy
+    await updateDoc(doc(db, 'usuarios', usuarioId), {
+      ultimoTiqueteOroUsado: hoy,
+    });
+
+    return true;
+  };
+
   // ── Juego: vidas, monedas ──
   const restarVida = async () => {
     if (!usuarioId || vidasMostradas <= 0) return;
@@ -238,7 +351,58 @@ export const GameProvider = ({ children }) => {
     if (cantidad > 0) await _avanzarMision('monedas', Number(cantidad));
   };
 
-  // ── SISTEMA DE SANTOS ──
+  // ── Nuevas funciones ──
+  const comprarCorazon = async () => {
+    if (!usuarioId) return false;
+    const hoy = hoyStr();
+    if (ultimaFechaCompraCorazon !== hoy) {
+      setCorazonesCompradosHoy(0);
+      setUltimaFechaCompraCorazon(hoy);
+    }
+    if (corazonesCompradosHoy >= 3) {
+      console.warn('Límite diario de corazones alcanzado');
+      return false;
+    }
+    if ((userDoc?.monedas ?? 0) < 200) return false;
+    await sumarMonedas(-200);
+    await añadirVida();
+    setCorazonesCompradosHoy(prev => prev + 1);
+    await updateDoc(doc(db, 'usuarios', usuarioId), {
+      corazonComprasHoy: increment(1),
+      ultimaCompraCorazon: hoy,
+    });
+    return true;
+  };
+
+  const registrarPrimeraLeccionDelDia = async () => {
+    if (!usuarioId) return false;
+    const hoy = hoyStr();
+    if (userDoc?.ultimaPrimeraLeccion === hoy) return false;
+    const rachaActual = userDoc?.racha || 0;
+    let recompensa = 50;
+    if (rachaActual >= 7) recompensa = 200;
+    else if (rachaActual >= 3) recompensa = 100;
+    await sumarMonedas(recompensa);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { ultimaPrimeraLeccion: hoy });
+    setRecompensaRacha({ monedas: recompensa, racha: rachaActual });
+    setMostrarModalRacha(true);
+    return true;
+  };
+
+  const obtenerOfertaDiaria = () => {
+    const hoy = new Date().toISOString().split('T')[0];
+    const seed = hoy.split('-').join('');
+    const items = [
+      { id: 'corazon_extra', nombre: 'Corazón Extra', icono: '❤️', precioOriginal: 200, descuento: 40, precioOferta: 120 },
+      { id: 'tiquete_oro', nombre: 'Tiquete de Oro', icono: '🎫', precioOriginal: 350, descuento: 30, precioOferta: 245 },
+      { id: 'doble_xp', nombre: 'Doble XP', icono: '⚡', precioOriginal: 150, descuento: 50, precioOferta: 75 },
+      { id: 'pocion_sabiduria', nombre: 'Poción de Sabiduría', icono: '🧪', precioOriginal: 150, descuento: 20, precioOferta: 120 },
+    ];
+    const idx = parseInt(seed.slice(-2)) % items.length;
+    return items[idx];
+  };
+
+  // ── Sistema de santos y cofres ──
   const entregarSanto = async (tipoCofre) => {
     const santo = obtenerSantoPorRareza(tipoCofre);
     if (!santo) return null;
@@ -251,32 +415,23 @@ export const GameProvider = ({ children }) => {
         monedas: increment(compensacion),
         cofresAbiertos: increment(1),
       });
-      return {
-        tipo: 'repetido',
-        santo: santo,
-        compensacion: compensacion,
-      };
+      return { tipo: 'repetido', santo, compensacion };
     } else {
       await updateDoc(doc(db, 'usuarios', usuarioId), {
         coleccion: arrayUnion(santo.id),
         cofresAbiertos: increment(1),
       });
       setColeccion(prev => [...prev, santo.id]);
-      return {
-        tipo: 'nuevo',
-        santo: santo,
-      };
+      return { tipo: 'nuevo', santo };
     }
   };
 
-  // ── Completar nivel (cofre) ──
   const completarNivel = async (fueConPerfecta = false) => {
     if (!usuarioId) return;
-    const hoy      = hoyStr();
-    const jugóHoy  = userDoc?.jugóHoy ?? null;
-    const rachaAct = userDoc?.racha   ?? 0;
+    const hoy = hoyStr();
+    const jugóHoy = userDoc?.jugóHoy ?? null;
+    const rachaAct = userDoc?.racha ?? 0;
     let nuevaRacha = rachaAct;
-
     if (jugóHoy !== hoy) {
       const ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
       const ayerStr = ayer.toISOString().split('T')[0];
@@ -286,18 +441,15 @@ export const GameProvider = ({ children }) => {
     } else {
       await updateDoc(doc(db, 'usuarios', usuarioId), { nivelActual: increment(1) });
     }
-
     await _avanzarMision('lecciones', 1);
     await _avanzarMision('niveles', 1);
     await _avanzarMision('racha', 1);
     if (fueConPerfecta) await _avanzarMision('perfectas', 1);
-
     const tipoCofre = fueConPerfecta ? 'oro' : 'madera';
     const recompensa = await entregarSanto(tipoCofre);
     setCofrePendiente({ tipo: tipoCofre, recompensa });
   };
 
-  // ── Aprobar examen (cofre de plata) ──
   const aprobarExamen = async (claveUnidad) => {
     if (!usuarioId) return;
     await updateDoc(doc(db, 'usuarios', usuarioId), {
@@ -316,20 +468,23 @@ export const GameProvider = ({ children }) => {
     const inv = userDoc?.inventario ?? [];
     if (item.id === 'corazon_extra') {
       if ((userDoc?.monedas ?? 0) < item.precio) return false;
-      await sumarMonedas(-item.precio); await añadirVida(); return true;
+      await sumarMonedas(-item.precio);
+      await añadirVida();
+      return true;
     }
     if (inv.includes(item.id) || (userDoc?.monedas ?? 0) < item.precio) return false;
     await sumarMonedas(-item.precio);
     await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: arrayUnion(item.id) });
     if (item.id === 'titulo_guardian') await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Guardián del Credo' });
-    if (item.id === 'titulo_maestro')  await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Maestro de la Fe' });
+    if (item.id === 'titulo_maestro') await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Maestro de la Fe' });
     return true;
   };
 
   // ── Ranking y estudiantes ──
   const obtenerRanking = async (grupo) => {
     const q = query(collection(db, 'usuarios'), where('grupo', '==', grupo), orderBy('monedas', 'desc'));
-    const snap = await getDocs(q); return snap.docs.map((d, i) => ({ ...d.data(), posicion: i + 1 }));
+    const snap = await getDocs(q);
+    return snap.docs.map((d, i) => ({ ...d.data(), posicion: i + 1 }));
   };
 
   const obtenerRankingGlobal = async () => {
@@ -342,17 +497,10 @@ export const GameProvider = ({ children }) => {
     const q = query(collection(db, 'usuarios'), where('rol', '==', 'estudiante'));
     const snap = await getDocs(q);
     const estudiantes = snap.docs.map(d => d.data());
-
     const gruposMap = new Map();
     estudiantes.forEach(est => {
       const grupo = est.grupo || 'Sin Grupo';
-      if (!gruposMap.has(grupo)) {
-        gruposMap.set(grupo, {
-          nombre: grupo,
-          monedasTotal: 0,
-          estudiantes: []
-        });
-      }
+      if (!gruposMap.has(grupo)) gruposMap.set(grupo, { nombre: grupo, monedasTotal: 0, estudiantes: [] });
       const grupoObj = gruposMap.get(grupo);
       grupoObj.monedasTotal += (est.monedas || 0);
       grupoObj.estudiantes.push({
@@ -366,42 +514,35 @@ export const GameProvider = ({ children }) => {
         avatar: est.avatar || '😇',
       });
     });
-
     const grupos = Array.from(gruposMap.values())
-      .map(g => {
-        const estudiantesOrdenados = [...g.estudiantes].sort((a,b) => b.monedas - a.monedas);
-        return {
-          ...g,
-          estudiantes: estudiantesOrdenados,
-          top3: estudiantesOrdenados.slice(0,3)
-        };
-      })
+      .map(g => ({ ...g, estudiantes: [...g.estudiantes].sort((a,b) => b.monedas - a.monedas), top3: [...g.estudiantes].sort((a,b) => b.monedas - a.monedas).slice(0,3) }))
       .sort((a,b) => b.monedasTotal - a.monedasTotal)
       .map((g, idx) => ({ ...g, posicion: idx + 1 }));
-
     return grupos;
   };
 
   const obtenerEstudiantesGrupo = async (grupo) => {
     const q = query(collection(db, 'usuarios'), where('grupo', '==', grupo), where('rol', '==', 'estudiante'));
-    const snap = await getDocs(q); return snap.docs.map(d => d.data());
+    const snap = await getDocs(q);
+    return snap.docs.map(d => d.data());
   };
 
-  const iniciarLeccion = (oracion) => { setOracionActual(oracion); setEnLeccion(true); };
+  const iniciarLeccion = (oracion) => {
+    setOracionActual(oracion);
+    setEnLeccion(true);
+  };
 
   const minutosHastaVida = () => {
-    const vp = userDoc?.vidasPerdidas ?? []; if (!vp.length) return 0;
+    const vp = userDoc?.vidasPerdidas ?? [];
+    if (!vp.length) return 0;
     return Math.max(0, Math.ceil((MS_REGEN_VIDA - (Date.now() - Math.min(...vp))) / 60000));
   };
 
-  // ── Función para actualizar avatar (con mejora de persistencia) ──
   const actualizarAvatar = async (nuevoAvatar) => {
     if (!usuarioId) return false;
     try {
       await updateDoc(doc(db, 'usuarios', usuarioId), { avatar: nuevoAvatar });
-      // Actualizar estado local inmediatamente para reflejar el cambio visual
       setUserDoc(prev => ({ ...prev, avatar: nuevoAvatar }));
-      console.log('Avatar actualizado en Firestore y estado local:', nuevoAvatar);
       return true;
     } catch (error) {
       console.error('Error al actualizar avatar:', error);
@@ -412,7 +553,7 @@ export const GameProvider = ({ children }) => {
   // ── Valores expuestos ──
   const value = {
     usuarioId,
-    userDoc,  // exponemos userDoc completo para acceder a avatar directamente
+    userDoc,
     nombre:            userDoc?.nombre            ?? 'Guardián',
     grupo:             userDoc?.grupo             ?? 'Sin Grupo',
     rol:               userDoc?.rol               ?? 'estudiante',
@@ -428,21 +569,42 @@ export const GameProvider = ({ children }) => {
     coleccion,
     catalogoSantos:    santosData.santos,
     actualizarAvatar,
-
-    loading, activeTab, setActiveTab,
-    enLeccion, setEnLeccion,
-    oracionActual, misionesState,
-
-    registrarNiño, registrarCatequista,
-    iniciarSesion, cerrarSesion,
-    restarVida, añadirVida,
-    sumarMonedas, completarNivel,
-    comprarItem, iniciarLeccion,
-    obtenerRanking, obtenerEstudiantesGrupo,
+    consumirItem,
+    loading,
+    activeTab,
+    setActiveTab,
+    enLeccion,
+    setEnLeccion,
+    oracionActual,
+    misionesState,
+    registrarNiño,
+    registrarCatequista,
+    iniciarSesion,
+    cerrarSesion,
+    restarVida,
+    añadirVida,
+    sumarMonedas,
+    completarNivel,
+    comprarItem,
+    iniciarLeccion,
+    obtenerRanking,
+    obtenerEstudiantesGrupo,
     obtenerRankingGlobal,
     obtenerRankingGrupos,
-    reclamarMision, aprobarExamen,
-    cerrarCofre, minutosHastaVida,
+    reclamarMision,
+    aprobarExamen,
+    cerrarCofre,
+    minutosHastaVida,
+    // Nuevas exportaciones
+    comprarCorazon,
+    registrarPrimeraLeccionDelDia,
+    mostrarModalRacha,
+    setMostrarModalRacha,
+    recompensaRacha,
+    obtenerOfertaDiaria,
+    corazonesCompradosHoy,
+    usarTiqueteOro,
+    abrirCofreOro,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

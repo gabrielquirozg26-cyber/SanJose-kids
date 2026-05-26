@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 
-// ── Configuración de cofres (mismo estilo) ────────────────────────────────
+// ── Configuración de cofres ────────────────────────────────────────────────
 export const TIPOS_COFRE = {
   madera: {
     id: 'madera',
@@ -42,10 +42,6 @@ const RAREZA_CLASE = {
   legendario: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/30',
 };
 
-// ── Funcion de sorteo (ya no se usa directamente, pero se mantiene por si acaso) ──
-export const sortearRecompensa = () => null; // Ya no se usa
-
-// ── Componente principal ───────────────────────────────────────────────────
 const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
   const [fase, setFase] = useState('idle'); // idle → sacudiendo → abriendo → revelando → listo
   const config = TIPOS_COFRE[tipoCofre] ?? TIPOS_COFRE.madera;
@@ -57,7 +53,6 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
     setTimeout(() => setFase('abriendo'), 800);
     setTimeout(() => {
       setFase('revelando');
-      // Confeti al revelar
       const boom = () => confetti({
         particleCount: 180,
         spread: 120,
@@ -75,7 +70,6 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
     setTimeout(() => setFase('listo'), 2600);
   };
 
-  // Si no hay recompensa (por seguridad) no mostramos nada
   if (!recompensa) return null;
 
   return (
@@ -169,8 +163,8 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
           )}
         </div>
 
-        {/* ── Recompensa revelada (Santo) ── */}
-        {(fase === 'revelando' || fase === 'listo') && recompensa && (
+        {/* ── Recompensa revelada (imagen del santo) ── */}
+        {(fase === 'revelando' || fase === 'listo') && recompensa && recompensa.santo && (
           <div className="w-full animate-slide-up space-y-4">
             <div className={`glass-card rounded-3xl p-6 border text-center space-y-3
               ${tipoCofre === 'oro'   ? 'border-yellow-400/50 bg-yellow-400/5'
@@ -181,13 +175,26 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
                 {recompensa.tipo === 'nuevo' ? '✨ ¡Nuevo Santo! ✨' : '🪙 Santo repetido'}
               </p>
 
-              <div className={`w-24 h-24 rounded-2xl mx-auto flex items-center justify-center text-6xl
-                bg-gradient-to-br ${config.color} shadow-xl`}>
-                {recompensa.santo.icono}
+              {/* Aquí mostramos la imagen del santo o fallback a emoji */}
+              <div className={`w-28 h-28 rounded-2xl mx-auto flex items-center justify-center shadow-xl overflow-hidden bg-gradient-to-br ${config.color}`}>
+                {recompensa.santo.imagen ? (
+                  <img
+                    src={recompensa.santo.imagen}
+                    alt={recompensa.santo.nombre}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Si la imagen falla, mostrar emoji
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = `<span class="text-6xl">${recompensa.santo.icono || '📿'}</span>`;
+                    }}
+                  />
+                ) : (
+                  <span className="text-6xl">{recompensa.santo.icono || '📿'}</span>
+                )}
               </div>
 
               <div>
-                <p className={`font-black text-2xl
+                <p className={`font-black text-xl
                   ${tipoCofre === 'oro' ? 'text-yellow-400'
                   : tipoCofre === 'plata' ? 'text-slate-200'
                   : 'text-amber-400'}`}>

@@ -38,7 +38,7 @@
         "versos": [
           { "id": "gl_01", "texto": "Gloria al Padre y al Hijo y al Espíritu Santo", "palabraFaltante": "Espíritu", "opcionesSeleccion": ["Espíritu", "Señor", "Dios", "Ángel"], "palabrasOrdenar": ["Gloria", "al", "Padre", "y", "al", "Hijo", "y", "al", "Espíritu", "Santo"] },
           { "id": "gl_02", "texto": "como era en el principio ahora y siempre", "palabraFaltante": "principio", "opcionesSeleccion": ["principio", "inicio", "origen", "comienzo"], "palabrasOrdenar": ["como", "era", "en", "el", "principio", "ahora", "y", "siempre"] },
-          { "id": "gl_03", "texto": "y por los siglos de los siglos amén", "palabraFaltante": "siglos", "opcionesSeleccion": ["siglos", "tiempos", "años", "días"], "palabrasOrdenar": ["y", "por", "los", "siglos", "de", "los", "siglos", "amén"] }
+          { "id": "gl_03", "texto": "y por los siglos de los siglo amén", "palabraFaltante": "siglos", "opcionesSeleccion": ["siglos", "tiempos", "años", "días"], "palabrasOrdenar": ["y", "por", "los", "siglos", "de", "los", "siglos", "amén"] }
         ]
       },
       {
