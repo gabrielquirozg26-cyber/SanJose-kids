@@ -78,11 +78,23 @@ export const GameProvider = ({ children }) => {
   const [cofrePendiente, setCofrePendiente] = useState(null);
   const [coleccion, setColeccion]         = useState([]);
 
-  // Estados para nuevas funcionalidades
+  // Estados para límites diarios
   const [corazonesCompradosHoy, setCorazonesCompradosHoy] = useState(0);
   const [ultimaFechaCompraCorazon, setUltimaFechaCompraCorazon] = useState(null);
   const [mostrarModalRacha, setMostrarModalRacha] = useState(false);
   const [recompensaRacha, setRecompensaRacha] = useState(null);
+  // Para cofres diarios
+  const [cofresMaderaCompradosHoy, setCofresMaderaCompradosHoy] = useState(0);
+  const [cofresPlataCompradosHoy, setCofresPlataCompradosHoy] = useState(0);
+  const [cofresOroCompradosHoy, setCofresOroCompradosHoy] = useState(0);
+  const [ultimaFechaCofreMadera, setUltimaFechaCofreMadera] = useState(null);
+  const [ultimaFechaCofrePlata, setUltimaFechaCofrePlata] = useState(null);
+  const [ultimaFechaCofreOro, setUltimaFechaCofreOro] = useState(null);
+  // Para pociones
+  const [pocionesCompradasHoy, setPocionesCompradasHoy] = useState(0);
+  const [ultimaFechaPocion, setUltimaFechaPocion] = useState(null);
+  // Para tiquete oro (límite diario)
+  const [ultimoTiqueteOroUsado, setUltimoTiqueteOroUsado] = useState(null);
 
   // ── Sincronización con Firebase ──
   useEffect(() => {
@@ -95,8 +107,18 @@ export const GameProvider = ({ children }) => {
             if (!data.avatar) data.avatar = '😇';
             setUserDoc(data);
             setColeccion(data.coleccion ?? []);
+            // Limites diarios
             setCorazonesCompradosHoy(data.corazonComprasHoy ?? 0);
             setUltimaFechaCompraCorazon(data.ultimaCompraCorazon ?? null);
+            setCofresMaderaCompradosHoy(data.cofresMaderaHoy ?? 0);
+            setCofresPlataCompradosHoy(data.cofresPlataHoy ?? 0);
+            setCofresOroCompradosHoy(data.cofresOroHoy ?? 0);
+            setUltimaFechaCofreMadera(data.ultimaFechaCofreMadera ?? null);
+            setUltimaFechaCofrePlata(data.ultimaFechaCofrePlata ?? null);
+            setUltimaFechaCofreOro(data.ultimaFechaCofreOro ?? null);
+            setPocionesCompradasHoy(data.pocionesHoy ?? 0);
+            setUltimaFechaPocion(data.ultimaFechaPocion ?? null);
+            setUltimoTiqueteOroUsado(data.ultimoTiqueteOroUsado ?? null);
             _sincronizarMisiones(user.uid, data);
             _aplicarRegenVidas(user.uid, data);
             _verificarRacha(user.uid, data);
@@ -112,10 +134,20 @@ export const GameProvider = ({ children }) => {
         setMisionesState(null);
         setLoading(false);
         setColeccion([]);
+        // Resetear estados
         setCorazonesCompradosHoy(0);
         setUltimaFechaCompraCorazon(null);
         setMostrarModalRacha(false);
         setRecompensaRacha(null);
+        setCofresMaderaCompradosHoy(0);
+        setCofresPlataCompradosHoy(0);
+        setCofresOroCompradosHoy(0);
+        setUltimaFechaCofreMadera(null);
+        setUltimaFechaCofrePlata(null);
+        setUltimaFechaCofreOro(null);
+        setPocionesCompradasHoy(0);
+        setUltimaFechaPocion(null);
+        setUltimoTiqueteOroUsado(null);
       }
     });
     return () => unsubAuth();
@@ -206,10 +238,19 @@ export const GameProvider = ({ children }) => {
     cofresAbiertos: 0,
     coleccion: [],
     avatar: '😇',
+    // Límites diarios
     corazonComprasHoy: 0,
     ultimaCompraCorazon: null,
-    ultimaPrimeraLeccion: null,
+    cofresMaderaHoy: 0,
+    cofresPlataHoy: 0,
+    cofresOroHoy: 0,
+    ultimaFechaCofreMadera: null,
+    ultimaFechaCofrePlata: null,
+    ultimaFechaCofreOro: null,
+    pocionesHoy: 0,
+    ultimaFechaPocion: null,
     ultimoTiqueteOroUsado: null,
+    ultimaPrimeraLeccion: null,
     ...extra,
   });
 
@@ -240,94 +281,12 @@ export const GameProvider = ({ children }) => {
 
   const cerrarSesion = async () => { try { await signOut(auth); } catch (e) { console.error(e); } };
 
-  // ── Función para consumir items (usada por la poción) ──
+  // ── Funciones de consumición de items ──
   const consumirItem = async (itemId) => {
     if (!usuarioId) return false;
     const nuevoInventario = (userDoc?.inventario || []).filter(id => id !== itemId);
     await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: nuevoInventario });
     setUserDoc(prev => ({ ...prev, inventario: nuevoInventario }));
-    return true;
-  };
-  const usarTiqueteOro = async () => {
-    if (!usuarioId) return false;
-    const tieneTiquete = (userDoc?.inventario || []).includes('tiquete_oro');
-    if (!tieneTiquete) return false;
-    
-    // Consumir el tiquete
-    const nuevoInventario = (userDoc?.inventario || []).filter(id => id !== 'tiquete_oro');
-    await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: nuevoInventario });
-    setUserDoc(prev => ({ ...prev, inventario: nuevoInventario }));
-    
-    // Crear cofre de oro con un santo (rareza alta)
-    const santo = obtenerSantoPorRareza('oro');
-    if (!santo) return false;
-    
-    const yaTiene = coleccion.includes(santo.id);
-    let recompensa;
-    if (yaTiene) {
-      let compensacion = 200;
-      await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(compensacion), cofresAbiertos: increment(1) });
-      recompensa = { tipo: 'repetido', santo, compensacion };
-    } else {
-      await updateDoc(doc(db, 'usuarios', usuarioId), { coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
-      setColeccion(prev => [...prev, santo.id]);
-      recompensa = { tipo: 'nuevo', santo };
-    }
-    setCofrePendiente({ tipo: 'oro', recompensa });
-    return true;
-  };
-
-  const abrirCofreOro = async () => {
-    if (!usuarioId) return false;
-
-    const hoy = hoyStr();
-
-    // Verificar límite diario (1 uso por día)
-    if (userDoc?.ultimoTiqueteOroUsado === hoy) {
-      console.warn('Solo puedes usar un Tiquete de Oro por día');
-      // Si quieres un toast, puedes agregarlo, pero aquí solo retornamos false
-      return false;
-    }
-
-    // Verificar que tenga al menos 350 monedas
-    if ((userDoc?.monedas ?? 0) < 350) return false;
-
-    // Descontar 350 monedas
-    await sumarMonedas(-350);
-
-    // Obtener un santo de rareza "oro" (o la que corresponda)
-    const santo = obtenerSantoPorRareza('oro');
-    if (!santo) return false;
-
-    const yaTiene = coleccion.includes(santo.id);
-
-    if (yaTiene) {
-      let compensacion = 200; // compensación para rareza legendaria o alta
-      await updateDoc(doc(db, 'usuarios', usuarioId), {
-        monedas: increment(compensacion),
-        cofresAbiertos: increment(1),
-      });
-      setCofrePendiente({
-        tipo: 'oro',
-        recompensa: { tipo: 'repetido', santo, compensacion },
-      });
-    } else {
-      await updateDoc(doc(db, 'usuarios', usuarioId), {
-        coleccion: arrayUnion(santo.id),
-        cofresAbiertos: increment(1),
-      });
-      setColeccion(prev => [...prev, santo.id]);
-      setCofrePendiente({
-        tipo: 'oro',
-        recompensa: { tipo: 'nuevo', santo },
-      });
-    }
-
-    // Marcar que ya usó el tiquete hoy
-    await updateDoc(doc(db, 'usuarios', usuarioId), {
-      ultimoTiqueteOroUsado: hoy,
-    });
-
     return true;
   };
 
@@ -351,21 +310,35 @@ export const GameProvider = ({ children }) => {
     if (cantidad > 0) await _avanzarMision('monedas', Number(cantidad));
   };
 
-  // ── Nuevas funciones ──
+    // ── Compra de corazón con límite diario y vidas llenas ──
   const comprarCorazon = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
+    
+    // Resetear contador diario si cambió el día
     if (ultimaFechaCompraCorazon !== hoy) {
       setCorazonesCompradosHoy(0);
       setUltimaFechaCompraCorazon(hoy);
     }
+    
+    // Límite diario
     if (corazonesCompradosHoy >= 3) {
       console.warn('Límite diario de corazones alcanzado');
       return false;
     }
+    
+    // ✅ Usar el estado vidasMostradas (vidas reales)
+    const vidasActuales = vidasMostradas;
+    if (vidasActuales >= MAX_VIDAS) {
+      console.warn('Ya tienes todas las vidas');
+      return false;
+    }
+    
     if ((userDoc?.monedas ?? 0) < 200) return false;
+    
     await sumarMonedas(-200);
-    await añadirVida();
+    await añadirVida();  // Esta función ya actualiza vidasPerdidas y setVidasM
+    
     setCorazonesCompradosHoy(prev => prev + 1);
     await updateDoc(doc(db, 'usuarios', usuarioId), {
       corazonComprasHoy: increment(1),
@@ -374,6 +347,154 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
+  // ── Compra de cofre de madera ──
+  const comprarCofreMadera = async () => {
+    if (!usuarioId) return false;
+    const hoy = hoyStr();
+    if (ultimaFechaCofreMadera !== hoy) {
+      setCofresMaderaCompradosHoy(0);
+      setUltimaFechaCofreMadera(hoy);
+    }
+    if (cofresMaderaCompradosHoy >= 3) return false;
+    if ((userDoc?.monedas ?? 0) < 250) return false;
+    await sumarMonedas(-250);
+    const santo = obtenerSantoPorRareza('madera');
+    if (!santo) return false;
+    const yaTiene = coleccion.includes(santo.id);
+    if (yaTiene) {
+      let compensacion = 50;
+      if (santo.rareza === 'raro') compensacion = 100;
+      else if (santo.rareza === 'legendario') compensacion = 200;
+      await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(compensacion), cofresAbiertos: increment(1) });
+      setCofrePendiente({ tipo: 'madera', recompensa: { tipo: 'repetido', santo, compensacion } });
+    } else {
+      await updateDoc(doc(db, 'usuarios', usuarioId), { coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
+      setColeccion(prev => [...prev, santo.id]);
+      setCofrePendiente({ tipo: 'madera', recompensa: { tipo: 'nuevo', santo } });
+    }
+    setCofresMaderaCompradosHoy(prev => prev + 1);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { cofresMaderaHoy: increment(1), ultimaFechaCofreMadera: hoy });
+    return true;
+  };
+
+  // Compra de cofre de plata
+  const comprarCofrePlata = async () => {
+    if (!usuarioId) return false;
+    const hoy = hoyStr();
+    if (ultimaFechaCofrePlata !== hoy) {
+      setCofresPlataCompradosHoy(0);
+      setUltimaFechaCofrePlata(hoy);
+    }
+    if (cofresPlataCompradosHoy >= 2) return false;
+    if ((userDoc?.monedas ?? 0) < 350) return false;
+    await sumarMonedas(-350);
+    const santo = obtenerSantoPorRareza('plata');
+    if (!santo) return false;
+    const yaTiene = coleccion.includes(santo.id);
+    if (yaTiene) {
+      let compensacion = 100;
+      if (santo.rareza === 'legendario') compensacion = 200;
+      await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(compensacion), cofresAbiertos: increment(1) });
+      setCofrePendiente({ tipo: 'plata', recompensa: { tipo: 'repetido', santo, compensacion } });
+    } else {
+      await updateDoc(doc(db, 'usuarios', usuarioId), { coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
+      setColeccion(prev => [...prev, santo.id]);
+      setCofrePendiente({ tipo: 'plata', recompensa: { tipo: 'nuevo', santo } });
+    }
+    setCofresPlataCompradosHoy(prev => prev + 1);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { cofresPlataHoy: increment(1), ultimaFechaCofrePlata: hoy });
+    return true;
+  };
+
+  // Compra de cofre de oro
+  const comprarCofreOro = async () => {
+    if (!usuarioId) return false;
+    const hoy = hoyStr();
+    if (ultimaFechaCofreOro !== hoy) {
+      setCofresOroCompradosHoy(0);
+      setUltimaFechaCofreOro(hoy);
+    }
+    if (cofresOroCompradosHoy >= 1) return false;
+    if ((userDoc?.monedas ?? 0) < 500) return false;
+    await sumarMonedas(-500);
+    const santo = obtenerSantoPorRareza('oro');
+    if (!santo) return false;
+    const yaTiene = coleccion.includes(santo.id);
+    if (yaTiene) {
+      let compensacion = 200;
+      await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(compensacion), cofresAbiertos: increment(1) });
+      setCofrePendiente({ tipo: 'oro', recompensa: { tipo: 'repetido', santo, compensacion } });
+    } else {
+      await updateDoc(doc(db, 'usuarios', usuarioId), { coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
+      setColeccion(prev => [...prev, santo.id]);
+      setCofrePendiente({ tipo: 'oro', recompensa: { tipo: 'nuevo', santo } });
+    }
+    setCofresOroCompradosHoy(prev => prev + 1);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { cofresOroHoy: increment(1), ultimaFechaCofreOro: hoy });
+    return true;
+  };
+
+  // ── Compra de poción de sabiduría con límite diario y de inventario ──
+  const comprarPocion = async () => {
+    if (!usuarioId) return false;
+    const hoy = hoyStr();
+    if (ultimaFechaPocion !== hoy) {
+      setPocionesCompradasHoy(0);
+      setUltimaFechaPocion(hoy);
+    }
+    if (pocionesCompradasHoy >= 2) return false;
+    const cantidadActual = (userDoc?.inventario || []).filter(id => id === 'pocion_sabiduria').length;
+    if (cantidadActual >= 3) return false;
+    if ((userDoc?.monedas ?? 0) < 150) return false;
+    await sumarMonedas(-150);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: arrayUnion('pocion_sabiduria') });
+    setUserDoc(prev => ({ ...prev, inventario: [...(prev?.inventario || []), 'pocion_sabiduria'] }));
+    setPocionesCompradasHoy(prev => prev + 1);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { pocionesHoy: increment(1), ultimaFechaPocion: hoy });
+    return true;
+  };
+
+  // ── Uso del tiquete de oro (desde el inventario o compra directa) ──
+  const usarTiqueteOro = async () => {
+    if (!usuarioId) return false;
+    const tieneTiquete = (userDoc?.inventario || []).includes('tiquete_oro');
+    if (!tieneTiquete) return false;
+    const hoy = hoyStr();
+    if (ultimoTiqueteOroUsado === hoy) return false;
+    // Consumir el tiquete
+    const nuevoInventario = (userDoc?.inventario || []).filter(id => id !== 'tiquete_oro');
+    await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: nuevoInventario });
+    setUserDoc(prev => ({ ...prev, inventario: nuevoInventario }));
+    // Abrir cofre de oro
+    const santo = obtenerSantoPorRareza('oro');
+    if (!santo) return false;
+    const yaTiene = coleccion.includes(santo.id);
+    if (yaTiene) {
+      let compensacion = 200;
+      await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(compensacion), cofresAbiertos: increment(1) });
+      setCofrePendiente({ tipo: 'oro', recompensa: { tipo: 'repetido', santo, compensacion } });
+    } else {
+      await updateDoc(doc(db, 'usuarios', usuarioId), { coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
+      setColeccion(prev => [...prev, santo.id]);
+      setCofrePendiente({ tipo: 'oro', recompensa: { tipo: 'nuevo', santo } });
+    }
+    setUltimoTiqueteOroUsado(hoy);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { ultimoTiqueteOroUsado: hoy });
+    return true;
+  };
+
+  // ── Compra directa de tiquete de oro (objeto consumible) ──
+  const comprarTiqueteOro = async () => {
+    if (!usuarioId) return false;
+    if ((userDoc?.monedas ?? 0) < 350) return false;
+    await sumarMonedas(-350);
+    // Añadir al inventario (para que el usuario pueda usarlo después)
+    await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: arrayUnion('tiquete_oro') });
+    setUserDoc(prev => ({ ...prev, inventario: [...(prev?.inventario || []), 'tiquete_oro'] }));
+    return true;
+  };
+
+  // ── Primera lección del día (bonus de racha) ──
   const registrarPrimeraLeccionDelDia = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
@@ -389,6 +510,7 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
+  // Oferta diaria (solo frontend, sin persistencia)
   const obtenerOfertaDiaria = () => {
     const hoy = new Date().toISOString().split('T')[0];
     const seed = hoy.split('-').join('');
@@ -402,7 +524,7 @@ export const GameProvider = ({ children }) => {
     return items[idx];
   };
 
-  // ── Sistema de santos y cofres ──
+  // ── Sistema de santos y cofres (entregar santo al completar nivel o examen) ──
   const entregarSanto = async (tipoCofre) => {
     const santo = obtenerSantoPorRareza(tipoCofre);
     if (!santo) return null;
@@ -462,19 +584,15 @@ export const GameProvider = ({ children }) => {
 
   const cerrarCofre = () => setCofrePendiente(null);
 
-  // ── Inventario y tienda ──
+  // ── Compra de objetos genéricos (para cosméticos) ──
   const comprarItem = async (item) => {
     if (!usuarioId) return false;
     const inv = userDoc?.inventario ?? [];
-    if (item.id === 'corazon_extra') {
-      if ((userDoc?.monedas ?? 0) < item.precio) return false;
-      await sumarMonedas(-item.precio);
-      await añadirVida();
-      return true;
-    }
-    if (inv.includes(item.id) || (userDoc?.monedas ?? 0) < item.precio) return false;
+    if (inv.includes(item.id)) return false;
+    if ((userDoc?.monedas ?? 0) < item.precio) return false;
     await sumarMonedas(-item.precio);
     await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: arrayUnion(item.id) });
+    setUserDoc(prev => ({ ...prev, inventario: [...(prev?.inventario || []), item.id] }));
     if (item.id === 'titulo_guardian') await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Guardián del Credo' });
     if (item.id === 'titulo_maestro') await updateDoc(doc(db, 'usuarios', usuarioId), { rango: 'Maestro de la Fe' });
     return true;
@@ -550,7 +668,7 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // ── Valores expuestos ──
+  // ── Valores expuestos (incluyendo todas las nuevas funciones) ──
   const value = {
     usuarioId,
     userDoc,
@@ -595,16 +713,26 @@ export const GameProvider = ({ children }) => {
     aprobarExamen,
     cerrarCofre,
     minutosHastaVida,
-    // Nuevas exportaciones
+    // Nuevas funciones de tienda
     comprarCorazon,
+    comprarCofreMadera,
+    comprarCofrePlata,
+    comprarCofreOro,
+    comprarPocion,
+    comprarTiqueteOro,
+    usarTiqueteOro,
     registrarPrimeraLeccionDelDia,
+    obtenerOfertaDiaria,
     mostrarModalRacha,
     setMostrarModalRacha,
     recompensaRacha,
-    obtenerOfertaDiaria,
     corazonesCompradosHoy,
-    usarTiqueteOro,
-    abrirCofreOro,
+    // Límites diarios (necesarios para la UI)
+    cofresMaderaCompradosHoy,
+    cofresPlataCompradosHoy,
+    cofresOroCompradosHoy,
+    pocionesCompradasHoy,
+    ultimoTiqueteOroUsado,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
