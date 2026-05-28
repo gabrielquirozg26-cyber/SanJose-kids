@@ -1,254 +1,187 @@
 import React, { useState } from 'react';
-import { useGame, MISIONES_DIARIAS, MISIONES_SEMANALES } from '../context/GameContext';
+import { useGame } from '../context/GameContext';
 import confetti from 'canvas-confetti';
 
-// ── Barra de progreso ──────────────────────────────────────────────────────
-const BarraProgreso = ({ progreso, meta, color }) => {
-  const pct = Math.min((progreso / meta) * 100, 100);
-  return (
-    <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden mt-2">
-      <div
-        className={`h-full rounded-full transition-all duration-700 ${color}`}
-        style={{ width: `${pct}%` }}
-      />
-    </div>
-  );
-};
+const Misiones = () => {
+  const {
+    misionesState,
+    reclamarMision,
+    logrosPendientes,
+    canjearLogro,
+    titulosPorNivel,
+    MISIONES_DIARIAS,
+    MISIONES_SEMANALES,
+  } = useGame();
 
-// ── Tarjeta de misión ──────────────────────────────────────────────────────
-const TarjetaMision = ({ def, estado, grupoKey, onReclamar }) => {
-  const progreso   = estado?.progreso  ?? 0;
-  const reclamada  = estado?.reclamada ?? false;
-  const completada = progreso >= def.meta;
-  const pct        = Math.min(Math.round((progreso / def.meta) * 100), 100);
+  const [reclamando, setReclamando] = useState(null);
+  const [canjeando, setCanjeando] = useState(null);
 
-  const [reclamando, setReclamando] = useState(false);
-
-  const handleReclamar = async () => {
-    if (reclamando || reclamada || !completada) return;
-    setReclamando(true);
-    const ok = await onReclamar(grupoKey, def.id, def.recompensa);
-    if (ok) {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#facc15', '#fff', '#3b82f6'],
-      });
-    }
-    setReclamando(false);
+  const handleReclamar = async (grupo, id, recompensa) => {
+    setReclamando(id);
+    const ok = await reclamarMision(grupo, id, recompensa);
+    setReclamando(null);
+    if (ok) confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 }, colors: ['#facc15', '#fff'] });
   };
 
-  return (
-    <div className={`glass-card rounded-3xl p-5 border transition-all duration-300
-      ${reclamada     ? 'border-white/5 opacity-60'
-      : completada    ? 'border-yellow-400/40 shadow-[0_0_20px_rgba(250,204,21,0.1)]'
-      :                 'border-white/10'}`}
-    >
-      <div className="flex items-start gap-4">
-        {/* Icono */}
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0
-          ${reclamada  ? 'bg-white/5'
-          : completada ? 'bg-yellow-500/20'
-          :              'bg-white/5'}`}
-        >
-          {reclamada ? '✅' : def.icono}
-        </div>
+  const handleCanjear = async (logroId) => {
+    setCanjeando(logroId);
+    const ok = await canjearLogro(logroId);
+    setCanjeando(null);
+    if (ok) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#a855f7', '#facc15'] });
+  };
 
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-0.5">
-            <h3 className={`font-black text-sm truncate
-              ${reclamada ? 'text-white/40' : 'text-white'}`}>
-              {def.titulo}
+  const diarias = misionesState?.diarias || {};
+  const semanales = misionesState?.semanales || {};
+
+  return (
+    <div className="py-6 space-y-8 animate-slide-up">
+      {/* Encabezado */}
+      <div className="text-center">
+        <p className="text-[9px] font-black text-yellow-400 uppercase tracking-[0.5em]">Desafíos</p>
+        <h2 className="text-3xl font-black text-white tracking-tighter">Misiones</h2>
+        <p className="text-white/40 text-xs mt-1">Completa desafíos diarios y semanales para ganar monedas</p>
+      </div>
+
+      {/* LOGROS DE NIVEL (recompensas canjeables) */}
+      {logrosPendientes && logrosPendientes.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">🏆</span>
+            <h3 className="text-white font-black text-sm uppercase tracking-wider bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+              Recompensas de nivel
             </h3>
-            <span className="text-[9px] font-black text-yellow-400 shrink-0">
-              🪙 +{def.recompensa}
-            </span>
           </div>
+          <div className="space-y-3">
+            {logrosPendientes.map(logro => {
+              const titulo = titulosPorNivel?.find(t => t.id === logro.id);
+              if (!titulo) return null;
+              return (
+                <div key={logro.id} className="glass-card rounded-2xl p-4 border border-purple-500/30 bg-purple-500/5 transition-all hover:scale-[1.01]">
+                  <div className="flex items-center gap-4">
+                    <span className="text-5xl">🎖️</span>
+                    <div className="flex-1">
+                      <p className="font-black text-white text-lg">{titulo.nombre}</p>
+                      <p className="text-white/40 text-xs">Completa el nivel para desbloquear este título</p>
+                    </div>
+                    <button
+                      onClick={() => handleCanjear(logro.id)}
+                      disabled={canjeando === logro.id}
+                      className="px-5 py-2 rounded-xl font-black text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:scale-105 transition-all disabled:opacity-50"
+                    >
+                      {canjeando === logro.id ? '...' : 'Canjear'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-          <p className={`text-xs leading-snug mb-2
-            ${reclamada ? 'text-white/20' : 'text-white/50'}`}>
-            {def.descripcion}
-          </p>
-
-          {/* Progreso */}
-          {!reclamada && (
-            <>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] text-white/40 font-bold">
-                  {progreso} / {def.meta}
-                </span>
-                <span className={`text-[10px] font-black
-                  ${completada ? 'text-yellow-400' : 'text-white/30'}`}>
-                  {pct}%
-                </span>
+      {/* MISIONES DIARIAS */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">☀️</span>
+          <h3 className="text-white font-black text-sm uppercase tracking-wider bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
+            Diarias
+          </h3>
+        </div>
+        <div className="space-y-3">
+          {MISIONES_DIARIAS.map(def => {
+            const mision = diarias[def.id];
+            if (!mision) return null;
+            const completada = mision.progreso >= def.meta;
+            const reclamada = mision.reclamada;
+            return (
+              <div key={def.id} className="glass-card rounded-2xl p-4 border border-white/10 transition-all hover:scale-[1.01]">
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl">{def.icono}</span>
+                  <div className="flex-1">
+                    <p className="font-black text-white text-sm">{def.titulo}</p>
+                    <p className="text-white/40 text-xs">{def.descripcion}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-yellow-400 to-amber-400 rounded-full" style={{ width: `${(mision.progreso / def.meta) * 100}%` }} />
+                      </div>
+                      <span className="text-white/40 text-[10px] font-black">{mision.progreso}/{def.meta}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-yellow-400 font-black text-sm">+{def.recompensa} 🪙</p>
+                    {!reclamada && completada && (
+                      <button
+                        onClick={() => handleReclamar('diarias', def.id, def.recompensa)}
+                        disabled={reclamando === def.id}
+                        className="mt-2 px-4 py-1.5 rounded-xl font-black text-xs bg-yellow-400 text-blue-900 hover:scale-105 transition-all"
+                      >
+                        {reclamando === def.id ? '...' : 'Reclamar'}
+                      </button>
+                    )}
+                    {reclamada && <p className="text-green-400 text-[10px] font-black mt-2">✓ Reclamada</p>}
+                  </div>
+                </div>
               </div>
-              <BarraProgreso
-                progreso={progreso}
-                meta={def.meta}
-                color={completada
-                  ? 'bg-gradient-to-r from-yellow-400 to-yellow-300'
-                  : 'bg-gradient-to-r from-blue-500 to-cyan-400'}
-              />
-            </>
-          )}
+            );
+          })}
         </div>
       </div>
 
-      {/* Botón reclamar */}
-      {completada && !reclamada && (
-        <button
-          onClick={handleReclamar}
-          disabled={reclamando}
-          className="w-full mt-4 py-3 rounded-2xl bg-yellow-400 text-blue-900 font-black text-sm
-            uppercase tracking-widest hover:bg-yellow-300 active:scale-95 transition-all
-            shadow-lg shadow-yellow-400/20 disabled:opacity-50"
-        >
-          {reclamando ? 'Reclamando…' : `¡Reclamar 🪙 ${def.recompensa}!`}
-        </button>
+      {/* MISIONES SEMANALES */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">🌟</span>
+          <h3 className="text-white font-black text-sm uppercase tracking-wider bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+            Semanales
+          </h3>
+        </div>
+        <div className="space-y-3">
+          {MISIONES_SEMANALES.map(def => {
+            const mision = semanales[def.id];
+            if (!mision) return null;
+            const completada = mision.progreso >= def.meta;
+            const reclamada = mision.reclamada;
+            return (
+              <div key={def.id} className="glass-card rounded-2xl p-4 border border-white/10 transition-all hover:scale-[1.01]">
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl">{def.icono}</span>
+                  <div className="flex-1">
+                    <p className="font-black text-white text-sm">{def.titulo}</p>
+                    <p className="text-white/40 text-xs">{def.descripcion}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full" style={{ width: `${(mision.progreso / def.meta) * 100}%` }} />
+                      </div>
+                      <span className="text-white/40 text-[10px] font-black">{mision.progreso}/{def.meta}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-yellow-400 font-black text-sm">+{def.recompensa} 🪙</p>
+                    {!reclamada && completada && (
+                      <button
+                        onClick={() => handleReclamar('semanales', def.id, def.recompensa)}
+                        disabled={reclamando === def.id}
+                        className="mt-2 px-4 py-1.5 rounded-xl font-black text-xs bg-yellow-400 text-blue-900 hover:scale-105 transition-all"
+                      >
+                        {reclamando === def.id ? '...' : 'Reclamar'}
+                      </button>
+                    )}
+                    {reclamada && <p className="text-green-400 text-[10px] font-black mt-2">✓ Reclamada</p>}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mensaje cuando no hay nada */}
+      {logrosPendientes?.length === 0 && Object.keys(diarias).length === 0 && Object.keys(semanales).length === 0 && (
+        <div className="glass-card rounded-2xl p-8 text-center border border-white/10">
+          <p className="text-4xl mb-3">🎯</p>
+          <p className="text-white font-black">¡No hay misiones activas!</p>
+          <p className="text-white/40 text-xs mt-1">Vuelve más tarde para nuevos desafíos</p>
+        </div>
       )}
-
-      {reclamada && (
-        <p className="text-center text-[10px] text-white/25 font-black uppercase tracking-widest mt-3">
-          Recompensa recibida ✓
-        </p>
-      )}
-    </div>
-  );
-};
-
-// ── Contador regresivo ─────────────────────────────────────────────────────
-const CountdownBadge = ({ label, horas }) => (
-  <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
-    <span className="text-xs">⏱️</span>
-    <span className="text-[10px] font-black text-white/50 uppercase tracking-wider">
-      {label} · {horas}h
-    </span>
-  </div>
-);
-
-const horasHastaMedianoche = () => {
-  const ahora = new Date();
-  const medianoche = new Date();
-  medianoche.setHours(24, 0, 0, 0);
-  return Math.ceil((medianoche - ahora) / 3600000);
-};
-
-const horasHastaLunesSiguiente = () => {
-  const ahora = new Date();
-  const lunes = new Date();
-  const diasHastaLunes = (8 - (lunes.getDay() || 7)) % 7 || 7;
-  lunes.setDate(lunes.getDate() + diasHastaLunes);
-  lunes.setHours(0, 0, 0, 0);
-  return Math.ceil((lunes - ahora) / 3600000);
-};
-
-// ── Componente principal ───────────────────────────────────────────────────
-const Misiones = () => {
-  const { misionesState, reclamarMision } = useGame();
-  const [tab, setTab] = useState('diarias');
-
-  const diarias   = misionesState?.diarias   ?? {};
-  const semanales = misionesState?.semanales ?? {};
-
-  // Conteo de misiones completadas sin reclamar
-  const pendientesDiarias   = MISIONES_DIARIAS.filter(d =>
-    (diarias[d.id]?.progreso ?? 0) >= d.meta && !diarias[d.id]?.reclamada
-  ).length;
-  const pendientesSemanales = MISIONES_SEMANALES.filter(s =>
-    (semanales[s.id]?.progreso ?? 0) >= s.meta && !semanales[s.id]?.reclamada
-  ).length;
-  const totalPendientes = pendientesDiarias + pendientesSemanales;
-
-  return (
-    <div className="py-6 space-y-4 animate-slide-up">
-
-      {/* Cabecera */}
-      <div className="glass-card rounded-3xl p-5 border border-white/10">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[9px] font-black text-yellow-400 uppercase tracking-[0.4em] mb-1">
-              Centro de misiones
-            </p>
-            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
-              Misiones
-            </h2>
-          </div>
-          {totalPendientes > 0 && (
-            <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center shadow-lg shadow-yellow-400/30 animate-bounce">
-              <span className="text-blue-900 font-black text-sm">{totalPendientes}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Contadores regresivos */}
-        <div className="flex gap-2 mt-3 flex-wrap">
-          <CountdownBadge label="Diarias" horas={horasHastaMedianoche()} />
-          <CountdownBadge label="Semanales" horas={horasHastaLunesSiguiente()} />
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2">
-        {[
-          { id: 'diarias',   label: 'Diarias',   badge: pendientesDiarias   },
-          { id: 'semanales', label: 'Semanales', badge: pendientesSemanales },
-        ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex-1 py-3 rounded-2xl font-black text-sm uppercase tracking-widest
-              border transition-all relative
-              ${tab === t.id
-                ? 'bg-white text-black border-white'
-                : 'bg-white/5 text-white/40 border-white/10 hover:border-white/20'}`}
-          >
-            {t.label}
-            {t.badge > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-yellow-400
-                flex items-center justify-center text-[10px] font-black text-blue-900">
-                {t.badge}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Lista de misiones */}
-      <div className="space-y-3">
-        {tab === 'diarias' && (
-          <>
-            {MISIONES_DIARIAS.map(def => (
-              <TarjetaMision
-                key={def.id}
-                def={def}
-                estado={diarias[def.id]}
-                grupoKey="diarias"
-                onReclamar={reclamarMision}
-              />
-            ))}
-            <p className="text-center text-white/20 text-[9px] font-black uppercase tracking-[0.3em] pt-2">
-              Se renuevan cada día a medianoche
-            </p>
-          </>
-        )}
-
-        {tab === 'semanales' && (
-          <>
-            {MISIONES_SEMANALES.map(def => (
-              <TarjetaMision
-                key={def.id}
-                def={def}
-                estado={semanales[def.id]}
-                grupoKey="semanales"
-                onReclamar={reclamarMision}
-              />
-            ))}
-            <p className="text-center text-white/20 text-[9px] font-black uppercase tracking-[0.3em] pt-2">
-              Se renuevan cada lunes
-            </p>
-          </>
-        )}
-      </div>
     </div>
   );
 };

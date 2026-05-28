@@ -1,0 +1,29 @@
+{
+  "porNivel": [
+    { "nivel": 1, "id": "protector_reino", "nombre": "Protector del Reino", "rareza": "raro" },
+    { "nivel": 2, "id": "caballero_mariano", "nombre": "Caballero Mariano", "rareza": "raro" },
+    { "nivel": 3, "id": "luz_eterna", "nombre": "Luz Eterna", "rareza": "raro" },
+    { "nivel": 4, "id": "custodio_divino", "nombre": "Custodio Divino", "rareza": "raro" },
+    { "nivel": 5, "id": "corazon_purificado", "nombre": "Corazón Purificado", "rareza": "epico" },
+    { "nivel": 6, "id": "espiritu_renovado", "nombre": "Espíritu Renovado", "rareza": "epico" },
+    { "nivel": 7, "id": "hijo_maria", "nombre": "Hijo de María", "rareza": "epico" },
+    { "nivel": 8, "id": "pilar_iglesia", "nombre": "Pilar de la Iglesia", "rareza": "legendario" },
+    { "nivel": 9, "id": "reina_misericordia", "nombre": "Reina de Misericordia", "rareza": "legendario" },
+    { "nivel": 10, "id": "guardian_supremo", "nombre": "Guardián Supremo", "rareza": "legendario" },
+    { "nivel": 11, "id": "heredero_reino", "nombre": "Heredero del Reino", "rareza": "legendario" },
+    { "nivel": 12, "id": "elegido_gracia", "nombre": "Elegido de la Gracia", "rareza": "legendario" },
+    { "nivel": 13, "id": "manos_esperanza", "nombre": "Manos de Esperanza", "rareza": "legendario" },
+    { "nivel": 14, "id": "luz_nazaret", "nombre": "Luz de Nazaret", "rareza": "mitico" },
+    { "nivel": 15, "id": "guerrero_calvario", "nombre": "Guerrero del Calvario", "rareza": "mitico" },
+    { "nivel": 16, "id": "campeon_celestial", "nombre": "Campeón Celestial", "rareza": "mitico" },
+    { "nivel": 17, "id": "portador_luz_divina", "nombre": "Portador de la Luz Divina", "rareza": "divino" }
+  ],
+  "legendarios": [
+    { "id": "aprendiz_celestial", "nombre": "Aprendiz Celestial", "icono": "⚪", "precio": 1000, "rareza": "comun", "descripcion": "Inicia tu camino hacia la gloria celestial." },
+    { "id": "guardian_dorado", "nombre": "Guardián Dorado", "icono": "🟡", "precio": 5000, "rareza": "raro", "descripcion": "Un destello dorado protege tu fe." },
+    { "id": "maestro_del_credo", "nombre": "Maestro del Credo", "icono": "🟣", "precio": 15000, "rareza": "epico", "descripcion": "Conoces cada palabra de la doctrina." },
+    { "id": "arcangel_supremo", "nombre": "Arcángel Supremo", "icono": "🟠", "precio": 35000, "rareza": "legendario", "descripcion": "Los cielos te reconocen como guerrero divino." },
+    { "id": "emperador_de_la_fe", "nombre": "Emperador de la Fe", "icono": "🔴", "precio": 60000, "rareza": "legendario", "descripcion": "Tu devoción no tiene límites." },
+    { "id": "gran_guardian_supremo", "nombre": "✨ GRAN GUARDIÁN SUPREMO ✨", "icono": "💎", "precio": 100000, "rareza": "divino", "descripcion": "Solo los elegidos alcanzan esta gloria eterna." }
+  ]
+}

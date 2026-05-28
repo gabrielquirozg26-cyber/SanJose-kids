@@ -4,7 +4,6 @@ import confetti from 'canvas-confetti';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const mezclar = (arr) => [...arr].sort(() => Math.random() - 0.5);
-
 const normalizar = (str) =>
   str.trim().toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -28,7 +27,6 @@ const AnimacionEscudo = ({ onFin }) => {
     const t = setTimeout(onFin, 2800);
     return () => clearTimeout(t);
   }, []);
-
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
       <div className="relative flex items-center justify-center mb-6">
@@ -58,9 +56,9 @@ const AnimacionEscudo = ({ onFin }) => {
 // ══════════════════════════════════════════════════════════════════════════
 const PantallaVictoria = ({
   oracion, monedasGanadas, errores, totalVersos,
-  escudosUsados, tipoCofre, onVolverMapa,
+  escudosUsados, onVolverMapa,
 }) => {
-  const precision = Math.round(((totalVersos - errores) / totalVersos) * 100);
+  const precision  = Math.round(((totalVersos - errores) / totalVersos) * 100);
   const esPerfecta = errores === 0;
 
   useEffect(() => {
@@ -315,18 +313,23 @@ const EjercicioEscritura = ({ verso, resultado, onEscribir, escrito }) => {
 };
 
 // ══════════════════════════════════════════════════════════════════════════
-// COMPONENTE PRINCIPAL
+// COMPONENTE PRINCIPAL DE LECCIÓN (CORREGIDO)
 // ══════════════════════════════════════════════════════════════════════════
 const Leccion = () => {
   const {
     vidas, restarVida, sumarMonedas,
     setEnLeccion, completarNivel,
-    oracionActual, inventario, consumirItem, registrarPrimeraLeccionDelDia,   // ← Agrega esta línea
+    oracionActual, inventario, consumirItem,
+    nivelesCompletados,
   } = useGame();
 
-  // ── TODOS LOS HOOKS PRIMERO ────────────────────────────────────────────
   const banco = oracionActual?.versos ?? [];
-  
+  const nivelId = oracionActual?.id;
+  const yaCompletadoAntes = nivelesCompletados?.includes(nivelId) || false;
+  const factorMonedas = yaCompletadoAntes ? 0.1 : 1;
+
+  const [yaCompletado, setYaCompletado] = useState(false);
+
   const tiposPorVerso = useMemo(() => {
     if (!banco.length) return [];
     const tipos = [];
@@ -339,57 +342,23 @@ const Leccion = () => {
     return tipos;
   }, [oracionActual?.id]);
 
-  const [paso, setPaso] = useState(0);
-  const [resultado, setResultado] = useState(null);
-  const [seleccionada, setSeleccionada] = useState(null);
-  const [respuestaOrden, setRespOrden] = useState('');
-  const [escrito, setEscrito] = useState('');
-  const [errores, setErrores] = useState(0);
-  const [monedasAc, setMonedasAc] = useState(0);
+  const [paso, setPaso]                   = useState(0);
+  const [resultado, setResultado]         = useState(null);
+  const [seleccionada, setSeleccionada]   = useState(null);
+  const [respuestaOrden, setRespOrden]    = useState('');
+  const [escrito, setEscrito]             = useState('');
+  const [errores, setErrores]             = useState(0);
+  const [monedasAc, setMonedasAc]         = useState(0);
   const [mostrarVictoria, setMostrarVict] = useState(false);
-  const [escudoActivo, setEscudoActivo] = useState(() => inventario.includes('escudo_miguel'));
+  const [escudoActivo, setEscudoActivo]   = useState(() => inventario.includes('escudo_miguel'));
   const [mostrarEscudo, setMostrarEscudo] = useState(false);
   const [escudosUsados, setEscudosUsados] = useState(0);
-  const [usandoPocion, setUsandoPocion] = useState(false);
+  const [usandoPocion, setUsandoPocion]   = useState(false);
   const [opcionesFiltradas, setOpcionesFiltradas] = useState(null);
 
   const tienePocion = inventario.includes('pocion_sabiduria');
 
-  // ── Función para usar la poción (solo para ejercicios de selección)
-  const usarPocionSabiduria = async () => {
-    if (!tienePocion || tipo !== 'seleccion' || usandoPocion) return;
-    
-    const versoActual = banco[paso];
-    const opcionesOrig = [...versoActual.opcionesSeleccion];
-    const correcta = versoActual.palabraFaltante;
-    const incorrectas = opcionesOrig.filter(op => op !== correcta);
-    
-    // Eliminamos 2 incorrectas (o la única si solo hay una)
-    let nuevasIncorrectas = [...incorrectas];
-    if (nuevasIncorrectas.length >= 2) {
-      nuevasIncorrectas = nuevasIncorrectas.slice(0, -2);
-    } else {
-      nuevasIncorrectas = nuevasIncorrectas.slice(0, -1);
-    }
-    
-    const nuevasOpciones = [correcta, ...nuevasIncorrectas];
-    setOpcionesFiltradas(mezclar(nuevasOpciones));
-    setUsandoPocion(true);
-    
-    // Consumir el item del inventario
-    if (consumirItem) {
-      await consumirItem('pocion_sabiduria');
-    }
-  };
-
-  useEffect(() => {
-    const checkFirstLesson = async () => {
-      await registrarPrimeraLeccionDelDia();
-    };
-    checkFirstLesson();
-  }, []);
-
-  // ── Early return (después de todos los hooks) ─────────────────────────
+  // ── Early return si no hay versos ─────────────────────────────────────
   if (!oracionActual?.versos?.length) {
     setEnLeccion(false);
     return null;
@@ -399,7 +368,21 @@ const Leccion = () => {
   const tipo = tiposPorVerso[paso];
   const progreso = ((paso + 1) / banco.length) * 100;
   const esPerfecta = errores === 0;
-  const tipoCofre = esPerfecta ? 'oro' : 'madera';
+
+  const usarPocionSabiduria = async () => {
+    if (!tienePocion || tipo !== 'seleccion' || usandoPocion) return;
+    const versoActual = banco[paso];
+    const opcionesOrig = [...versoActual.opcionesSeleccion];
+    const correcta = versoActual.palabraFaltante;
+    const incorrectas = opcionesOrig.filter(op => op !== correcta);
+    let nuevasIncorrectas = [...incorrectas];
+    if (nuevasIncorrectas.length >= 2) nuevasIncorrectas = nuevasIncorrectas.slice(0, -2);
+    else nuevasIncorrectas = nuevasIncorrectas.slice(0, -1);
+    const nuevasOpciones = [correcta, ...nuevasIncorrectas];
+    setOpcionesFiltradas(mezclar(nuevasOpciones));
+    setUsandoPocion(true);
+    if (consumirItem) await consumirItem('pocion_sabiduria');
+  };
 
   const validar = () => {
     let correcto = false;
@@ -409,7 +392,8 @@ const Leccion = () => {
 
     if (correcto) {
       setResultado('acierto');
-      const xp = tipo === 'escritura' ? 40 : tipo === 'ordenar' ? 35 : 25;
+      const baseXp = tipo === 'escritura' ? 40 : tipo === 'ordenar' ? 35 : 25;
+      const xp = Math.floor(baseXp * factorMonedas);
       sumarMonedas(xp);
       setMonedasAc(prev => prev + xp);
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.75 }, colors: ['#facc15', '#fff', '#3b82f6'] });
@@ -437,14 +421,16 @@ const Leccion = () => {
       setUsandoPocion(false);
       setOpcionesFiltradas(null);
     } else {
-      completarNivel(esPerfecta);
+      if (!yaCompletado) {
+        setYaCompletado(true);
+        const esPrimeraVez = !yaCompletadoAntes;
+        completarNivel(esPerfecta, esPrimeraVez);
+      }
       setMostrarVict(true);
     }
   };
 
-  const volverAlMapa = () => {
-    setEnLeccion(false);
-  };
+  const volverAlMapa = () => setEnLeccion(false);
 
   if (mostrarVictoria) {
     return (
@@ -454,18 +440,16 @@ const Leccion = () => {
         errores={errores}
         totalVersos={banco.length}
         escudosUsados={escudosUsados}
-        tipoCofre={tipoCofre}
         onVolverMapa={volverAlMapa}
       />
     );
   }
 
-  const puedeComprobar =
-    !resultado && (
-      tipo === 'seleccion' ? !!seleccionada :
-      tipo === 'ordenar'   ? respuestaOrden.trim().split(' ').length === verso.palabrasOrdenar.length :
-                             escrito.trim().length > 0
-    );
+  const puedeComprobar = !resultado && (
+    tipo === 'seleccion' ? !!seleccionada :
+    tipo === 'ordenar'   ? respuestaOrden.trim().split(' ').length === verso.palabrasOrdenar.length :
+                           escrito.trim().length > 0
+  );
 
   const tipoLabel = { seleccion: '🔤 Completar', ordenar: '🔀 Ordenar', escritura: '✍️ Escribir' }[tipo];
   const monedaXP  = { seleccion: '+25', ordenar: '+35', escritura: '+40' }[tipo];
@@ -540,7 +524,7 @@ const Leccion = () => {
                   onClick={usarPocionSabiduria}
                   className="w-full mb-3 py-2 rounded-xl bg-purple-500/20 border border-purple-400/40 text-purple-300 font-black text-sm uppercase tracking-widest hover:bg-purple-500/30 transition-all"
                 >
-                  🧪 Usar Poción de Sabiduría (elimina opciones incorrectas)
+                  🧪 Usar Poción de Sabiduría
                 </button>
               )}
               <button
@@ -548,9 +532,7 @@ const Leccion = () => {
                 onClick={validar}
                 disabled={!puedeComprobar}
                 className={`w-full py-5 rounded-2xl font-black text-lg uppercase tracking-widest transition-all duration-300
-                  ${puedeComprobar
-                    ? 'bg-white text-black shadow-xl hover:scale-[1.02] active:scale-95'
-                    : 'bg-white/5 text-white/10 cursor-not-allowed'}`}
+                  ${puedeComprobar ? 'bg-white text-black shadow-xl hover:scale-[1.02] active:scale-95' : 'bg-white/5 text-white/10 cursor-not-allowed'}`}
               >
                 Comprobar
               </button>

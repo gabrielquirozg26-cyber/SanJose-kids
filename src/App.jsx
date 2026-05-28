@@ -21,6 +21,7 @@ import DailyStreakModal from './components/DailyStreakModal';
 
 import LoginCatequista from './views/LoginCatequista';
 import PanelCatequista from './views/PanelCatequista';
+import TituloDesbloqueadoModal from './components/TituloDesbloqueadoModal';
 
 // ── Cargando ───────────────────────────────────────────────────────────────
 const Cargando = () => <LoadingScreen />;
@@ -39,7 +40,7 @@ const tieneSeguro = (inv) => inv.includes('seguro_racha');
 
 // ── Shell estudiante ───────────────────────────────────────────────────────
 const AppShell = () => {
-  const { activeTab, enLeccion, cofrePendiente, cerrarCofre, mostrarModalRacha, setMostrarModalRacha, racha, recompensaRacha } = useGame();
+  const { activeTab, enLeccion, cofrePendiente, cerrarCofre, mostrarModalRacha, setMostrarModalRacha, racha, recompensaRacha, tituloDesbloqueadoReciente, setTituloDesbloqueadoReciente } = useGame();
   const [examenActivo, setExamenActivo] = useState(null);
   const [santoSeleccionado, setSantoSeleccionado] = useState(null);
   const [perfilPublico, setPerfilPublico] = useState(null);
@@ -108,6 +109,11 @@ const AppShell = () => {
         onClose={() => setMostrarModalRacha(false)}
         racha={racha}
         recompensa={recompensaRacha?.monedas}
+      />
+      <TituloDesbloqueadoModal
+        isOpen={tituloDesbloqueadoReciente.mostrar}
+        onClose={() => setTituloDesbloqueadoReciente({ mostrar: false, titulo: null })}
+        titulo={tituloDesbloqueadoReciente.titulo}
       />
     </div>
   );  

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import AvatarSelector from '../components/AvatarSelector';
+import PerfilPersonalizacion from './PerfilPersonalizacion';
 
-// Helpers para marcos decorativos (basado en inventario)
+// ── Helpers para marcos y auras (basado en inventario) ──
 const MARCOS = {
   marco_vitral_azul:   { border: 'border-blue-400',   shadow: 'shadow-[0_0_20px_rgba(96,165,250,0.5)]',  gradiente: 'from-blue-600 to-cyan-400'   },
   marco_vitral_dorado: { border: 'border-yellow-400', shadow: 'shadow-[0_0_20px_rgba(250,204,21,0.6)]',  gradiente: 'from-yellow-500 to-amber-300' },
@@ -10,7 +11,7 @@ const MARCOS = {
 const getMarco    = (inv) => inv.includes('marco_vitral_dorado') ? MARCOS.marco_vitral_dorado : inv.includes('marco_vitral_azul') ? MARCOS.marco_vitral_azul : null;
 const tieneAura   = (inv) => inv.includes('aura_santidad');
 
-// Nombres de niveles
+// ── Nombres de niveles ──
 const NIVEL_NOMBRE = {
   1:'Padre Nuestro',2:'Ave María',3:'Gloria',4:'Ángel de la Guarda',
   5:'Yo Confieso',6:'Acto de Contrición',7:'Dulce Madre',
@@ -18,6 +19,16 @@ const NIVEL_NOMBRE = {
   11:'Bienaventuranzas',12:'7 Sacramentos',13:'Obras de Misericordia',
   14:'Misterios Gozosos',15:'Misterios Dolorosos',
   16:'Misterios Gloriosos',17:'Misterios Luminosos',
+};
+
+// ── Colores de rareza para títulos (para mostrar en perfil) ──
+const RAREZA_TITULO = {
+  comun: 'border-slate-500/30 bg-slate-500/10 text-slate-300',
+  raro: 'border-blue-500/30 bg-blue-500/10 text-blue-300',
+  epico: 'border-purple-500/30 bg-purple-500/10 text-purple-300',
+  legendario: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300',
+  mitico: 'border-orange-500/30 bg-orange-500/10 text-orange-300',
+  divino: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300',
 };
 
 const Perfil = () => {
@@ -35,6 +46,8 @@ const Perfil = () => {
     minutosHastaVida,
     cofresAbiertos,
     actualizarAvatar,
+    titulosDesbloqueados,
+    tituloEquipado,
   } = useGame();
 
   const marco = getMarco(inventario);
@@ -43,22 +56,33 @@ const Perfil = () => {
   const tiempoVida = mins > 0 ? (mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`) : null;
 
   const [selectorAbierto, setSelectorAbierto] = useState(false);
+  const [mostrarPersonalizacion, setMostrarPersonalizacion] = useState(false);
 
-  // Usar directamente el avatar del contexto (sin estado local)
+  // Avatar
   const avatarActual = userDoc?.avatar || '😇';
-  // Detectar si es imagen (ruta absoluta que empiece con /, base64, http, etc.)
-  const esImagen = avatarActual?.startsWith('/') || 
-                   avatarActual?.startsWith('data:image') || 
-                   avatarActual?.startsWith('http');
+  const esImagen = avatarActual?.startsWith('data:image') || avatarActual?.startsWith('http') || avatarActual?.startsWith('/images/');
+
+  // Título equipado
+  const tituloActualObj = titulosDesbloqueados?.find(t => t.id === tituloEquipado);
+  const tituloNombre = tituloActualObj?.nombre || 'Sin título equipado';
+  const rarezaTitulo = tituloActualObj?.rareza || 'comun';
+  const tituloEstilo = RAREZA_TITULO[rarezaTitulo] || RAREZA_TITULO.comun;
+
+  const esTituloSupremo = tituloActualObj?.id === 'gran_guardian_supremo';
 
   const handleSelectAvatar = async (nuevoAvatar) => {
     await actualizarAvatar(nuevoAvatar);
     setSelectorAbierto(false);
   };
 
+  // Si estamos en el modo personalización, mostramos ese componente
+  if (mostrarPersonalizacion) {
+    return <PerfilPersonalizacion onVolver={() => setMostrarPersonalizacion(false)} />;
+  }
+
   return (
     <div className="py-6 space-y-5 animate-slide-up">
-      {/* Tarjeta de perfil con avatar grande */}
+      {/* ── Tarjeta de perfil (avatar, nombre, grupo, título) ── */}
       <div className="glass-card rounded-3xl p-6 text-center relative overflow-hidden">
         {aura && <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/10 to-transparent pointer-events-none" />}
         
@@ -76,17 +100,7 @@ const Perfil = () => {
           <div className={`relative w-28 h-28 rounded-full flex items-center justify-center overflow-hidden border-4
             ${marco ? `${marco.border} ${marco.shadow}` : aura ? 'border-yellow-400/60 shadow-[0_0_25px_rgba(250,204,21,0.4)]' : 'border-white/20 bg-white/5'}`}>
             {esImagen ? (
-              <img 
-                src={avatarActual} 
-                alt="Avatar" 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Si falla la imagen, mostrar emoji por defecto
-                  console.error('Error cargando avatar:', avatarActual);
-                  e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<span class="text-5xl">😇</span>';
-                }}
-              />
+              <img src={avatarActual} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
               <span className="text-5xl">{avatarActual}</span>
             )}
@@ -98,7 +112,17 @@ const Perfil = () => {
 
         <div className="mt-4">
           <h2 className={`text-2xl font-black tracking-tighter ${aura ? 'text-yellow-100' : 'text-white'}`}>{nombre}</h2>
-          <div className={`inline-flex items-center gap-1.5 mt-1 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest
+          
+          {/* Título equipado (con efecto especial si es el supremo) */}
+          <div className="mt-2 flex justify-center">
+            <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${tituloEstilo}`}>
+              {esTituloSupremo && <span className="text-yellow-300 animate-pulse">✨</span>}
+              {tituloNombre}
+              {esTituloSupremo && <span className="text-yellow-300 animate-pulse">✨</span>}
+            </div>
+          </div>
+
+          <div className={`inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest
             ${rango === 'Maestro de la Fe' ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300'
             : rango === 'Guardián del Credo' ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
             : 'bg-white/5 border-white/10 text-white/50'}`}>
@@ -117,7 +141,7 @@ const Perfil = () => {
         )}
       </div>
 
-      {/* Stats modernos (igual que antes) */}
+      {/* ── Stats ── */}
       <div className="grid grid-cols-2 gap-3">
         <div className="glass-card rounded-2xl p-4 border border-white/10">
           <p className="text-white/40 text-[9px] font-black uppercase tracking-wider">🏅 Nivel</p>
@@ -130,9 +154,9 @@ const Perfil = () => {
           <p className="text-white/40 text-[9px] font-black uppercase tracking-wider">🪙 Monedas</p>
           <p className="text-yellow-400 font-black text-2xl">{monedas}</p>
         </div>
-        <div className="glass-card rounded-2xl p-4 border border-orange-400/30">
+        <div className={`glass-card rounded-2xl p-4 border ${racha >= 7 ? 'border-orange-400/30' : 'border-white/10'}`}>
           <p className="text-white/40 text-[9px] font-black uppercase tracking-wider">🔥 Racha</p>
-          <p className="text-orange-400 font-black text-2xl">{racha} días</p>
+          <p className={`font-black text-2xl ${racha >= 7 ? 'text-orange-400' : 'text-white'}`}>{racha} días</p>
           {inventario.includes('seguro_racha') && <p className="text-orange-300 text-[9px] font-black mt-1">Seguro activo</p>}
         </div>
         <div className="glass-card rounded-2xl p-4 border border-white/10">
@@ -146,7 +170,7 @@ const Perfil = () => {
         </div>
       </div>
 
-      {/* Cofres abiertos */}
+      {/* ── Cofres abiertos ── */}
       {cofresAbiertos > 0 && (
         <div className="glass-card rounded-2xl p-4 border border-amber-600/20 flex items-center gap-3">
           <span className="text-2xl">📦</span>
@@ -157,10 +181,10 @@ const Perfil = () => {
         </div>
       )}
 
-      {/* Inventario */}
+      {/* ── Inventario (objetos equipados) ── */}
       {inventario.length > 0 && (
-        <div className="glass-card rounded-3xl p-5 border border-white/10">
-          <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em] mb-3">Objetos equipados</p>
+        <div className="glass-card rounded-3xl p-5 border border-white/10 space-y-3">
+          <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em]">Objetos equipados</p>
           <div className="flex flex-wrap gap-2">
             {[
               { id: 'escudo_miguel', icono: '🛡️', nombre: 'Escudo de San Miguel' },
@@ -182,13 +206,22 @@ const Perfil = () => {
         </div>
       )}
 
+      {/* ── Botones de acción ── */}
+      <button 
+        onClick={() => setMostrarPersonalizacion(true)}
+        className="w-full py-3 rounded-2xl border border-purple-500/30 text-purple-400 font-black text-sm uppercase tracking-widest hover:bg-purple-500/10 transition-all my-3"
+      >
+        ✨ Personalizar título y marco ✨
+      </button>
+
       <button 
         onClick={cerrarSesion} 
         className="w-full py-3 rounded-2xl border border-red-500/30 text-red-400 font-black text-sm uppercase tracking-widest hover:bg-red-500/10 transition-all"
       >
-        Cerrar sesión
+        Cerrar Sesión
       </button>
 
+      {/* ── Modales ── */}
       <AvatarSelector 
         isOpen={selectorAbierto} 
         onClose={() => setSelectorAbierto(false)} 

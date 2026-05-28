@@ -10,6 +10,7 @@ import {
   signOut, onAuthStateChanged,
 } from 'firebase/auth';
 import santosData from '../data/santos.json';
+import titulosData from '../data/titulos.json';
 
 const GameContext = createContext();
 
@@ -77,24 +78,23 @@ export const GameProvider = ({ children }) => {
   const [misionesState, setMisionesState] = useState(null);
   const [cofrePendiente, setCofrePendiente] = useState(null);
   const [coleccion, setColeccion]         = useState([]);
+  const [logrosPendientes, setLogrosPendientes] = useState([]); // <-- ESTADO FALTANTE
 
   // Estados para límites diarios
   const [corazonesCompradosHoy, setCorazonesCompradosHoy] = useState(0);
   const [ultimaFechaCompraCorazon, setUltimaFechaCompraCorazon] = useState(null);
   const [mostrarModalRacha, setMostrarModalRacha] = useState(false);
   const [recompensaRacha, setRecompensaRacha] = useState(null);
-  // Para cofres diarios
   const [cofresMaderaCompradosHoy, setCofresMaderaCompradosHoy] = useState(0);
   const [cofresPlataCompradosHoy, setCofresPlataCompradosHoy] = useState(0);
   const [cofresOroCompradosHoy, setCofresOroCompradosHoy] = useState(0);
   const [ultimaFechaCofreMadera, setUltimaFechaCofreMadera] = useState(null);
   const [ultimaFechaCofrePlata, setUltimaFechaCofrePlata] = useState(null);
   const [ultimaFechaCofreOro, setUltimaFechaCofreOro] = useState(null);
-  // Para pociones
   const [pocionesCompradasHoy, setPocionesCompradasHoy] = useState(0);
   const [ultimaFechaPocion, setUltimaFechaPocion] = useState(null);
-  // Para tiquete oro (límite diario)
   const [ultimoTiqueteOroUsado, setUltimoTiqueteOroUsado] = useState(null);
+  const [tituloDesbloqueadoReciente, setTituloDesbloqueadoReciente] = useState({ mostrar: false, titulo: null });
 
   // ── Sincronización con Firebase ──
   useEffect(() => {
@@ -107,7 +107,8 @@ export const GameProvider = ({ children }) => {
             if (!data.avatar) data.avatar = '😇';
             setUserDoc(data);
             setColeccion(data.coleccion ?? []);
-            // Limites diarios
+            setLogrosPendientes(data.logrosPendientes ?? []);
+            // Límites diarios
             setCorazonesCompradosHoy(data.corazonComprasHoy ?? 0);
             setUltimaFechaCompraCorazon(data.ultimaCompraCorazon ?? null);
             setCofresMaderaCompradosHoy(data.cofresMaderaHoy ?? 0);
@@ -134,7 +135,7 @@ export const GameProvider = ({ children }) => {
         setMisionesState(null);
         setLoading(false);
         setColeccion([]);
-        // Resetear estados
+        setLogrosPendientes([]);
         setCorazonesCompradosHoy(0);
         setUltimaFechaCompraCorazon(null);
         setMostrarModalRacha(false);
@@ -238,7 +239,6 @@ export const GameProvider = ({ children }) => {
     cofresAbiertos: 0,
     coleccion: [],
     avatar: '😇',
-    // Límites diarios
     corazonComprasHoy: 0,
     ultimaCompraCorazon: null,
     cofresMaderaHoy: 0,
@@ -251,6 +251,12 @@ export const GameProvider = ({ children }) => {
     ultimaFechaPocion: null,
     ultimoTiqueteOroUsado: null,
     ultimaPrimeraLeccion: null,
+    titulosDesbloqueados: [],
+    tituloEquipado: null,
+    marcosDesbloqueados: [],
+    marcoEquipado: null,
+    nivelesCompletados: [],
+    logrosPendientes: [],
     ...extra,
   });
 
@@ -310,35 +316,19 @@ export const GameProvider = ({ children }) => {
     if (cantidad > 0) await _avanzarMision('monedas', Number(cantidad));
   };
 
-    // ── Compra de corazón con límite diario y vidas llenas ──
+  // ── Compra de corazón ──
   const comprarCorazon = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
-    
-    // Resetear contador diario si cambió el día
     if (ultimaFechaCompraCorazon !== hoy) {
       setCorazonesCompradosHoy(0);
       setUltimaFechaCompraCorazon(hoy);
     }
-    
-    // Límite diario
-    if (corazonesCompradosHoy >= 3) {
-      console.warn('Límite diario de corazones alcanzado');
-      return false;
-    }
-    
-    // ✅ Usar el estado vidasMostradas (vidas reales)
-    const vidasActuales = vidasMostradas;
-    if (vidasActuales >= MAX_VIDAS) {
-      console.warn('Ya tienes todas las vidas');
-      return false;
-    }
-    
+    if (corazonesCompradosHoy >= 3) return false;
+    if (vidasMostradas >= MAX_VIDAS) return false;
     if ((userDoc?.monedas ?? 0) < 200) return false;
-    
     await sumarMonedas(-200);
-    await añadirVida();  // Esta función ya actualiza vidasPerdidas y setVidasM
-    
+    await añadirVida();
     setCorazonesCompradosHoy(prev => prev + 1);
     await updateDoc(doc(db, 'usuarios', usuarioId), {
       corazonComprasHoy: increment(1),
@@ -347,7 +337,7 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // ── Compra de cofre de madera ──
+  // ── Compra de cofres ──
   const comprarCofreMadera = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
@@ -377,7 +367,6 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // Compra de cofre de plata
   const comprarCofrePlata = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
@@ -406,7 +395,6 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // Compra de cofre de oro
   const comprarCofreOro = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
@@ -434,7 +422,7 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // ── Compra de poción de sabiduría con límite diario y de inventario ──
+  // ── Compra de poción ──
   const comprarPocion = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
@@ -454,18 +442,16 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // ── Uso del tiquete de oro (desde el inventario o compra directa) ──
+  // ── Tiquete de oro ──
   const usarTiqueteOro = async () => {
     if (!usuarioId) return false;
     const tieneTiquete = (userDoc?.inventario || []).includes('tiquete_oro');
     if (!tieneTiquete) return false;
     const hoy = hoyStr();
     if (ultimoTiqueteOroUsado === hoy) return false;
-    // Consumir el tiquete
     const nuevoInventario = (userDoc?.inventario || []).filter(id => id !== 'tiquete_oro');
     await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: nuevoInventario });
     setUserDoc(prev => ({ ...prev, inventario: nuevoInventario }));
-    // Abrir cofre de oro
     const santo = obtenerSantoPorRareza('oro');
     if (!santo) return false;
     const yaTiene = coleccion.includes(santo.id);
@@ -483,18 +469,16 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // ── Compra directa de tiquete de oro (objeto consumible) ──
   const comprarTiqueteOro = async () => {
     if (!usuarioId) return false;
     if ((userDoc?.monedas ?? 0) < 350) return false;
     await sumarMonedas(-350);
-    // Añadir al inventario (para que el usuario pueda usarlo después)
     await updateDoc(doc(db, 'usuarios', usuarioId), { inventario: arrayUnion('tiquete_oro') });
     setUserDoc(prev => ({ ...prev, inventario: [...(prev?.inventario || []), 'tiquete_oro'] }));
     return true;
   };
 
-  // ── Primera lección del día (bonus de racha) ──
+  // ── Primera lección del día ──
   const registrarPrimeraLeccionDelDia = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
@@ -510,7 +494,7 @@ export const GameProvider = ({ children }) => {
     return true;
   };
 
-  // Oferta diaria (solo frontend, sin persistencia)
+  // Oferta diaria
   const obtenerOfertaDiaria = () => {
     const hoy = new Date().toISOString().split('T')[0];
     const seed = hoy.split('-').join('');
@@ -524,7 +508,7 @@ export const GameProvider = ({ children }) => {
     return items[idx];
   };
 
-  // ── Sistema de santos y cofres (entregar santo al completar nivel o examen) ──
+  // ── Sistema de santos y cofres ──
   const entregarSanto = async (tipoCofre) => {
     const santo = obtenerSantoPorRareza(tipoCofre);
     if (!santo) return null;
@@ -548,28 +532,145 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  const completarNivel = async (fueConPerfecta = false) => {
+  // ── Funciones de títulos (movidas antes de donde se usan) ──
+  const equiparTitulo = async (tituloId) => {
+    if (!usuarioId) return false;
+    await updateDoc(doc(db, 'usuarios', usuarioId), { tituloEquipado: tituloId });
+    setUserDoc(prev => ({ ...prev, tituloEquipado: tituloId }));
+    return true;
+  };
+
+  const equiparMarco = async (marcoId) => {
+    if (!usuarioId) return false;
+    await updateDoc(doc(db, 'usuarios', usuarioId), { marcoEquipado: marcoId });
+    setUserDoc(prev => ({ ...prev, marcoEquipado: marcoId }));
+    return true;
+  };
+
+  const desbloquearTitulo = async (tituloId, nombreTitulo, rareza) => {
+    if (!usuarioId) return false;
+    const titulosActuales = userDoc?.titulosDesbloqueados || [];
+    if (titulosActuales.some(t => t.id === tituloId)) return false;
+    const nuevoTitulo = { id: tituloId, nombre: nombreTitulo, rareza, fecha: new Date().toISOString() };
+    const nuevosTitulos = [...titulosActuales, nuevoTitulo];
+    await updateDoc(doc(db, 'usuarios', usuarioId), {
+      titulosDesbloqueados: nuevosTitulos,
+    });
+    setUserDoc(prev => ({ ...prev, titulosDesbloqueados: nuevosTitulos }));
+    if (!userDoc?.tituloEquipado) {
+      await equiparTitulo(tituloId);
+    }
+    setTituloDesbloqueadoReciente({ titulo: nuevoTitulo, mostrar: true });
+    return true;
+  };
+
+  const canjearLogro = async (logroId) => {
+    if (!usuarioId) return false;
+    const logrosActuales = userDoc?.logrosPendientes || [];
+    const logro = logrosActuales.find(l => l.id === logroId);
+    if (!logro) return false;
+    const tituloInfo = titulosData.porNivel.find(t => t.id === logroId);
+    if (!tituloInfo) return false;
+    await desbloquearTitulo(tituloInfo.id, tituloInfo.nombre, tituloInfo.rareza);
+    const nuevosLogros = logrosActuales.filter(l => l.id !== logroId);
+    await updateDoc(doc(db, 'usuarios', usuarioId), { logrosPendientes: nuevosLogros });
+    setLogrosPendientes(nuevosLogros);
+    setUserDoc(prev => ({ ...prev, logrosPendientes: nuevosLogros }));
+    return true;
+  };
+
+  const comprarTituloLegendario = async (tituloId, nombreTitulo, rareza, precio) => {
+    if (!usuarioId) return false;
+    if ((userDoc?.monedas ?? 0) < precio) return false;
+    await sumarMonedas(-precio);
+    const titulosActuales = userDoc?.titulosDesbloqueados || [];
+    if (titulosActuales.some(t => t.id === tituloId)) return false;
+    const nuevoTitulo = { id: tituloId, nombre: nombreTitulo, rareza, fecha: new Date().toISOString() };
+    const nuevosTitulos = [...titulosActuales, nuevoTitulo];
+    await updateDoc(doc(db, 'usuarios', usuarioId), {
+      titulosDesbloqueados: nuevosTitulos,
+    });
+    setUserDoc(prev => ({ ...prev, titulosDesbloqueados: nuevosTitulos, monedas: (prev?.monedas || 0) - precio }));
+    setTituloDesbloqueadoReciente({ titulo: nuevoTitulo, mostrar: true });
+    return true;
+  };
+
+  // ── Mapeo de niveles a títulos ──
+  const titulosPorNivel = {};
+  titulosData.porNivel.forEach(t => { titulosPorNivel[t.nivel] = { id: t.id, nombre: t.nombre, rareza: t.rareza }; });
+
+  // ── Completar nivel ──
+  const completarNivel = async (fueConPerfecta = false, esPrimeraVez = true) => {
     if (!usuarioId) return;
+    if (!esPrimeraVez) return;
+
+    const nivelId = oracionActual?.id;
+    if (!nivelId) return;
+
     const hoy = hoyStr();
     const jugóHoy = userDoc?.jugóHoy ?? null;
     const rachaAct = userDoc?.racha ?? 0;
     let nuevaRacha = rachaAct;
+
     if (jugóHoy !== hoy) {
       const ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
       const ayerStr = ayer.toISOString().split('T')[0];
       if (jugóHoy === ayerStr || jugóHoy === null) nuevaRacha = rachaAct + 1;
       else nuevaRacha = 1;
-      await updateDoc(doc(db, 'usuarios', usuarioId), { nivelActual: increment(1), racha: nuevaRacha, jugóHoy: hoy });
+      await updateDoc(doc(db, 'usuarios', usuarioId), {
+        nivelActual: increment(1),
+        racha: nuevaRacha,
+        jugóHoy: hoy,
+        nivelesCompletados: arrayUnion(nivelId),
+      });
     } else {
-      await updateDoc(doc(db, 'usuarios', usuarioId), { nivelActual: increment(1) });
+      await updateDoc(doc(db, 'usuarios', usuarioId), {
+        nivelActual: increment(1),
+        nivelesCompletados: arrayUnion(nivelId),
+      });
     }
+
     await _avanzarMision('lecciones', 1);
     await _avanzarMision('niveles', 1);
     await _avanzarMision('racha', 1);
     if (fueConPerfecta) await _avanzarMision('perfectas', 1);
+
     const tipoCofre = fueConPerfecta ? 'oro' : 'madera';
     const recompensa = await entregarSanto(tipoCofre);
-    setCofrePendiente({ tipo: tipoCofre, recompensa });
+    setCofrePendiente(recompensa ? { tipo: tipoCofre, recompensa } : null);
+
+    const mapaNivelATitulo = {
+      'u1_padre_nuestro': 'protector_reino',
+      'u1_ave_maria': 'caballero_mariano',
+      'u1_gloria': 'luz_eterna',
+      'u1_angel_guarda': 'custodio_divino',
+      'u2_yo_confieso': 'corazon_purificado',
+      'u2_acto_contricion': 'espiritu_renovado',
+      'u2_dulce_madre': 'hijo_maria',
+      'u3_credo_apostolico': 'pilar_iglesia',
+      'u3_salve': 'reina_misericordia',
+      'u4_mandamientos': 'guardian_supremo',
+      'u4_bienaventuranzas': 'heredero_reino',
+      'u5_sacramentos': 'elegido_gracia',
+      'u5_obras_misericordia': 'manos_esperanza',
+      'u6_misterios_gozosos': 'luz_nazaret',
+      'u6_misterios_dolorosos': 'guerrero_calvario',
+      'u6_misterios_gloriosos': 'campeon_celestial',
+      'u6_misterios_luminosos': 'portador_luz_divina',
+    };
+    const tituloId = mapaNivelATitulo[nivelId];
+    if (tituloId) {
+      const yaTieneTitulo = userDoc?.titulosDesbloqueados?.some(t => t.id === tituloId) || false;
+      const yaHayLogro = userDoc?.logrosPendientes?.some(l => l.id === tituloId) || false;
+      if (!yaTieneTitulo && !yaHayLogro) {
+        const nuevoLogro = { id: tituloId, fecha: new Date().toISOString() };
+        await updateDoc(doc(db, 'usuarios', usuarioId), {
+          logrosPendientes: arrayUnion(nuevoLogro),
+        });
+        setLogrosPendientes(prev => [...prev, nuevoLogro]);
+        setUserDoc(prev => ({ ...prev, logrosPendientes: [...(prev?.logrosPendientes || []), nuevoLogro] }));
+      }
+    }
   };
 
   const aprobarExamen = async (claveUnidad) => {
@@ -582,9 +683,10 @@ export const GameProvider = ({ children }) => {
     setCofrePendiente({ tipo: 'plata', recompensa });
   };
 
+
   const cerrarCofre = () => setCofrePendiente(null);
 
-  // ── Compra de objetos genéricos (para cosméticos) ──
+  // ── Compra de objetos (solo una versión) ──
   const comprarItem = async (item) => {
     if (!usuarioId) return false;
     const inv = userDoc?.inventario ?? [];
@@ -668,7 +770,7 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // ── Valores expuestos (incluyendo todas las nuevas funciones) ──
+  // ── Valores expuestos ──
   const value = {
     usuarioId,
     userDoc,
@@ -713,7 +815,6 @@ export const GameProvider = ({ children }) => {
     aprobarExamen,
     cerrarCofre,
     minutosHastaVida,
-    // Nuevas funciones de tienda
     comprarCorazon,
     comprarCofreMadera,
     comprarCofrePlata,
@@ -727,12 +828,28 @@ export const GameProvider = ({ children }) => {
     setMostrarModalRacha,
     recompensaRacha,
     corazonesCompradosHoy,
-    // Límites diarios (necesarios para la UI)
     cofresMaderaCompradosHoy,
     cofresPlataCompradosHoy,
     cofresOroCompradosHoy,
     pocionesCompradasHoy,
     ultimoTiqueteOroUsado,
+    titulosDesbloqueados: userDoc?.titulosDesbloqueados || [],
+    tituloEquipado: userDoc?.tituloEquipado,
+    marcosDesbloqueados: userDoc?.marcosDesbloqueados || [],
+    marcoEquipado: userDoc?.marcoEquipado,
+    desbloquearTitulo,
+    equiparTitulo,
+    equiparMarco,
+    tituloDesbloqueadoReciente,
+    setTituloDesbloqueadoReciente,
+    titulosLegendarios: titulosData.legendarios,
+    titulosPorNivel: titulosData.porNivel,
+    comprarTituloLegendario,
+    logrosPendientes,
+    canjearLogro,
+    MISIONES_DIARIAS,
+    MISIONES_SEMANALES,
+    nivelesCompletados: userDoc?.nivelesCompletados || [],
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
