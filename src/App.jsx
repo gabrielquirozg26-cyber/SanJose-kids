@@ -57,6 +57,8 @@ const AppShell = () => {
     </>
   );
 
+
+
   return (
     <div className="min-h-screen text-white font-sans flex flex-col relative">
       {/* Fondo fijo con imagen de iglesia + blur + overlay */}

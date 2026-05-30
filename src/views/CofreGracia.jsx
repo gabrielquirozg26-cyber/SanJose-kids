@@ -57,7 +57,8 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
         particleCount: 180,
         spread: 120,
         origin: { y: 0.5 },
-        colors: config.particulas,
+        colors: ['#facc15', '#ffffff', '#a855f7', '#34d399'],
+        startVelocity: 20,
       });
       boom();
       if (tipoCofre === 'oro') {

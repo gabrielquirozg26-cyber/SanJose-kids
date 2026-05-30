@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import {
   doc, onSnapshot, updateDoc, increment,
-  setDoc, collection, query, where, getDocs, orderBy,
-  arrayUnion,
+  setDoc, collection, query, where, getDocs, getDoc, orderBy,
+  arrayUnion, writeBatch
 } from 'firebase/firestore';
 import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword,
@@ -257,6 +257,10 @@ export const GameProvider = ({ children }) => {
     marcoEquipado: null,
     nivelesCompletados: [],
     logrosPendientes: [],
+    historialNiveles: [],
+    biografia: '',
+    santoFavorito: '',
+    
     ...extra,
   });
 
@@ -770,6 +774,84 @@ export const GameProvider = ({ children }) => {
     }
   };
 
+  // ── NUEVAS FUNCIONES PARA EXÁMENES Y ANALÍTICA ──
+  // Guardar resultado de examen (solo catequistas)
+  const guardarResultadoExamen = async (estudianteId, lessonId, resultado, observaciones = '') => {
+    if (!usuarioId) return false;
+    // Usar userDoc?.rol en lugar de 'rol'
+    if (userDoc?.rol !== 'catequista' && userDoc?.rol !== 'coordinador') return false;
+
+    const estudianteRef = doc(db, 'usuarios', estudianteId);
+    const estudianteDoc = await getDoc(estudianteRef);
+    if (!estudianteDoc.exists()) return false;
+    if (estudianteDoc.data().grupo !== userDoc?.grupo) return false;
+
+    const examenData = {
+      lessonId,
+      resultado, // 'sabe' | 'regular' | 'no_sabe'
+      fecha: new Date().toISOString(),
+      catequistaId: usuarioId,
+      catequistaNombre: userDoc?.nombre,
+      observaciones,
+    };
+    // Guardar en subcolección 'examenes' del estudiante
+    await setDoc(doc(db, 'usuarios', estudianteId, 'examenes', `${lessonId}_${Date.now()}`), examenData);
+    return true;
+  };
+
+  // Guardar múltiples resultados de examen en una sola transacción (batch)
+  const guardarExamenMultiple = async (estudianteId, resultados, observaciones = '') => {
+    if (!usuarioId) return false;
+    if (userDoc?.rol !== 'catequista' && userDoc?.rol !== 'coordinador') return false;
+
+    const estudianteRef = doc(db, 'usuarios', estudianteId);
+    const estudianteDoc = await getDoc(estudianteRef);
+    if (!estudianteDoc.exists()) return false;
+    if (estudianteDoc.data().grupo !== userDoc?.grupo) return false;
+
+    const batch = writeBatch(db);
+    const fecha = new Date().toISOString();
+    const fechaId = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+    for (const [lessonId, resultado] of Object.entries(resultados)) {
+      const examenId = `${lessonId}_${fechaId}`; // Evita duplicados el mismo día
+      const examenRef = doc(db, 'usuarios', estudianteId, 'examenes', examenId);
+      batch.set(examenRef, {
+        lessonId,
+        resultado,
+        fecha,
+        catequistaId: usuarioId,
+        catequistaNombre: userDoc?.nombre,
+        observaciones,
+      });
+    }
+    await batch.commit();
+    return true;
+  };
+
+  // Obtener resultados de exámenes de un estudiante
+  const obtenerResultadosExamenes = async (estudianteId) => {
+    const q = query(collection(db, 'usuarios', estudianteId, 'examenes'), orderBy('fecha', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  };
+
+  // Registrar progreso de nivel (para gráfico de evolución)
+  const registrarProgresoNivel = async (nuevoNivel) => {
+    if (!usuarioId) return;
+    const nuevoRegistro = { nivel: nuevoNivel, fecha: new Date().toISOString() };
+    await updateDoc(doc(db, 'usuarios', usuarioId), {
+      historialNiveles: arrayUnion(nuevoRegistro),
+    });
+    setUserDoc(prev => ({ ...prev, historialNiveles: [...(prev?.historialNiveles || []), nuevoRegistro] }));
+  };
+
+  // Obtener historial de niveles (para gráficos)
+  const obtenerHistorialNiveles = async (estudianteId) => {
+    const docSnap = await getDoc(doc(db, 'usuarios', estudianteId));
+    return docSnap.data()?.historialNiveles || [];
+  };
+
   // ── Valores expuestos ──
   const value = {
     usuarioId,
@@ -850,6 +932,13 @@ export const GameProvider = ({ children }) => {
     MISIONES_DIARIAS,
     MISIONES_SEMANALES,
     nivelesCompletados: userDoc?.nivelesCompletados || [],
+    // ── Nuevas funciones para exámenes y analítica ──
+    guardarResultadoExamen,
+    obtenerResultadosExamenes,
+    obtenerHistorialNiveles,
+    registrarProgresoNivel,
+    guardarExamenMultiple,
+    
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

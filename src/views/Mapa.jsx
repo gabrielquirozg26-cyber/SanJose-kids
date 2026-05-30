@@ -1,242 +1,232 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import nivelesData from '../data/niveles.json';
+import confetti from 'canvas-confetti';
 
-// ── Datos del mapa ─────────────────────────────────────────────────────────
-const MAPA = [
-  { nivelId: 1,  unidad: 1, unidadNombre: 'Semillas de Fe',        oracionId: 'u1_padre_nuestro',     icono: '🙏', nombre: 'Padre Nuestro'        },
-  { nivelId: 2,  unidad: 1, unidadNombre: 'Semillas de Fe',        oracionId: 'u1_ave_maria',         icono: '🌹', nombre: 'Ave María'            },
-  { nivelId: 3,  unidad: 1, unidadNombre: 'Semillas de Fe',        oracionId: 'u1_gloria',            icono: '✨', nombre: 'Gloria'               },
-  { nivelId: 4,  unidad: 1, unidadNombre: 'Semillas de Fe',        oracionId: 'u1_angel_guarda',      icono: '👼', nombre: 'Ángel de la Guarda'   },
-  { nivelId: 5,  unidad: 2, unidadNombre: 'Corazón Limpio',        oracionId: 'u2_yo_confieso',       icono: '😔', nombre: 'Yo Confieso'          },
-  { nivelId: 6,  unidad: 2, unidadNombre: 'Corazón Limpio',        oracionId: 'u2_acto_contricion',   icono: '🕊️', nombre: 'Acto de Contrición'   },
-  { nivelId: 7,  unidad: 2, unidadNombre: 'Corazón Limpio',        oracionId: 'u2_dulce_madre',       icono: '💙', nombre: 'Dulce Madre'          },
-  { nivelId: 8,  unidad: 3, unidadNombre: 'La Roca de la Iglesia', oracionId: 'u3_credo_apostolico',  icono: '⛪', nombre: 'Credo Apostólico'     },
-  { nivelId: 9,  unidad: 3, unidadNombre: 'La Roca de la Iglesia', oracionId: 'u3_salve',             icono: '🌊', nombre: 'La Salve'             },
-  { nivelId: 10, unidad: 4, unidadNombre: 'Camino de Vida',        oracionId: 'u4_mandamientos',      icono: '📜', nombre: '10 Mandamientos'      },
-  { nivelId: 11, unidad: 4, unidadNombre: 'Camino de Vida',        oracionId: 'u4_bienaventuranzas',  icono: '🕊️', nombre: 'Bienaventuranzas'     },
-  { nivelId: 12, unidad: 5, unidadNombre: 'Gracia y Virtud',       oracionId: 'u5_sacramentos',       icono: '✝️', nombre: '7 Sacramentos'        },
-  { nivelId: 13, unidad: 5, unidadNombre: 'Gracia y Virtud',       oracionId: 'u5_obras_misericordia', icono: '🤲', nombre: 'Obras de Misericordia' },
-  { nivelId: 14, unidad: 6, unidadNombre: 'El Jardín de María',    oracionId: 'u6_misterios_gozosos',    icono: '📿', nombre: 'Misterios Gozosos'    },
-  { nivelId: 15, unidad: 6, unidadNombre: 'El Jardín de María',    oracionId: 'u6_misterios_dolorosos',  icono: '✝️', nombre: 'Misterios Dolorosos'  },
-  { nivelId: 16, unidad: 6, unidadNombre: 'El Jardín de María',    oracionId: 'u6_misterios_gloriosos',  icono: '👑', nombre: 'Misterios Gloriosos'  },
-  { nivelId: 17, unidad: 6, unidadNombre: 'El Jardín de María',    oracionId: 'u6_misterios_luminosos',  icono: '💫', nombre: 'Misterios Luminosos'  },
-];
-
-// ── Examen por unidad ──────────────────────────────────────────────────────
-// nivelMinimo: el nivelActual mínimo para desbloquear el examen de esa unidad
-// (= último nivelId de la unidad + 1, porque nivelActual avanza al completar)
-const EXAMENES = {
-  1: { clave: 'unidad1', nombre: 'Semillas de Fe',        nivelMinimo: 5  },
-  2: { clave: 'unidad2', nombre: 'Corazón Limpio',        nivelMinimo: 8  },
-  3: { clave: 'unidad3', nombre: 'La Roca de la Iglesia', nivelMinimo: 10 },
-  4: { clave: 'unidad4', nombre: 'Camino de Vida',        nivelMinimo: 12 },
-  5: { clave: 'unidad5', nombre: 'Gracia y Virtud',       nivelMinimo: 14 },
-  6: { clave: 'unidad6', nombre: 'El Jardín de María',    nivelMinimo: 18 },
+// Colores reales para los gradientes (hex)
+const GRADIENTES = {
+  calido: 'linear-gradient(90deg, #fbbf24, #fcd34d)',
+  naturaleza: 'linear-gradient(90deg, #34d399, #6ee7b7)',
+  penitencial: 'linear-gradient(90deg, #818cf8, #a78bfa)',
+  solemne: 'linear-gradient(90deg, #60a5fa, #7dd3fc)',
+  regio: 'linear-gradient(90deg, #a78bfa, #c084fc)',
+  fuego: 'linear-gradient(90deg, #fb923c, #f97316)',
+  sagrado: 'linear-gradient(90deg, #22d3ee, #5eead4)',
+  mariano: 'linear-gradient(90deg, #f472b6, #fb7185)',
+  default: 'linear-gradient(90deg, #94a3b8, #cbd5e1)',
 };
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-const getVersos = (oracionId) => {
-  for (const key of Object.keys(nivelesData)) {
-    const oracion = nivelesData[key].oraciones?.find(o => o.id === oracionId);
-    if (oracion) return oracion;
-  }
-  return null;
+const REINO_ESTILOS = {
+  calido: { bg: 'from-amber-900/30 to-yellow-800/10', border: 'border-amber-400/40', shadow: 'shadow-amber-400/20', decoracion: '🌟', particula: '⭐', textColor: 'text-amber-200', glow: 'rgba(251,191,36,0.3)' },
+  naturaleza: { bg: 'from-emerald-900/30 to-green-800/10', border: 'border-emerald-400/40', shadow: 'shadow-emerald-400/20', decoracion: '🌿', particula: '🍃', textColor: 'text-emerald-200', glow: 'rgba(74,222,128,0.3)' },
+  penitencial: { bg: 'from-indigo-900/30 to-purple-800/10', border: 'border-indigo-400/40', shadow: 'shadow-indigo-400/20', decoracion: '🕊️', particula: '✨', textColor: 'text-indigo-200', glow: 'rgba(129,140,248,0.3)' },
+  solemne: { bg: 'from-blue-900/30 to-sky-800/10', border: 'border-blue-400/40', shadow: 'shadow-blue-400/20', decoracion: '⛪', particula: '💙', textColor: 'text-blue-200', glow: 'rgba(59,130,246,0.3)' },
+  regio: { bg: 'from-violet-900/30 to-purple-800/10', border: 'border-violet-400/40', shadow: 'shadow-violet-400/20', decoracion: '⚔️', particula: '👑', textColor: 'text-violet-200', glow: 'rgba(139,92,246,0.3)' },
+  fuego: { bg: 'from-orange-900/30 to-red-800/10', border: 'border-orange-400/40', shadow: 'shadow-orange-400/20', decoracion: '🔥', particula: '💥', textColor: 'text-orange-200', glow: 'rgba(249,115,22,0.3)' },
+  sagrado: { bg: 'from-cyan-900/30 to-teal-800/10', border: 'border-cyan-400/40', shadow: 'shadow-cyan-400/20', decoracion: '✨', particula: '💎', textColor: 'text-cyan-200', glow: 'rgba(34,211,238,0.3)' },
+  mariano: { bg: 'from-pink-900/30 to-rose-800/10', border: 'border-pink-400/40', shadow: 'shadow-pink-400/20', decoracion: '🌹', particula: '🌸', textColor: 'text-pink-200', glow: 'rgba(244,114,182,0.3)' },
+  default: { bg: 'from-gray-800/30 to-gray-900/20', border: 'border-white/10', shadow: 'shadow-white/5', decoracion: '📖', particula: '•', textColor: 'text-white/80', glow: 'rgba(255,255,255,0.1)' },
 };
 
-const agruparPorUnidad = () => {
-  const grupos = {};
-  MAPA.forEach(n => {
-    if (!grupos[n.unidad]) grupos[n.unidad] = { id: n.unidad, nombre: n.unidadNombre, nodos: [] };
-    grupos[n.unidad].nodos.push(n);
+const Mapa = () => {
+  const { nivelActual, nivelesCompletados, vidas, iniciarLeccion } = useGame();
+  const [unidades, setUnidades] = useState([]);
+  const [efectoUnidad, setEfectoUnidad] = useState(null);
+  const [estrellas] = useState(() => {
+    const arr = [];
+    for (let i = 0; i < 80; i++) {
+      arr.push({ id: i, left: Math.random() * 100, top: Math.random() * 100, size: 1 + Math.random() * 3, delay: Math.random() * 5, duration: 2 + Math.random() * 4 });
+    }
+    return arr;
   });
-  return Object.values(grupos);
-};
+  const [particulas, setParticulas] = useState([]);
 
-// ── Botón de nivel ─────────────────────────────────────────────────────────
-const NivelBtn = ({ nodo, index, completado, desbloqueado, onPress }) => (
-  <div
-    className="flex flex-col items-center transition-transform duration-500"
-    style={{ transform: `translateX(${index % 2 === 0 ? '-50px' : '50px'})` }}
-  >
-    <div className="relative">
-      {completado && (
-        <div className="absolute inset-0 bg-yellow-400 rounded-full blur-xl opacity-30 animate-pulse" />
-      )}
-      {desbloqueado && !completado && (
-        <div className="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-20 animate-pulse" />
-      )}
-      <button
-        onClick={desbloqueado || completado ? onPress : undefined}
-        className={`relative w-24 h-24 rounded-full flex items-center justify-center text-4xl
-          shadow-2xl border-b-[10px] transition-all
-          active:scale-95 active:border-b-0 active:translate-y-2
-          ${completado
-            ? 'bg-gradient-to-br from-yellow-300 to-yellow-500 border-yellow-700'
-            : desbloqueado
-              ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-800'
-              : 'bg-white/10 border-slate-600/50 cursor-not-allowed opacity-40'
-          }`}
-      >
-        {completado || desbloqueado ? nodo.icono : '🔒'}
-      </button>
-    </div>
+  useEffect(() => {
+    setUnidades(nivelesData.unidades);
+  }, []);
 
-    <div className={`mt-4 px-4 py-1.5 rounded-full border shadow-sm transition-all
-      ${completado
-        ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
-        : desbloqueado
-          ? 'bg-blue-500/20 text-blue-200 border-blue-400/40'
-          : 'bg-white/5 text-white/20 border-white/10'
-      }`}
-    >
-      <span className="font-black text-[11px] tracking-widest uppercase">{nodo.nombre}</span>
-    </div>
-  </div>
-);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (unidades.length === 0) return;
+      const reino = unidades[Math.floor(Math.random() * unidades.length)];
+      const estilo = REINO_ESTILOS[reino.tema] || REINO_ESTILOS.default;
+      const id = Date.now() + Math.random();
+      setParticulas(prev => [...prev, { id, left: Math.random() * 100, icono: estilo.particula, duracion: 5 + Math.random() * 5 }]);
+      setTimeout(() => setParticulas(prev => prev.filter(p => p.id !== id)), 6000);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [unidades]);
 
-// ── Botón de examen de unidad ──────────────────────────────────────────────
-const ExamenBtn = ({ examen, desbloqueado, aprobado, onPress }) => {
-  if (!desbloqueado && !aprobado) {
-    // Bloqueado: muestra candado pero con info de cuándo se desbloquea
-    return (
-      <div className="w-full mt-6 px-4">
-        <div className="glass-card rounded-2xl p-4 border border-white/5 flex items-center gap-3 opacity-40">
-          <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-2xl shrink-0">
-            🔒
-          </div>
-          <div>
-            <p className="text-white/50 font-black text-sm">Examen de Unidad</p>
-            <p className="text-white/25 text-xs">Completa todas las oraciones para desbloquear</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full mt-6 px-4">
-      <button
-        onClick={onPress}
-        className={`w-full rounded-2xl p-4 border transition-all active:scale-95
-          flex items-center gap-4
-          ${aprobado
-            ? 'bg-green-500/15 border-green-400/40 hover:bg-green-500/20'
-            : 'bg-yellow-400/10 border-yellow-400/40 hover:bg-yellow-400/15 shadow-[0_0_20px_rgba(250,204,21,0.1)]'
-          }`}
-      >
-        {/* Icono */}
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 border
-          ${aprobado
-            ? 'bg-green-500/20 border-green-400/40'
-            : 'bg-yellow-400/15 border-yellow-400/30'
-          }`}>
-          {aprobado ? '✅' : '🎓'}
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 text-left">
-          <p className={`font-black text-sm ${aprobado ? 'text-green-300' : 'text-yellow-300'}`}>
-            {aprobado ? 'Examen aprobado' : 'Examen de Unidad'}
-          </p>
-          <p className="text-white/40 text-xs mt-0.5">
-            {aprobado
-              ? `${examen.nombre} — ¡Completado!`
-              : `${examen.nombre} · 8 preguntas · +50🪙 c/u`}
-          </p>
-        </div>
-
-        {/* Flecha / badge */}
-        <div className={`shrink-0 px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-widest
-          ${aprobado
-            ? 'bg-green-500/20 text-green-400'
-            : 'bg-yellow-400 text-blue-900'
-          }`}>
-          {aprobado ? '✓' : 'Entrar'}
-        </div>
-      </button>
-    </div>
-  );
-};
-
-// ── Componente principal ───────────────────────────────────────────────────
-const Mapa = ({ onIniciarExamen }) => {
-  const { nivelActual, vidas, iniciarLeccion, examenesAprobados = [] } = useGame();
-  const grupos = agruparPorUnidad();
-
-  const handlePresionar = (nodo) => {
-    if (vidas <= 0) return;
-    const oracion = getVersos(nodo.oracionId);
-    if (!oracion) return;
-    iniciarLeccion(oracion);
+  const isUnidadDesbloqueada = (idx) => {
+    if (idx === 0) return true;
+    let acum = 0;
+    for (let i = 0; i < idx; i++) acum += unidades[i]?.lecciones.length || 0;
+    return nivelActual > acum;
   };
 
-  return (
-    <div className="flex flex-col items-center w-full pb-8 relative">
+  const isLeccionCompletada = (id) => nivelesCompletados.includes(id);
 
-      {/* Aviso sin vidas */}
+  const handleIniciarLeccion = (leccion, uIdx, lIdx) => {
+    if (vidas <= 0) return;
+    if (!isUnidadDesbloqueada(uIdx)) return;
+    if (lIdx > 0 && !isLeccionCompletada(unidades[uIdx].lecciones[lIdx - 1]?.id)) return;
+    iniciarLeccion(leccion);
+  };
+
+  useEffect(() => {
+    if (unidades.length === 0) return;
+    let completadasConsecutivas = 0;
+    for (let i = 0; i < unidades.length; i++) {
+      const todas = unidades[i].lecciones.every(l => nivelesCompletados.includes(l.id));
+      if (todas) completadasConsecutivas++;
+      else break;
+    }
+    const ultimaCompletada = completadasConsecutivas - 1;
+    if (ultimaCompletada >= 0 && ultimaCompletada !== efectoUnidad) {
+      setEfectoUnidad(ultimaCompletada);
+      confetti({ particleCount: 300, spread: 150, origin: { y: 0.5 }, colors: ['#facc15', '#ffffff', '#a855f7'] });
+      setTimeout(() => confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 }, colors: ['#facc15', '#ffffff'] }), 300);
+      setTimeout(() => setEfectoUnidad(null), 3000);
+    }
+  }, [nivelesCompletados, unidades]);
+
+  return (
+    <div className="relative py-8 space-y-16 overflow-x-hidden">
+      {/* Estrellas fijas */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {estrellas.map(star => (
+          <div key={star.id} className="absolute rounded-full bg-white animate-twinkle"
+            style={{ left: `${star.left}%`, top: `${star.top}%`, width: star.size, height: star.size, animationDelay: `${star.delay}s`, animationDuration: `${star.duration}s`, opacity: 0.3 + Math.random() * 0.5 }} />
+        ))}
+      </div>
+      {/* Partículas flotantes */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {particulas.map(p => (
+          <div key={p.id} className="absolute text-lg animate-float-up" style={{ left: `${p.left}%`, top: '100%', animationDuration: `${p.duracion}s` }}>{p.icono}</div>
+        ))}
+      </div>
+
+      {/* Encabezado */}
+      <div className="relative z-10 text-center px-4">
+        <div className="inline-block mb-2 px-4 py-1 rounded-full bg-yellow-400/20 backdrop-blur border border-yellow-400/40">
+          <p className="text-[9px] font-black text-yellow-300 uppercase tracking-[0.5em]">Aventura espiritual</p>
+        </div>
+        <h1 className="text-5xl font-black text-white tracking-tighter mt-2 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent animate-glow-text">Sendero de Luz</h1>
+        <p className="text-white/40 text-sm mt-2 max-w-md mx-auto">Explora cada reino, completa lecciones y desbloquea la gloria celestial</p>
+      </div>
+
       {vidas <= 0 && (
-        <div className="w-full glass-card rounded-2xl p-4 mb-6 border border-red-500/30 text-center">
-          <p className="text-red-400 font-black text-sm animate-pulse">❤️ Sin vidas — regresa en unas horas</p>
+        <div className="relative z-10 glass-card rounded-2xl p-4 text-center border border-red-500/30 max-w-md mx-auto animate-pulse">
+          <p className="text-red-400 font-black text-sm">❤️ Sin vidas — regresa en unas horas</p>
         </div>
       )}
 
-      {grupos.map((grupo, gi) => {
-        const examen        = EXAMENES[grupo.id];
-        const examenDesbloq = nivelActual >= examen.nivelMinimo;
-        const examenAprobado = examenesAprobados.includes(examen.clave);
+      {unidades.map((unidad, uIdx) => {
+        const desbloqueada = isUnidadDesbloqueada(uIdx);
+        const estilo = REINO_ESTILOS[unidad.tema] || REINO_ESTILOS.default;
+        const completadas = unidad.lecciones.filter(l => nivelesCompletados.includes(l.id)).length;
+        const progreso = (completadas / unidad.lecciones.length) * 100;
+        const gradiente = GRADIENTES[unidad.tema] || GRADIENTES.default;
+        const reinoCompleto = completadas === unidad.lecciones.length;
 
         return (
-          <div key={gi} className="w-full mb-16">
+          <div key={unidad.id} className={`relative z-10 mx-4 rounded-3xl p-6 transition-all duration-700 bg-gradient-to-br ${estilo.bg} border ${estilo.border} shadow-xl backdrop-blur-sm transform hover:scale-[1.01] ${desbloqueada ? 'opacity-100' : 'opacity-90'}`} style={{ boxShadow: `0 0 20px ${estilo.glow}` }}>
+            {efectoUnidad === uIdx && <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-yellow-400/30 via-transparent to-transparent animate-pulse pointer-events-none" />}
+            <div className="absolute -top-8 -right-8 text-7xl opacity-30 pointer-events-none animate-float">{estilo.decoracion}</div>
+            <div className="absolute -bottom-6 -left-6 text-7xl opacity-20 pointer-events-none animate-float-delay">{estilo.decoracion}</div>
 
-            {/* Encabezado de unidad */}
-            <div className="text-center mb-10">
-              <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em] mb-1">
-                Unidad {gi + 1}
-              </p>
-              <h2 className="text-4xl font-black text-white tracking-tighter drop-shadow-lg">
-                {grupo.nombre}
-              </h2>
+            <div className="flex items-center gap-4 mb-6 flex-wrap relative z-10">
+              <div className="text-6xl drop-shadow-lg">{unidad.icono}</div>
+              <div className="flex-1">
+                <h2 className={`text-2xl font-black ${estilo.textColor} tracking-tighter`}>{unidad.nombre}</h2>
+                <p className="text-white/50 text-sm">{unidad.subtitulo}</p>
+              </div>
+              {!desbloqueada && (
+                <div className="bg-black/60 backdrop-blur-sm rounded-full px-4 py-1.5 flex items-center gap-2">
+                  <span className="text-xl">🔒</span>
+                  <span className="text-white/70 text-xs font-black">Bloqueado</span>
+                </div>
+              )}
+              {desbloqueada && reinoCompleto && (
+                <div className="bg-green-500/30 backdrop-blur-sm rounded-full px-4 py-1.5 border border-green-400/60 animate-pulse">
+                  <span className="text-green-300 text-sm font-black">✨ Reino completado ✨</span>
+                </div>
+              )}
             </div>
 
-            {/* Niveles en zigzag */}
-            <div className="flex flex-col items-center gap-y-14 w-full px-8">
-              {grupo.nodos.map((nodo, index) => (
-                <NivelBtn
-                  key={nodo.nivelId}
-                  nodo={nodo}
-                  index={index}
-                  completado={nivelActual > nodo.nivelId}
-                  desbloqueado={nivelActual === nodo.nivelId}
-                  onPress={() => handlePresionar(nodo)}
-                />
-              ))}
-            </div>
-
-            {/* Botón de examen al final de la unidad */}
-            <ExamenBtn
-              examen={examen}
-              desbloqueado={examenDesbloq}
-              aprobado={examenAprobado}
-              onPress={() => onIniciarExamen(examen.clave, examen.nombre)}
-            />
-
-            {/* Separador entre unidades */}
-            {gi < grupos.length - 1 && (
-              <div className="flex items-center gap-3 mt-10 px-8 opacity-20">
-                <div className="flex-1 h-px bg-white/30" />
-                <span className="text-white text-xs">✦</span>
-                <div className="flex-1 h-px bg-white/30" />
+            {desbloqueada ? (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                  {unidad.lecciones.map((leccion, lIdx) => {
+                    const completada = isLeccionCompletada(leccion.id);
+                    const bloqueada = lIdx > 0 && !isLeccionCompletada(unidad.lecciones[lIdx - 1]?.id);
+                    const disponible = !bloqueada;
+                    return (
+                      <button
+                        key={leccion.id}
+                        onClick={() => disponible && handleIniciarLeccion(leccion, uIdx, lIdx)}
+                        disabled={!disponible || vidas <= 0}
+                        className={`group relative flex flex-col items-center justify-center p-5 rounded-3xl transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+                          completada
+                            ? 'glass-card border-green-400/60 bg-green-500/15 shadow-green-400/30'
+                            : disponible
+                            ? 'glass-card border-white/20 hover:border-yellow-400/60 hover:shadow-yellow-400/30 hover:bg-white/10'
+                            : 'glass-card border-white/5 opacity-40 cursor-not-allowed'
+                        }`}
+                        style={{ backdropFilter: 'blur(12px)', transition: 'all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1)' }}
+                      >
+                        <span className="text-5xl drop-shadow-md transition-transform duration-200 group-hover:scale-110">{leccion.icono}</span>
+                        <p className="font-black text-base mt-3 text-center break-words max-w-[100px] leading-tight">{leccion.nombre}</p>
+                        {completada && (
+                          <div className="absolute -top-3 -right-3 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full w-7 h-7 flex items-center justify-center text-sm font-black shadow-lg animate-bounce">
+                            ✓
+                          </div>
+                        )}
+                        {!disponible && !completada && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-3xl backdrop-blur-sm">
+                            <span className="text-4xl drop-shadow-lg">🔒</span>
+                          </div>
+                        )}
+                        {disponible && !completada && (
+                          <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" 
+                              style={{ boxShadow: `inset 0 0 25px ${estilo.glow}, 0 0 15px ${estilo.glow}` }} />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Barra de progreso CORREGIDA */}
+                <div className="mt-8">
+                  <div className="flex justify-between items-center text-white/40 text-[10px] mb-2 font-mono">
+                    <span className="flex items-center gap-1"><span className="text-yellow-400">✨</span> Progreso del reino</span>
+                    <span className="font-black">{completadas} / {unidad.lecciones.length}</span>
+                  </div>
+                  <div className="h-3 bg-white/15 rounded-full overflow-hidden shadow-inner">
+                    <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${progreso}%`, background: gradiente }} />
+                  </div>
+                  {progreso === 100 && (
+                    <div className="text-center mt-2 text-yellow-400/80 text-[10px] font-black animate-pulse">
+                      🌟 Reino completado - ¡Sigue adelante! 🌟
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <div className="inline-block p-4 bg-black/40 rounded-full backdrop-blur">
+                  <span className="text-5xl animate-pulse">🔒</span>
+                </div>
+                <p className="text-white/40 text-sm mt-4 max-w-xs mx-auto">Completa el reino anterior para desbloquear esta tierra sagrada</p>
+                <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full mx-auto mt-4" />
               </div>
             )}
           </div>
         );
       })}
 
-      {/* Decoración de fondo */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 opacity-30">
-        <div className="absolute top-1/4 left-10 w-32 h-32 bg-yellow-200 rounded-full blur-[80px]" />
-        <div className="absolute bottom-1/3 right-10 w-40 h-40 bg-blue-200 rounded-full blur-[100px]" />
+      <div className="relative z-10 text-center py-8">
+        <div className="w-32 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto" />
+        <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.3em] mt-4">Que la luz te guíe</p>
       </div>
     </div>
   );

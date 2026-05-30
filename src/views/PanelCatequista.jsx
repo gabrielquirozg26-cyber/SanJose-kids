@@ -1,321 +1,380 @@
 import React, { useEffect, useState } from 'react';
 import { useGame } from '../context/GameContext';
+import confetti from 'canvas-confetti';
+import GraficoProgreso from '../components/GraficoProgreso';
+import nivelesData from '../data/niveles.json';
 
-// ── Mapa de niveles para mostrar nombre de la oración ─────────────────────
-const NIVEL_NOMBRE = {
-  1: 'Padre Nuestro', 2: 'Ave María', 3: 'Gloria', 4: 'Ángel de la Guarda',
-  5: 'Yo Confieso', 6: 'Acto de Contrición', 7: 'Dulce Madre',
-  8: 'Credo Apostólico', 9: 'La Salve', 10: '10 Mandamientos',
-  11: 'Bienaventuranzas', 12: '7 Sacramentos', 13: 'Obras de Misericordia',
-  14: 'Misterios Gozosos', 15: 'Misterios Dolorosos',
-  16: 'Misterios Gloriosos', 17: 'Misterios Luminosos',
-};
-
-// ── Tarjeta de estadística ─────────────────────────────────────────────────
-const StatCard = ({ icono, label, value, color = 'text-white' }) => (
-  <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
-    <p className="text-2xl mb-1">{icono}</p>
-    <p className={`font-black text-xl ${color}`}>{value}</p>
-    <p className="text-white/30 text-[9px] font-black uppercase tracking-wider mt-0.5">{label}</p>
-  </div>
-);
-
-// ── Barra de progreso ──────────────────────────────────────────────────────
-const BarraProgreso = ({ valor, total, color = 'bg-blue-500' }) => {
-  const pct = total > 0 ? Math.round((valor / total) * 100) : 0;
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all duration-700 ${color}`}
-          style={{ width: `${pct}%` }} />
-      </div>
-      <span className="text-[10px] font-black text-white/40 w-8 text-right">{pct}%</span>
-    </div>
-  );
-};
-
-// ── Fila de estudiante ─────────────────────────────────────────────────────
-const FilaEstudiante = ({ estudiante, onClick, seleccionado }) => {
-  const nivelNombre = NIVEL_NOMBRE[estudiante.nivelActual] ?? `Nivel ${estudiante.nivelActual}`;
-  const activo = estudiante.racha > 0;
-
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all text-left
-        ${seleccionado
-          ? 'bg-blue-500/20 border-blue-400/50'
-          : 'bg-white/5 border-white/5 hover:border-white/20'}`}
-    >
-      {/* Avatar */}
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0
-        ${activo ? 'bg-green-500/20 border border-green-400/40' : 'bg-white/10'}`}>
-        😇
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="font-black text-sm text-white truncate">{estudiante.nombre}</p>
-        <p className="text-white/30 text-[10px] font-bold truncate">{nivelNombre}</p>
-      </div>
-
-      {/* Stats rápidas */}
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="text-right">
-          <p className="text-yellow-400 font-black text-sm">🪙 {estudiante.monedas}</p>
-          <p className="text-white/30 text-[10px]">🔥 {estudiante.racha}d</p>
-        </div>
-        <div className={`w-2 h-2 rounded-full ${activo ? 'bg-green-400' : 'bg-white/10'}`} />
-      </div>
-    </button>
-  );
-};
-
-// ── Detalle de estudiante ──────────────────────────────────────────────────
-const DetalleEstudiante = ({ estudiante, onCerrar }) => {
-  const nivelNombre = NIVEL_NOMBRE[estudiante.nivelActual] ?? `Nivel ${estudiante.nivelActual}`;
-  const totalNiveles = Object.keys(NIVEL_NOMBRE).length;
-  const progresoPct  = Math.round((estudiante.nivelActual / totalNiveles) * 100);
-
-  return (
-    <div className="glass-card rounded-3xl p-5 border border-blue-400/30 space-y-4 animate-slide-up">
-
-      {/* Cabecera */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-400/40
-            flex items-center justify-center text-2xl">😇</div>
-          <div>
-            <p className="font-black text-white">{estudiante.nombre}</p>
-            <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider">
-              {estudiante.rango ?? 'Iniciado'}
-            </p>
-          </div>
-        </div>
-        <button onClick={onCerrar}
-          className="text-white/30 hover:text-white/60 text-xl font-black transition-colors">✕</button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-2">
-        <StatCard icono="🏅" label="Nivel"   value={estudiante.nivelActual ?? 1} />
-        <StatCard icono="🪙" label="Monedas" value={estudiante.monedas ?? 0} color="text-yellow-400" />
-        <StatCard icono="🔥" label="Racha"   value={`${estudiante.racha ?? 0}d`} color="text-orange-400" />
-      </div>
-
-      {/* Progreso general */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <p className="text-[10px] font-black text-white/50 uppercase tracking-widest">Progreso general</p>
-          <p className="text-[10px] font-black text-blue-400">{nivelNombre}</p>
-        </div>
-        <BarraProgreso
-          valor={estudiante.nivelActual ?? 1}
-          total={totalNiveles}
-          color="bg-gradient-to-r from-blue-500 to-cyan-400"
-        />
-      </div>
-
-      {/* Fecha de registro */}
-      {estudiante.fechaRegistro && (
-        <p className="text-white/20 text-[9px] font-black uppercase tracking-widest text-center">
-          Registrado: {new Date(estudiante.fechaRegistro).toLocaleDateString('es-NI')}
-        </p>
-      )}
-    </div>
-  );
-};
-
-// ══════════════════════════════════════════════════════════════════════════
-// PANEL PRINCIPAL
-// ══════════════════════════════════════════════════════════════════════════
 const PanelCatequista = () => {
-  const { nombre, grupo, rol, cerrarSesion, obtenerEstudiantesGrupo } = useGame();
+  const {
+    nombre,
+    grupo,
+    rol,
+    cerrarSesion,
+    obtenerEstudiantesGrupo,
+    guardarExamenMultiple,
+    obtenerResultadosExamenes,
+    obtenerHistorialNiveles,
+  } = useGame();
 
-  const [estudiantes, setEstudiantes]     = useState([]);
-  const [cargando, setCargando]           = useState(true);
-  const [seleccionado, setSeleccionado]   = useState(null);
-  const [busqueda, setBusqueda]           = useState('');
-  const [orden, setOrden]                 = useState('nombre'); // 'nombre' | 'monedas' | 'nivel'
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
+  const [tab, setTab] = useState('examenes'); // 'examenes' o 'analitica'
+  const [resultadosExamen, setResultadosExamen] = useState([]);
+  const [historialNiveles, setHistorialNiveles] = useState([]);
+  const [lessonResult, setLessonResult] = useState({});
+  const [observaciones, setObservaciones] = useState('');
+  const [toast, setToast] = useState(null);
+  const [guardando, setGuardando] = useState(false);
 
+  // Cargar lista de estudiantes del grupo
   useEffect(() => {
-    const cargar = async () => {
+    const cargarEstudiantes = async () => {
       setCargando(true);
       try {
         const data = await obtenerEstudiantesGrupo(grupo);
         setEstudiantes(data);
       } catch (e) {
         console.error(e);
+        setError('No se pudo cargar la lista de estudiantes');
       } finally {
         setCargando(false);
       }
     };
-    if (grupo && grupo !== 'Sin Grupo') cargar();
-    else setCargando(false);
+    if (grupo && grupo !== 'Sin Grupo') cargarEstudiantes();
+    else setError('Grupo no asignado');
   }, [grupo]);
 
-  // ── Estadísticas globales del grupo ───────────────────────────────────
-  const totalEstudiantes = estudiantes.length;
-  const activos          = estudiantes.filter(e => (e.racha ?? 0) > 0).length;
-  const promedioNivel    = totalEstudiantes > 0
-    ? Math.round(estudiantes.reduce((s, e) => s + (e.nivelActual ?? 1), 0) / totalEstudiantes)
-    : 0;
-  const promedioMonedas  = totalEstudiantes > 0
-    ? Math.round(estudiantes.reduce((s, e) => s + (e.monedas ?? 0), 0) / totalEstudiantes)
-    : 0;
-  const completaronTodo  = estudiantes.filter(e => (e.nivelActual ?? 1) >= Object.keys(NIVEL_NOMBRE).length).length;
+  // Al seleccionar un estudiante, cargar sus exámenes e historial
+  useEffect(() => {
+    if (estudianteSeleccionado) {
+      cargarDatosEstudiante(estudianteSeleccionado.uid);
+    }
+  }, [estudianteSeleccionado]);
 
-  // ── Distribución por nivel ─────────────────────────────────────────────
-  const distribucionNivel = Object.entries(NIVEL_NOMBRE).map(([id, nom]) => ({
-    id: Number(id), nombre: nom,
-    cantidad: estudiantes.filter(e => (e.nivelActual ?? 1) === Number(id)).length,
-  })).filter(n => n.cantidad > 0);
+  const cargarDatosEstudiante = async (uid) => {
+    try {
+      const [resultados, historial] = await Promise.all([
+        obtenerResultadosExamenes(uid),
+        obtenerHistorialNiveles(uid),
+      ]);
+      setResultadosExamen(resultados);
+      setHistorialNiveles(historial);
+    } catch (error) {
+      console.error(error);
+      mostrarToast('Error al cargar datos del estudiante');
+    }
+  };
 
-  // ── Filtro y orden ─────────────────────────────────────────────────────
-  const estudiantesFiltrados = estudiantes
-    .filter(e => e.nombre.toLowerCase().includes(busqueda.toLowerCase()))
-    .sort((a, b) => {
-      if (orden === 'monedas') return (b.monedas ?? 0) - (a.monedas ?? 0);
-      if (orden === 'nivel')   return (b.nivelActual ?? 1) - (a.nivelActual ?? 1);
-      return a.nombre.localeCompare(b.nombre);
+  const mostrarToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Guardar examen usando batch (rápido y evita duplicados por día)
+  const handleGuardarExamen = async () => {
+    if (!estudianteSeleccionado) return;
+    if (guardando) return;
+    setGuardando(true);
+    try {
+      const ok = await guardarExamenMultiple(
+        estudianteSeleccionado.uid,
+        lessonResult,
+        observaciones
+      );
+      if (ok) {
+        confetti({ particleCount: 80, spread: 60, colors: ['#facc15', '#fff'] });
+        mostrarToast(`✅ Examen guardado para ${estudianteSeleccionado.nombre}`);
+        setLessonResult({});
+        setObservaciones('');
+        await cargarDatosEstudiante(estudianteSeleccionado.uid);
+      } else {
+        mostrarToast('❌ Error al guardar el examen');
+      }
+    } catch (error) {
+      console.error(error);
+      mostrarToast('❌ Error al guardar');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  // Filtrar estudiantes por búsqueda
+  const estudiantesFiltrados = estudiantes.filter((e) =>
+    e.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
+  // Obtener todas las lecciones agrupadas por unidad (para el listado de exámenes)
+  const todasLecciones = [];
+  nivelesData.unidades.forEach((unidad) => {
+    unidad.lecciones.forEach((leccion) => {
+      todasLecciones.push({
+        id: leccion.id,
+        nombre: leccion.nombre,
+        unidad: unidad.nombre,
+        unidadId: unidad.id,
+      });
     });
+  });
 
   return (
-    <div className="min-h-screen bg-[#080f1a] text-white font-sans">
+    <div className="min-h-screen bg-[#080f1a] text-white font-sans pb-24">
+      {toast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl font-black text-sm shadow-2xl animate-slide-up bg-black/80 backdrop-blur border border-white/20">
+          {toast}
+        </div>
+      )}
 
-      {/* Fondos */}
-      <div className="fixed top-0 right-0 w-96 h-96 bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-0 left-0 w-96 h-96 bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5 relative">
-
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div>
             <p className="text-[9px] font-black text-blue-400 uppercase tracking-[0.4em]">
               {rol === 'coordinador' ? 'Coordinador' : 'Catequista'}
             </p>
-            <h1 className="text-2xl font-black text-white tracking-tighter">{nombre}</h1>
-            <p className="text-white/40 text-xs font-bold mt-0.5">{grupo}</p>
+            <h1 className="text-3xl font-black text-white tracking-tighter">{nombre}</h1>
+            <p className="text-white/50 text-sm">Grupo: {grupo}</p>
           </div>
-          <button onClick={cerrarSesion}
-            className="px-4 py-2 rounded-xl border border-red-500/30 text-red-400
-              font-black text-xs uppercase tracking-widest hover:bg-red-500/10 transition-all">
+          <button
+            onClick={cerrarSesion}
+            className="px-5 py-2 rounded-xl border border-red-500/30 text-red-400 font-black text-sm uppercase tracking-widest hover:bg-red-500/10 transition-all"
+          >
             Salir
           </button>
         </div>
 
-        {/* ── Stats del grupo ── */}
-        <div>
-          <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em] mb-3">
-            Resumen del grupo
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard icono="👥" label="Estudiantes"    value={totalEstudiantes} />
-            <StatCard icono="✅" label="Activos hoy"    value={activos} color="text-green-400" />
-            <StatCard icono="📊" label="Nivel promedio" value={NIVEL_NOMBRE[promedioNivel] ? `Nv.${promedioNivel}` : '—'} color="text-blue-400" />
-            <StatCard icono="🪙" label="Monedas prom."  value={promedioMonedas} color="text-yellow-400" />
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setTab('examenes')}
+            className={`px-5 py-2 rounded-xl font-black text-sm uppercase transition-all ${
+              tab === 'examenes'
+                ? 'bg-yellow-400 text-blue-900'
+                : 'bg-white/5 text-white/60 hover:bg-white/10'
+            }`}
+          >
+            📝 Exámenes
+          </button>
+          <button
+            onClick={() => setTab('analitica')}
+            className={`px-5 py-2 rounded-xl font-black text-sm uppercase transition-all ${
+              tab === 'analitica'
+                ? 'bg-yellow-400 text-blue-900'
+                : 'bg-white/5 text-white/60 hover:bg-white/10'
+            }`}
+          >
+            📊 Analítica
+          </button>
         </div>
 
-        {/* ── Distribución por nivel ── */}
-        {distribucionNivel.length > 0 && (
-          <div className="glass-card rounded-3xl p-5 border border-white/10 space-y-3">
-            <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.4em]">
-              Distribución por nivel
-            </p>
-            {distribucionNivel.slice(0, 6).map(n => (
-              <div key={n.id} className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <p className="text-xs font-bold text-white/70 truncate flex-1">{n.nombre}</p>
-                  <span className="text-[10px] font-black text-white/40 ml-2">{n.cantidad}</span>
+        {/* Buscador de estudiantes */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Buscar estudiante por nombre..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-white text-sm font-bold outline-none focus:border-blue-400 transition-all placeholder:text-white/20"
+          />
+        </div>
+
+        {/* Lista de estudiantes (cards) */}
+        {cargando && (
+          <div className="flex justify-center py-12">
+            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        {error && <div className="glass-card p-6 text-center text-red-400">{error}</div>}
+        {!cargando && !error && estudiantesFiltrados.length === 0 && (
+          <div className="glass-card p-8 text-center border border-white/10">
+            <p className="text-white/60">No hay estudiantes en este grupo</p>
+          </div>
+        )}
+
+        {!cargando && !error && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {estudiantesFiltrados.map((est) => (
+              <div
+                key={est.uid}
+                onClick={() => setEstudianteSeleccionado(est)}
+                className={`glass-card rounded-2xl p-4 border cursor-pointer transition-all ${
+                  estudianteSeleccionado?.uid === est.uid
+                    ? 'border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)]'
+                    : 'border-white/10 hover:border-yellow-400/50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl overflow-hidden">
+                    {est.avatar &&
+                    (est.avatar.startsWith('data:image') ||
+                      est.avatar.startsWith('http')) ? (
+                      <img src={est.avatar} className="w-full h-full object-cover" alt="" />
+                    ) : (
+                      <span>{est.avatar || '😇'}</span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-black text-white">{est.nombre}</p>
+                    <p className="text-white/40 text-[10px]">
+                      Nivel {est.nivelActual || 1} · Racha {est.racha || 0}🔥
+                    </p>
+                  </div>
                 </div>
-                <BarraProgreso
-                  valor={n.cantidad}
-                  total={totalEstudiantes}
-                  color={n.id <= 4 ? 'bg-gradient-to-r from-yellow-500 to-yellow-300'
-                       : n.id <= 8 ? 'bg-gradient-to-r from-blue-500 to-cyan-400'
-                       :             'bg-gradient-to-r from-purple-500 to-purple-300'}
-                />
               </div>
             ))}
           </div>
         )}
 
-        {/* ── Detalle estudiante seleccionado ── */}
-        {seleccionado && (
-          <DetalleEstudiante
-            estudiante={seleccionado}
-            onCerrar={() => setSeleccionado(null)}
-          />
-        )}
+        {/* Panel detallado del estudiante seleccionado */}
+        {estudianteSeleccionado && (
+          <div className="glass-card rounded-3xl p-6 border border-white/10">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-black text-white">
+                {estudianteSeleccionado.nombre}
+              </h2>
+              <button
+                onClick={() => setEstudianteSeleccionado(null)}
+                className="text-white/40 hover:text-white text-xl"
+              >
+                ✕
+              </button>
+            </div>
 
-        {/* ── Lista de estudiantes ── */}
-        <div className="space-y-3">
-          {/* Buscador y orden */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Buscar estudiante…"
-              value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
-              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5
-                text-white text-sm font-bold outline-none focus:border-blue-400 transition-all
-                placeholder:text-white/20"
-            />
-            <select
-              value={orden}
-              onChange={e => setOrden(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-2xl px-3 py-2.5
-                text-white text-xs font-black outline-none focus:border-blue-400 transition-all"
-            >
-              <option value="nombre">A-Z</option>
-              <option value="monedas">Monedas</option>
-              <option value="nivel">Nivel</option>
-            </select>
+            {tab === 'examenes' && (
+              <div>
+                <p className="text-white/60 text-sm mb-4">
+                  Califica el conocimiento de cada oración o concepto:
+                </p>
+                <div className="space-y-6 max-h-96 overflow-y-auto pr-2">
+                  {todasLecciones.map((leccion) => {
+                    const currentValue = lessonResult[leccion.id];
+                    return (
+                      <div
+                        key={leccion.id}
+                        className="border-b border-white/10 pb-3"
+                      >
+                        <p className="font-black text-white text-sm">
+                          {leccion.nombre}{' '}
+                          <span className="text-white/30 text-[10px]">
+                            ({leccion.unidad})
+                          </span>
+                        </p>
+                        <div className="flex gap-3 mt-2">
+                          <button
+                            onClick={() =>
+                              setLessonResult((prev) => ({ ...prev, [leccion.id]: 'sabe' }))
+                            }
+                            className={`px-3 py-1 rounded-xl text-xs font-black ${
+                              currentValue === 'sabe'
+                                ? 'bg-green-500 text-white'
+                                : 'bg-white/10 text-white/70 hover:bg-white/20'
+                            }`}
+                          >
+                            ✅ Lo sabe
+                          </button>
+                          <button
+                            onClick={() =>
+                              setLessonResult((prev) => ({ ...prev, [leccion.id]: 'regular' }))
+                            }
+                            className={`px-3 py-1 rounded-xl text-xs font-black ${
+                              currentValue === 'regular'
+                                ? 'bg-yellow-500 text-black'
+                                : 'bg-white/10 text-white/70 hover:bg-white/20'
+                            }`}
+                          >
+                            🟡 Regular
+                          </button>
+                          <button
+                            onClick={() =>
+                              setLessonResult((prev) => ({ ...prev, [leccion.id]: 'no_sabe' }))
+                            }
+                            className={`px-3 py-1 rounded-xl text-xs font-black ${
+                              currentValue === 'no_sabe'
+                                ? 'bg-red-500 text-white'
+                                : 'bg-white/10 text-white/70 hover:bg-white/20'
+                            }`}
+                          >
+                            ❌ No lo sabe
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <textarea
+                  placeholder="Observaciones generales (opcional)"
+                  value={observaciones}
+                  onChange={(e) => setObservaciones(e.target.value)}
+                  className="w-full mt-4 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-yellow-400"
+                  rows="2"
+                />
+                <button
+                  onClick={handleGuardarExamen}
+                  disabled={guardando}
+                  className="btn-primary w-full mt-4 py-3 flex justify-center items-center gap-2"
+                >
+                  {guardando ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar examen'
+                  )}
+                </button>
+              </div>
+            )}
+
+            {tab === 'analitica' && (
+              <div className="space-y-6">
+                {historialNiveles && historialNiveles.length > 0 ? (
+                  <GraficoProgreso
+                    data={historialNiveles.map((h) => ({ fecha: h.fecha, nivel: h.nivel }))}
+                    title="Evolución de nivel"
+                  />
+                ) : (
+                  <div className="text-white/40 text-center py-4">
+                    No hay datos de progreso aún
+                  </div>
+                )}
+                <div className="glass-card rounded-2xl p-4 border border-white/10">
+                  <p className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-2">
+                    Últimos exámenes
+                  </p>
+                  {resultadosExamen.length === 0 && (
+                    <p className="text-white/40 text-sm">Sin exámenes registrados</p>
+                  )}
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {resultadosExamen.slice(0, 10).map((ex) => {
+                      const leccion = todasLecciones.find((l) => l.id === ex.lessonId);
+                      const resultadoText = {
+                        sabe: '✅ Sabe',
+                        regular: '🟡 Regular',
+                        no_sabe: '❌ No sabe',
+                      }[ex.resultado];
+                      return (
+                        <div
+                          key={ex.id}
+                          className="flex justify-between items-center border-b border-white/10 pb-2"
+                        >
+                          <span className="text-sm text-white/80">
+                            {leccion?.nombre || ex.lessonId}
+                          </span>
+                          <span className="text-xs font-black">{resultadoText}</span>
+                          <span className="text-[10px] text-white/40">
+                            {new Date(ex.fecha).toLocaleDateString()}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Conteo */}
-          <p className="text-[9px] font-black text-white/30 uppercase tracking-widest">
-            {estudiantesFiltrados.length} estudiantes
-            {busqueda && ` · búsqueda: "${busqueda}"`}
-          </p>
-
-          {/* Cargando */}
-          {cargando && (
-            <div className="flex flex-col items-center gap-3 py-12">
-              <div className="w-8 h-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
-              <p className="text-white/40 text-xs font-black uppercase tracking-widest">Cargando grupo…</p>
-            </div>
-          )}
-
-          {/* Sin estudiantes */}
-          {!cargando && estudiantesFiltrados.length === 0 && (
-            <div className="glass-card rounded-2xl p-8 text-center border border-white/10">
-              <p className="text-4xl mb-3">👥</p>
-              <p className="text-white font-black">
-                {busqueda ? 'Sin resultados' : 'No hay estudiantes en este grupo'}
-              </p>
-            </div>
-          )}
-
-          {/* Lista */}
-          {!cargando && estudiantesFiltrados.map((est, i) => (
-            <FilaEstudiante
-              key={est.uid ?? i}
-              estudiante={est}
-              seleccionado={seleccionado?.uid === est.uid}
-              onClick={() => setSeleccionado(
-                seleccionado?.uid === est.uid ? null : est
-              )}
-            />
-          ))}
-        </div>
-
-        {/* ── Footer ── */}
-        <p className="text-center text-white/15 text-[9px] font-black uppercase tracking-[0.4em] pb-4">
-          Parroquia San José · Diriamba · Panel Catequista
-        </p>
+        )}
       </div>
     </div>
   );
