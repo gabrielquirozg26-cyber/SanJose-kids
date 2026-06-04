@@ -210,6 +210,12 @@ const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
 
               <span className={`inline-block text-[10px] font-black uppercase px-3 py-1 rounded-full border ${RAREZA_CLASE[recompensa.santo.rareza]}`}>
                 {recompensa.santo.rareza.toUpperCase()}
+                {recompensa.santo.rareza === 'legendario' && (
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full h-1 bg-yellow-400 animate-pulse" />
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-1 bg-yellow-400 animate-pulse" />
+                  </div>
+                )}
               </span>
 
               {recompensa.tipo === 'nuevo' && (

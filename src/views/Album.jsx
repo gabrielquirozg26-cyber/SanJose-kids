@@ -1,33 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
-
-// Estilos de rareza para efectos visuales
-const RAREZA_ESTILOS = {
-  comun: { 
-    border: 'border-slate-500/30', 
-    bg: 'bg-slate-500/5', 
-    shadow: 'shadow-slate-500/10',
-    glow: 'hover:shadow-slate-400/30',
-    text: 'text-slate-300',
-    badge: 'bg-slate-500/20 text-slate-300'
-  },
-  raro: { 
-    border: 'border-blue-500/40', 
-    bg: 'bg-blue-500/5', 
-    shadow: 'shadow-blue-500/20',
-    glow: 'hover:shadow-blue-400/40',
-    text: 'text-blue-300',
-    badge: 'bg-blue-500/20 text-blue-300'
-  },
-  legendario: { 
-    border: 'border-yellow-500/50', 
-    bg: 'bg-yellow-500/5', 
-    shadow: 'shadow-yellow-500/30',
-    glow: 'hover:shadow-yellow-400/60 hover:scale-105',
-    text: 'text-yellow-300',
-    badge: 'bg-yellow-500/20 text-yellow-300 animate-pulse'
-  }
-};
+import RarezaBadge from '../components/RarezaBadge';
 
 const SECCIONES = [
   'Guerreros de la Fe',
@@ -38,6 +11,13 @@ const SECCIONES = [
 ];
 
 const RAREZAS = ['comun', 'raro', 'legendario'];
+
+// Estilos adicionales para la tarjeta según rareza (glow y fondo)
+const TARJETA_ESTILOS = {
+  comun: 'border-slate-500/30 bg-slate-500/5 hover:shadow-slate-400/20',
+  raro: 'border-blue-500/40 bg-blue-500/5 hover:shadow-blue-400/30',
+  legendario: 'border-yellow-500/50 bg-yellow-500/5 hover:shadow-yellow-400/50 hover:scale-105'
+};
 
 const Album = ({ onSeleccionarSanto }) => {
   const { coleccion, catalogoSantos } = useGame();
@@ -62,7 +42,7 @@ const Album = ({ onSeleccionarSanto }) => {
   const totalSantos = catalogoSantos?.length || 0;
   const desbloqueados = coleccion.length;
 
-  // Agrupar por sección para mostrar separadores (si no hay filtro activo)
+  // Agrupar por sección solo si no hay filtros activos
   const mostrarSecciones = seccionActiva === 'Todas' && rarezaActiva === 'Todas' && !busqueda;
   const santosAgrupados = useMemo(() => {
     if (!mostrarSecciones) return { 'Todos': santosFiltrados };
@@ -83,7 +63,7 @@ const Album = ({ onSeleccionarSanto }) => {
         <p className="text-white/40 text-sm mt-1">{desbloqueados} / {totalSantos} desbloqueados</p>
       </div>
 
-      {/* Barra de búsqueda y filtros */}
+      {/* Buscador y filtros */}
       <div className="space-y-3">
         <input
           type="text"
@@ -106,19 +86,23 @@ const Album = ({ onSeleccionarSanto }) => {
         </div>
       </div>
 
-      {/* Lista de santos (agrupados por sección o en un solo grid) */}
+      {/* Lista de santos (agrupados o en grid simple) */}
       {mostrarSecciones ? (
         Object.entries(santosAgrupados).map(([seccion, santos]) => (
           <div key={seccion} className="space-y-3">
             <h3 className="text-white/70 font-black text-sm uppercase tracking-wider border-l-4 border-yellow-400 pl-3">{seccion}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {santos.map(santo => <TarjetaSanto key={santo.id} santo={santo} desbloqueado={coleccion.includes(santo.id)} onSeleccionar={onSeleccionarSanto} />)}
+              {santos.map(santo => (
+                <TarjetaSanto key={santo.id} santo={santo} desbloqueado={coleccion.includes(santo.id)} onSeleccionar={onSeleccionarSanto} />
+              ))}
             </div>
           </div>
         ))
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {santosFiltrados.map(santo => <TarjetaSanto key={santo.id} santo={santo} desbloqueado={coleccion.includes(santo.id)} onSeleccionar={onSeleccionarSanto} />)}
+          {santosFiltrados.map(santo => (
+            <TarjetaSanto key={santo.id} santo={santo} desbloqueado={coleccion.includes(santo.id)} onSeleccionar={onSeleccionarSanto} />
+          ))}
         </div>
       )}
 
@@ -131,15 +115,15 @@ const Album = ({ onSeleccionarSanto }) => {
   );
 };
 
-// Componente tarjeta de santo (con efectos según rareza)
+// Componente Tarjeta de Santo (con efectos según rareza)
 const TarjetaSanto = ({ santo, desbloqueado, onSeleccionar }) => {
-  const estilo = RAREZA_ESTILOS[santo.rareza] || RAREZA_ESTILOS.comun;
   const [imagenError, setImagenError] = useState(false);
+  const estiloTarjeta = TARJETA_ESTILOS[santo.rareza] || TARJETA_ESTILOS.comun;
 
   return (
     <button
       onClick={() => desbloqueado && onSeleccionar(santo)}
-      className={`group relative glass-card rounded-2xl p-4 text-center transition-all duration-300 ${estilo.border} ${estilo.bg} ${estilo.glow} ${!desbloqueado ? 'opacity-60 grayscale blur-[1px] cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
+      className={`group relative glass-card rounded-2xl p-4 text-center transition-all duration-300 border ${estiloTarjeta} ${!desbloqueado ? 'opacity-60 grayscale blur-[1px] cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
       disabled={!desbloqueado}
     >
       <div className="relative w-full aspect-square flex items-center justify-center rounded-xl overflow-hidden">
@@ -157,10 +141,8 @@ const TarjetaSanto = ({ santo, desbloqueado, onSeleccionar }) => {
           <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-yellow-400 animate-ping" />
         )}
       </div>
-      <p className={`font-black text-sm mt-2 truncate ${estilo.text}`}>{santo.nombre}</p>
-      <span className={`inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-full border mt-1 ${estilo.badge}`}>
-        {santo.rareza}
-      </span>
+      <p className={`font-black text-sm mt-2 truncate ${santo.rareza === 'legendario' ? 'text-yellow-300' : 'text-white'}`}>{santo.nombre}</p>
+      <RarezaBadge rareza={santo.rareza} className="mt-1" />
     </button>
   );
 };

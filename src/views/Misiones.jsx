@@ -9,6 +9,7 @@ const Misiones = () => {
     logrosPendientes,
     canjearLogro,
     titulosPorNivel,
+    listaTitulosPorNIvel,
     MISIONES_DIARIAS,
     MISIONES_SEMANALES,
   } = useGame();
@@ -53,7 +54,7 @@ const Misiones = () => {
           </div>
           <div className="space-y-3">
             {logrosPendientes.map(logro => {
-              const titulo = titulosPorNivel?.find(t => t.id === logro.id);
+              const titulo = listaTitulosPorNivel?.find(t => t.id === logro.id);
               if (!titulo) return null;
               return (
                 <div key={logro.id} className="glass-card rounded-2xl p-4 border border-purple-500/30 bg-purple-500/5 transition-all hover:scale-[1.01]">

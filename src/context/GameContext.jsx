@@ -199,23 +199,41 @@ export const GameProvider = ({ children }) => {
 
   const _avanzarMision = async (tipo, cantidad = 1) => {
     if (!usuarioId || !misionesState) return;
-    const nuevo = JSON.parse(JSON.stringify(misionesState)); let bonus = 0;
+    const nuevo = JSON.parse(JSON.stringify(misionesState));
+    let hayCompletada = false;
+
     const act = (g, defs) => defs.forEach(def => {
       const p = nuevo[g]?.[def.id];
       if (!p || p.reclamada || def.tipo !== tipo) return;
-      p.progreso = Math.min(p.progreso + cantidad, def.meta);
-      if (p.progreso >= def.meta && !p.reclamada) { p.reclamada = true; bonus += def.recompensa; }
+      const nuevoProgreso = Math.min(p.progreso + cantidad, def.meta);
+      p.progreso = nuevoProgreso;
+      // ⚠️ NO marcar reclamada aquí, solo progreso
+      if (nuevoProgreso >= def.meta && !p.reclamada) {
+        hayCompletada = true; // solo para notificar, pero sin reclamar
+      }
     });
-    act('diarias', MISIONES_DIARIAS); act('semanales', MISIONES_SEMANALES);
+
+    act('diarias', MISIONES_DIARIAS);
+    act('semanales', MISIONES_SEMANALES);
+
     setMisionesState(nuevo);
     await updateDoc(doc(db, 'usuarios', usuarioId), { misiones: nuevo });
-    if (bonus > 0) await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(bonus) });
+
+    // Opcional: si quieres un mensaje o confeti cuando se completa una misión
+    if (hayCompletada) {
+      // Puedes lanzar un evento o notificación (por ejemplo, un toast)
+      console.log('🎉 Misión completada, ve a reclamar tu recompensa');
+    }
   };
 
   const reclamarMision = async (g, id, recompensa) => {
     if (!usuarioId || !misionesState) return false;
-    const prog = misionesState[g]?.[id]; if (!prog || prog.reclamada) return false;
-    const nuevo = JSON.parse(JSON.stringify(misionesState)); nuevo[g][id].reclamada = true;
+    const prog = misionesState[g]?.[id];
+    if (!prog || prog.reclamada) return false;
+    if (prog.progreso < (g === 'diarias' ? MISIONES_DIARIAS.find(d => d.id === id)?.meta : MISIONES_SEMANALES.find(s => s.id === id)?.meta)) return false;
+
+    const nuevo = JSON.parse(JSON.stringify(misionesState));
+    nuevo[g][id].reclamada = true;
     setMisionesState(nuevo);
     await updateDoc(doc(db, 'usuarios', usuarioId), { misiones: nuevo });
     await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(recompensa) });
@@ -639,6 +657,7 @@ export const GameProvider = ({ children }) => {
     await _avanzarMision('racha', 1);
     if (fueConPerfecta) await _avanzarMision('perfectas', 1);
 
+
     const tipoCofre = fueConPerfecta ? 'oro' : 'madera';
     const recompensa = await entregarSanto(tipoCofre);
     setCofrePendiente(recompensa ? { tipo: tipoCofre, recompensa } : null);
@@ -754,6 +773,12 @@ export const GameProvider = ({ children }) => {
   const iniciarLeccion = (oracion) => {
     setOracionActual(oracion);
     setEnLeccion(true);
+  };
+
+  
+  const cerrarLeccion = () => {
+    setEnLeccion(false);
+    setOracionActual(null);  // 👈 Crucial
   };
 
   const minutosHastaVida = () => {
@@ -926,6 +951,7 @@ export const GameProvider = ({ children }) => {
     setTituloDesbloqueadoReciente,
     titulosLegendarios: titulosData.legendarios,
     titulosPorNivel: titulosData.porNivel,
+    listaTitulosPorNivel: titulosData.porNivel,
     comprarTituloLegendario,
     logrosPendientes,
     canjearLogro,
@@ -938,6 +964,7 @@ export const GameProvider = ({ children }) => {
     obtenerHistorialNiveles,
     registrarProgresoNivel,
     guardarExamenMultiple,
+    cerrarLeccion,
     
   };
 

@@ -292,3 +292,11 @@ html {
 .hover\:shadow-yellow-400\/60:hover {
   animation: gentlePulse 1s infinite;
 }
+
+/* Efecto de rareza legendario */
+.glass-card {
+  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+.hover\:shadow-yellow-400\/50:hover {
+  box-shadow: 0 0 15px rgba(250,204,21,0.5);
+}
