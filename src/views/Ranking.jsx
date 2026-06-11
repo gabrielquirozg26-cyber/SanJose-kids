@@ -102,7 +102,7 @@ const Ranking = ({ onSeleccionarUsuario }) => {
     cargar();
   }, [modo, grupo]);
 
-  if (modo === 'grupos') return <RankingGrupos />;
+  if (modo === 'grupos') return <RankingGrupos onCambiarModo={setModo} />;
 
   const mostrarPodio = lista.length >= 3;
   const top3 = lista.slice(0, 3);

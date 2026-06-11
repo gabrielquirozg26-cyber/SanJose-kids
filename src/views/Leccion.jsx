@@ -148,23 +148,92 @@ const EjercicioSeleccion = ({ verso, resultado, onSeleccionar, seleccionada, opc
   );
 };
 
+// EJERCICIO ORDENAR MEJORADO: cada palabra seleccionada se puede quitar al hacer clic
 const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
-  const palabrasDisponibles = useMemo(() => mezclar(verso.palabrasOrdenar), [verso.id]);
-  const [usadas, setUsadas] = useState([]);
+  const palabrasDisponiblesInicial = useMemo(() => mezclar(verso.palabrasOrdenar), [verso.id]);
+  const [disponibles, setDisponibles] = useState(palabrasDisponiblesInicial);
   const [armada, setArmada] = useState([]);
-  useEffect(() => { setUsadas([]); setArmada([]); }, [verso.id]);
-  useEffect(() => { onRespuesta(armada.join(' ')); }, [armada]);
-  const agregar = (palabra, idx) => { if (resultado || usadas.includes(idx)) return; setUsadas(p => [...p, idx]); setArmada(p => [...p, palabra]); };
-  const quitarUltima = () => { if (resultado || !armada.length) return; setArmada(p => p.slice(0, -1)); setUsadas(p => p.slice(0, -1)); };
+
+  // Reiniciar cuando cambie el verso
+  useEffect(() => {
+    setDisponibles(mezclar(verso.palabrasOrdenar));
+    setArmada([]);
+  }, [verso.id]);
+
+  // Notificar al padre la frase armada (cada vez que cambia)
+  useEffect(() => {
+    onRespuesta(armada.join(' '));
+  }, [armada]);
+
+  const agregarPalabra = (palabra, idx) => {
+    if (resultado) return;
+    setArmada(prev => [...prev, palabra]);
+    setDisponibles(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const quitarPalabra = (palabra, idx) => {
+    if (resultado) return;
+    setArmada(prev => prev.filter((_, i) => i !== idx));
+    setDisponibles(prev => [...prev, palabra]);
+  };
+
+  const quitarUltima = () => {
+    if (resultado || armada.length === 0) return;
+    const ultima = armada[armada.length - 1];
+    setArmada(prev => prev.slice(0, -1));
+    setDisponibles(prev => [...prev, ultima]);
+  };
+
   return (
     <div className="w-full">
       <p className="text-[9px] font-black text-yellow-400 uppercase tracking-[0.3em] mb-3">Ordena las palabras</p>
       <div className={`min-h-[72px] glass-card p-4 rounded-3xl border-2 mb-4 flex flex-wrap gap-2 items-start transition-all duration-300 ${resultado === 'acierto' ? 'border-green-400/60 bg-green-500/10' : resultado === 'error' ? 'border-red-400/60 bg-red-500/10' : armada.length > 0 ? 'border-blue-400/40' : 'border-white/10'}`}>
-        {armada.length === 0 ? <span className="text-white/20 text-sm font-bold self-center">Toca las palabras para ordenarlas…</span> : armada.map((p, i) => (<span key={i} className={`px-3 py-1.5 rounded-xl font-black text-sm ${resultado === 'acierto' ? 'bg-green-500/30 text-green-200' : resultado === 'error' ? 'bg-red-500/30 text-red-200' : 'bg-blue-500/20 text-blue-200 border border-blue-400/30'}`}>{p}</span>))}
+        {armada.length === 0 ? (
+          <span className="text-white/20 text-sm font-bold self-center">Toca las palabras para ordenarlas…</span>
+        ) : (
+          armada.map((p, i) => (
+            <span
+              key={i}
+              onClick={() => quitarPalabra(p, i)}
+              className={`px-3 py-1.5 rounded-xl font-black text-sm cursor-pointer transition-all hover:scale-105 ${
+                resultado === 'acierto'
+                  ? 'bg-green-500/30 text-green-200'
+                  : resultado === 'error'
+                  ? 'bg-red-500/30 text-red-200'
+                  : 'bg-blue-500/20 text-blue-200 border border-blue-400/30 hover:bg-blue-500/40'
+              }`}
+            >
+              {p} ✕
+            </span>
+          ))
+        )}
       </div>
-      {resultado === 'error' && (<div className="mb-4 px-4 py-2 rounded-2xl bg-white/5 border border-white/10"><p className="text-[9px] text-white/40 uppercase tracking-widest font-black mb-1">Respuesta correcta</p><p className="text-white/80 text-sm font-bold">{verso.palabrasOrdenar.join(' ')}</p></div>)}
-      <div className="flex flex-wrap gap-2 mb-3">{palabrasDisponibles.map((p, i) => (<button key={i} onClick={() => agregar(p, i)} disabled={!!resultado || usadas.includes(i)} className={`px-3 py-2 rounded-xl border font-black text-sm transition-all active:scale-95 ${usadas.includes(i) ? 'opacity-20 cursor-not-allowed bg-white/5 border-white/5 text-white/30' : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/40'}`}>{p}</button>))}</div>
-      {!resultado && armada.length > 0 && (<button onClick={quitarUltima} className="text-[10px] text-white/30 font-black uppercase tracking-widest hover:text-white/60 transition-colors">← Borrar última</button>)}
+
+      {resultado === 'error' && (
+        <div className="mb-4 px-4 py-2 rounded-2xl bg-white/5 border border-white/10">
+          <p className="text-[9px] text-white/40 uppercase tracking-widest font-black mb-1">Respuesta correcta</p>
+          <p className="text-white/80 text-sm font-bold">{verso.palabrasOrdenar.join(' ')}</p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2 mb-3">
+        {disponibles.map((p, i) => (
+          <button
+            key={i}
+            onClick={() => agregarPalabra(p, i)}
+            disabled={!!resultado}
+            className="px-3 py-2 rounded-xl border font-black text-sm transition-all active:scale-95 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/40"
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+
+      {!resultado && armada.length > 0 && (
+        <button onClick={quitarUltima} className="text-[10px] text-white/30 font-black uppercase tracking-widest hover:text-white/60 transition-colors">
+          ← Borrar última
+        </button>
+      )}
     </div>
   );
 };
@@ -187,12 +256,11 @@ const EjercicioEscritura = ({ verso, resultado, onEscribir, escrito }) => {
 };
 
 // ══════════════════════════════════════════════════════════════════════════
-// COMPONENTE PARA CONCEPTO (quiz)
+// COMPONENTE PARA CONCEPTO (QUIZ) CON SELECCIÓN + BOTÓN COMPROBAR
 // ══════════════════════════════════════════════════════════════════════════
 const ConceptoQuiz = ({ 
   preguntas, 
   onCompletar, 
-  // Nuevas props para la mecánica de juego
   vidas, 
   restarVida, 
   sumarMonedas, 
@@ -214,6 +282,7 @@ const ConceptoQuiz = ({
   const [usandoPocion, setUsandoPocion] = useState(false);
   const [opcionesFiltradas, setOpcionesFiltradas] = useState(null);
   const [mensajeFlotante, setMensajeFlotante] = useState(null);
+  const [mostrarComprobar, setMostrarComprobar] = useState(false); // Nuevo: controla botón comprobar
 
   const pregunta = preguntas[paso];
   if (!pregunta && !terminado) return null;
@@ -239,11 +308,16 @@ const ConceptoQuiz = ({
     if (consumirItem) await consumirItem('pocion_sabiduria');
   };
 
-  const handleResponder = async (opcion) => {
+  const handleSeleccion = (opcion) => {
     if (respondido) return;
     setSeleccion(opcion);
+    setMostrarComprobar(true);
+  };
+
+  const handleComprobar = async () => {
+    if (!seleccion || respondido) return;
     setRespondido(true);
-    const esCorrecta = opcion === pregunta.correcta;
+    const esCorrecta = seleccion === pregunta.correcta;
     
     if (esCorrecta) {
       vibrar([20]);
@@ -255,7 +329,6 @@ const ConceptoQuiz = ({
       playCoinSound();
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#facc15', '#fff'] });
     } else {
-      // Respuesta incorrecta
       if (escudoActivo) {
         vibrar([30]);
         if (consumirItem) await consumirItem('escudo_miguel');
@@ -270,6 +343,7 @@ const ConceptoQuiz = ({
         setMensajeFlotante({ message: '❤️ -1 vida', icon: '❤️' });
       }
     }
+    setMostrarComprobar(false);
   };
 
   const siguiente = () => {
@@ -279,6 +353,7 @@ const ConceptoQuiz = ({
       setRespondido(false);
       setUsandoPocion(false);
       setOpcionesFiltradas(null);
+      setMostrarComprobar(false);
     } else {
       setTerminado(true);
       const total = preguntas.length;
@@ -324,18 +399,18 @@ const ConceptoQuiz = ({
 
       <div className="space-y-3">
         {opcionesMezcladas.map(op => {
-          const isSelected = seleccion === op;
+          const isSelected = seleccion === op && !respondido;
           const isCorrect = respondido && op === pregunta.correcta;
-          const isWrong = respondido && isSelected && !isCorrect;
+          const isWrong = respondido && seleccion === op && !isCorrect;
           return (
             <button
               key={op}
-              onClick={() => handleResponder(op)}
+              onClick={() => handleSeleccion(op)}
               disabled={respondido}
               className={`w-full p-4 rounded-2xl border-2 font-black text-left transition-all ${
                 isCorrect ? 'border-green-400 bg-green-500/20 text-green-300' : 
                 isWrong ? 'border-red-400 bg-red-500/20 text-red-300' : 
-                isSelected ? 'border-yellow-400 bg-yellow-500/20 text-white' : 
+                isSelected ? 'border-yellow-400 bg-yellow-500/20 text-white shadow-lg' : 
                 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
               }`}
             >
@@ -344,6 +419,16 @@ const ConceptoQuiz = ({
           );
         })}
       </div>
+
+      {/* Botón comprobar */}
+      {!respondido && mostrarComprobar && (
+        <button
+          onClick={handleComprobar}
+          className="w-full py-4 rounded-2xl bg-yellow-400 text-blue-900 font-black text-lg uppercase tracking-widest shadow-xl hover:scale-105 transition-all"
+        >
+          Comprobar respuesta ✓
+        </button>
+      )}
 
       {respondido && (
         <div className="glass-card rounded-2xl p-4">
@@ -368,7 +453,7 @@ const ConceptoQuiz = ({
 };
 
 // ══════════════════════════════════════════════════════════════════════════
-// COMPONENTE PARA LECCIÓN DE ORACIÓN
+// COMPONENTE PARA LECCIÓN DE ORACIÓN (sin cambios, ya funcionaba)
 // ══════════════════════════════════════════════════════════════════════════
 const FloatingMessage = ({ message, icon, onComplete }) => {
   useEffect(() => { const t = setTimeout(onComplete, 1200); return () => clearTimeout(t); }, []);
@@ -383,7 +468,6 @@ const FloatingMessage = ({ message, icon, onComplete }) => {
 };
 
 const LeccionOracion = ({ oracionActual, setEnLeccion, completarNivel, sumarMonedas, restarVida, consumirItem, inventario, nivelesCompletados, vidas }) => {
-  // ✅ Guarda: si no hay versos, no renderizar
   if (!oracionActual.versos || !oracionActual.versos.length) {
     console.error('Lección de oración sin versos:', oracionActual);
     return null;
@@ -398,7 +482,6 @@ const LeccionOracion = ({ oracionActual, setEnLeccion, completarNivel, sumarMone
   const [mostrarVictoria, setMostrarVict] = useState(false);
 
   const tiposPorVerso = useMemo(() => {
-    // ✅ Verificar que banco existe y tiene longitud
     if (!banco || banco.length === 0) return [];
     const tipos = [];
     let anterior = null;
@@ -528,7 +611,7 @@ const LeccionOracion = ({ oracionActual, setEnLeccion, completarNivel, sumarMone
         <div className="relative">
           <div className="absolute -top-12 right-2 text-5xl pointer-events-none select-none animate-bounce">😇</div>
           {tipo === 'seleccion' && <EjercicioSeleccion verso={verso} resultado={resultado === 'escudo' || resultado === 'escudo_visto' ? 'error' : resultado} seleccionada={seleccionada} onSeleccionar={setSeleccionada} opcionesFiltradas={opcionesFiltradas} />}
-          {tipo === 'ordenar' && <EjercicioOrdenar verso={verso} resultado={resultado === 'escudo' || resultado === 'escudo_visto' ? 'error' : resultado} respuestaOrden={respuestaOrden} onRespuesta={setRespOrden} />}
+          {tipo === 'ordenar' && <EjercicioOrdenar verso={verso} resultado={resultado === 'escudo' || resultado === 'escudo_visto' ? 'error' : resultado} onRespuesta={setRespOrden} />}
           {tipo === 'escritura' && <EjercicioEscritura verso={verso} resultado={resultado === 'escudo' || resultado === 'escudo_visto' ? 'error' : resultado} escrito={escrito} onEscribir={setEscrito} />}
         </div>
       </main>
@@ -571,7 +654,7 @@ const Leccion = () => {
   } = useGame();
 
   const [modoConcepto, setModoConcepto] = useState(false);
-  const [quizResult, setQuizResult] = useState(null); // { aprobado, aciertos, errores, total, escudosUsados }
+  const [quizResult, setQuizResult] = useState(null);
   const [mostrarVictoria, setMostrarVict] = useState(false);
 
   useEffect(() => {
@@ -599,7 +682,6 @@ const Leccion = () => {
     if (esPrimeraVez) {
       await completarNivel(fuePerfecto, true);
     } else if (aprobado) {
-      // Si ya lo había completado, solo da monedas (ya no sube nivel ni da cofre)
       await sumarMonedas(20);
     }
     setMostrarVict(true);
@@ -647,7 +729,6 @@ const Leccion = () => {
     );
   }
 
-  // Lección de oración (ya funciona)
   return <LeccionOracion 
     oracionActual={oracionActual}
     setEnLeccion={setEnLeccion}

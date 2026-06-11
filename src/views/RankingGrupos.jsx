@@ -9,7 +9,7 @@ const renderAvatar = (avatar, size = 'w-8 h-8', textSize = 'text-base') => {
   return <span className={textSize}>{avatar || '😇'}</span>;
 };
 
-const RankingGrupos = () => {
+const RankingGrupos = ({ onCambiarModo }) => {
   const { obtenerRankingGrupos } = useGame();
   const [grupos, setGrupos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -29,6 +29,19 @@ const RankingGrupos = () => {
 
   return (
     <div className="py-6 space-y-6 animate-slide-up">
+      {/* === BOTONES DE CAMBIO DE MODO === */}
+      <div className="glass-card rounded-3xl p-1 flex gap-1 border border-white/10">
+        <button onClick={() => onCambiarModo?.('grupo')} className="flex-1 py-2 rounded-2xl font-black text-xs uppercase tracking-widest transition-all text-white/70 hover:bg-white/10">
+          Mi grupo
+        </button>
+        <button onClick={() => onCambiarModo?.('global')} className="flex-1 py-2 rounded-2xl font-black text-xs uppercase tracking-widest transition-all text-white/70 hover:bg-white/10">
+          Global
+        </button>
+        <button onClick={() => onCambiarModo?.('grupos')} disabled className="flex-1 py-2 rounded-2xl font-black text-xs uppercase tracking-widest bg-yellow-400 text-blue-900 shadow-lg">
+          Grupos
+        </button>
+      </div>
+
       <div className="text-center">
         <p className="text-[9px] font-black text-yellow-400 uppercase tracking-[0.5em]">Competencia entre grupos</p>
         <h2 className="text-3xl font-black text-white tracking-tighter">Ranking de Grupos</h2>

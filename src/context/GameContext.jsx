@@ -620,15 +620,19 @@ export const GameProvider = ({ children }) => {
   // ── Mapeo de niveles a títulos ──
   const titulosPorNivel = {};
   titulosData.porNivel.forEach(t => { titulosPorNivel[t.nivel] = { id: t.id, nombre: t.nombre, rareza: t.rareza }; });
-
   // ── Completar nivel ──
   const completarNivel = async (fueConPerfecta = false, esPrimeraVez = true) => {
     if (!usuarioId) return;
-    if (!esPrimeraVez) return;
 
     const nivelId = oracionActual?.id;
     if (!nivelId) return;
 
+    // ✅ Siempre avanzar misiones de lecciones y niveles (incluso repeticiones)
+    await _avanzarMision('lecciones', 1);
+    await _avanzarMision('niveles', 1);
+    if (fueConPerfecta) await _avanzarMision('perfectas', 1);
+
+    // ========== RACHA: solo avanza si es primera lección del día ==========
     const hoy = hoyStr();
     const jugóHoy = userDoc?.jugóHoy ?? null;
     const rachaAct = userDoc?.racha ?? 0;
@@ -639,29 +643,34 @@ export const GameProvider = ({ children }) => {
       const ayerStr = ayer.toISOString().split('T')[0];
       if (jugóHoy === ayerStr || jugóHoy === null) nuevaRacha = rachaAct + 1;
       else nuevaRacha = 1;
+
+      // ✅ Aquí es donde realmente aumenta la racha (primera lección del día)
       await updateDoc(doc(db, 'usuarios', usuarioId), {
         nivelActual: increment(1),
         racha: nuevaRacha,
         jugóHoy: hoy,
         nivelesCompletados: arrayUnion(nivelId),
       });
+
+      // ✅ Avanzar misión de racha (solo una vez por día)
+      await _avanzarMision('racha', 1);
     } else {
+      // Si ya jugó hoy, solo actualiza nivel y lista de completados (no racha)
       await updateDoc(doc(db, 'usuarios', usuarioId), {
         nivelActual: increment(1),
         nivelesCompletados: arrayUnion(nivelId),
       });
+      // ⚠️ No llamar a _avanzarMision('racha') aquí
     }
 
-    await _avanzarMision('lecciones', 1);
-    await _avanzarMision('niveles', 1);
-    await _avanzarMision('racha', 1);
-    if (fueConPerfecta) await _avanzarMision('perfectas', 1);
-
+    // ========== A partir de aquí solo para primera vez (cofre, títulos) ==========
+    if (!esPrimeraVez) return;
 
     const tipoCofre = fueConPerfecta ? 'oro' : 'madera';
     const recompensa = await entregarSanto(tipoCofre);
     setCofrePendiente(recompensa ? { tipo: tipoCofre, recompensa } : null);
 
+    // Mapeo de niveles a títulos (sin cambios)
     const mapaNivelATitulo = {
       'u1_padre_nuestro': 'protector_reino',
       'u1_ave_maria': 'caballero_mariano',
@@ -695,7 +704,6 @@ export const GameProvider = ({ children }) => {
       }
     }
   };
-
   const aprobarExamen = async (claveUnidad) => {
     if (!usuarioId) return;
     await updateDoc(doc(db, 'usuarios', usuarioId), {

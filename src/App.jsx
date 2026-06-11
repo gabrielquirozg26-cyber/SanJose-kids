@@ -63,11 +63,15 @@ const AppShell = () => {
     <div className="min-h-screen text-white font-sans flex flex-col relative">
       {/* Fondo fijo con imagen de iglesia + blur + overlay */}
       <div className="fixed inset-0 -z-10">
+        {/* Imagen de fondo con opacidad media y sin blur fuerte */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/fondo-iglesia.jpeg')", filter: "blur(10px) brightness(0.6)", transform: "scale(1.05)" }}
+          style={{ backgroundImage: "url('/fondo-iglesia.jpeg')", opacity: 0.4 }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
+        {/* Overlay degradado más agradable, sin negro puro */}
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/70 via-purple-900/60 to-slate-900/80" />
+        {/* Brillo dorado para dar calidez */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400/20 rounded-full blur-[100px]" />
       </div>
 
       <Header />
