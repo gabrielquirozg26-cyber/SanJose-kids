@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useGame } from './context/GameContext';
+import { GameProvider, useGame } from './context/GameContext';
+import { MissionsProvider, useMissions } from './context/MissionsContext';
+import { setMissionAdvanceFn } from './utils/missionHelper';
 
-import Login    from './views/Login';
-import Mapa     from './views/Mapa';
-import Leccion  from './views/Leccion';
-import Tienda   from './views/Tienda';
-import Ranking  from './views/Ranking';
+import Login from './views/Login';
+import Mapa from './views/Mapa';
+import Leccion from './views/Leccion';
+import Tienda from './views/Tienda';
+import Ranking from './views/Ranking';
 import Misiones from './views/Misiones';
-import Navbar   from './components/Navbar';
-import Examen   from './views/Examen';
+import Navbar from './components/Navbar';
+import Examen from './views/Examen';
 import CofreGracia from './views/CofreGracia';
 import Album from './views/Album';
 import DetalleSantos from './views/DetalleSantos';
@@ -36,7 +38,17 @@ const tieneAura   = (inv) => inv.includes('aura_santidad');
 const tieneEscudo = (inv) => inv.includes('escudo_miguel');
 const tieneSeguro = (inv) => inv.includes('seguro_racha');
 
+// ── Conector de contextos ──────────────────────────────────────────────────
+const ContextConnector = ({ children }) => {
+  const { avanzarMision } = useMissions();
+  
+  useEffect(() => {
+    setMissionAdvanceFn(avanzarMision);
+    return () => setMissionAdvanceFn(null);
+  }, [avanzarMision]);
 
+  return children;
+};
 
 // ── Shell estudiante ───────────────────────────────────────────────────────
 const AppShell = () => {
@@ -57,20 +69,15 @@ const AppShell = () => {
     </>
   );
 
-
-
   return (
     <div className="min-h-screen text-white font-sans flex flex-col relative">
       {/* Fondo fijo con imagen de iglesia + blur + overlay */}
       <div className="fixed inset-0 -z-10">
-        {/* Imagen de fondo con opacidad media y sin blur fuerte */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/fondo-iglesia.jpeg')", opacity: 0.4 }}
         />
-        {/* Overlay degradado más agradable, sin negro puro */}
         <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/70 via-purple-900/60 to-slate-900/80" />
-        {/* Brillo dorado para dar calidez */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400/20 rounded-full blur-[100px]" />
       </div>
 
@@ -102,7 +109,6 @@ const AppShell = () => {
 
       <Navbar />
 
-      {/* Cofre global */}
       {cofrePendiente && (
         <CofreGracia
           tipoCofre={cofrePendiente.tipo}
@@ -142,9 +148,15 @@ const RutaCatequista = () => {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/"           element={<RutaEstudiante />} />
-      <Route path="/catequista" element={<RutaCatequista />} />
-    </Routes>
+    <GameProvider>
+      <MissionsProvider>
+        <ContextConnector>
+          <Routes>
+            <Route path="/" element={<RutaEstudiante />} />
+            <Route path="/catequista" element={<RutaCatequista />} />
+          </Routes>
+        </ContextConnector>
+      </MissionsProvider>
+    </GameProvider>
   );
 }

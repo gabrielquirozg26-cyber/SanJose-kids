@@ -11,26 +11,14 @@ import {
 } from 'firebase/auth';
 import santosData from '../data/santos.json';
 import titulosData from '../data/titulos.json';
+import { advanceMissions } from '../utils/missionHelper';
 
 const GameContext = createContext();
 
 const MAX_VIDAS     = 5;
 const MS_REGEN_VIDA = 4 * 60 * 60 * 1000;
 
-// ── Misiones diarias y semanales ──
-export const MISIONES_DIARIAS = [
-  { id: 'd1', icono: '📖', titulo: 'Estudiante Fiel',   descripcion: 'Completa 3 lecciones hoy',       tipo: 'lecciones', meta: 3,   recompensa: 50  },
-  { id: 'd2', icono: '🪙', titulo: 'Coleccionista',     descripcion: 'Gana 100 monedas en un día',      tipo: 'monedas',   meta: 100, recompensa: 30  },
-  { id: 'd3', icono: '⚡', titulo: 'Relámpago de Fe',   descripcion: 'Completa 1 lección sin errores',  tipo: 'perfectas', meta: 1,   recompensa: 40  },
-  { id: 'd4', icono: '🔥', titulo: 'Guardián de Racha', descripcion: 'Mantén tu racha activa hoy',      tipo: 'racha',     meta: 1,   recompensa: 25  },
-];
 
-export const MISIONES_SEMANALES = [
-  { id: 's1', icono: '🏆', titulo: 'Campeón Semanal',    descripcion: 'Completa 15 lecciones esta semana', tipo: 'lecciones', meta: 15,  recompensa: 200 },
-  { id: 's2', icono: '📿', titulo: 'Devoto del Rosario', descripcion: 'Completa 5 niveles distintos',      tipo: 'niveles',   meta: 5,   recompensa: 150 },
-  { id: 's3', icono: '💰', titulo: 'Tesorero',            descripcion: 'Acumula 500 monedas esta semana',  tipo: 'monedas',   meta: 500, recompensa: 100 },
-  { id: 's4', icono: '🌟', titulo: 'Luz de la Semana',   descripcion: 'Juega 5 días seguidos',             tipo: 'racha',     meta: 5,   recompensa: 300 },
-];
 
 const hoyStr    = () => new Date().toISOString().split('T')[0];
 const semanaStr = () => {
@@ -120,7 +108,6 @@ export const GameProvider = ({ children }) => {
             setPocionesCompradasHoy(data.pocionesHoy ?? 0);
             setUltimaFechaPocion(data.ultimaFechaPocion ?? null);
             setUltimoTiqueteOroUsado(data.ultimoTiqueteOroUsado ?? null);
-            _sincronizarMisiones(user.uid, data);
             _aplicarRegenVidas(user.uid, data);
             _verificarRacha(user.uid, data);
           } else {
@@ -182,63 +169,6 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // ── Misiones ──
-  const _sincronizarMisiones = async (uid, data) => {
-    const hoy = hoyStr(); const semana = semanaStr();
-    const mis = data.misiones ?? {}; let ok = false; const nuevo = { ...mis };
-    if (!mis.diaActual) {
-      nuevo.diaActual = hoy; nuevo.semanaActual = semana;
-      nuevo.diarias = initProgreso(MISIONES_DIARIAS); nuevo.semanales = initProgreso(MISIONES_SEMANALES); ok = true;
-    } else {
-      if (mis.diaActual !== hoy)       { nuevo.diaActual = hoy;       nuevo.diarias   = initProgreso(MISIONES_DIARIAS);   ok = true; }
-      if (mis.semanaActual !== semana) { nuevo.semanaActual = semana; nuevo.semanales = initProgreso(MISIONES_SEMANALES); ok = true; }
-    }
-    if (ok) await updateDoc(doc(db, 'usuarios', uid), { misiones: nuevo });
-    setMisionesState(ok ? nuevo : mis);
-  };
-
-  const _avanzarMision = async (tipo, cantidad = 1) => {
-    if (!usuarioId || !misionesState) return;
-    const nuevo = JSON.parse(JSON.stringify(misionesState));
-    let hayCompletada = false;
-
-    const act = (g, defs) => defs.forEach(def => {
-      const p = nuevo[g]?.[def.id];
-      if (!p || p.reclamada || def.tipo !== tipo) return;
-      const nuevoProgreso = Math.min(p.progreso + cantidad, def.meta);
-      p.progreso = nuevoProgreso;
-      // ⚠️ NO marcar reclamada aquí, solo progreso
-      if (nuevoProgreso >= def.meta && !p.reclamada) {
-        hayCompletada = true; // solo para notificar, pero sin reclamar
-      }
-    });
-
-    act('diarias', MISIONES_DIARIAS);
-    act('semanales', MISIONES_SEMANALES);
-
-    setMisionesState(nuevo);
-    await updateDoc(doc(db, 'usuarios', usuarioId), { misiones: nuevo });
-
-    // Opcional: si quieres un mensaje o confeti cuando se completa una misión
-    if (hayCompletada) {
-      // Puedes lanzar un evento o notificación (por ejemplo, un toast)
-      console.log('🎉 Misión completada, ve a reclamar tu recompensa');
-    }
-  };
-
-  const reclamarMision = async (g, id, recompensa) => {
-    if (!usuarioId || !misionesState) return false;
-    const prog = misionesState[g]?.[id];
-    if (!prog || prog.reclamada) return false;
-    if (prog.progreso < (g === 'diarias' ? MISIONES_DIARIAS.find(d => d.id === id)?.meta : MISIONES_SEMANALES.find(s => s.id === id)?.meta)) return false;
-
-    const nuevo = JSON.parse(JSON.stringify(misionesState));
-    nuevo[g][id].reclamada = true;
-    setMisionesState(nuevo);
-    await updateDoc(doc(db, 'usuarios', usuarioId), { misiones: nuevo });
-    await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(recompensa) });
-    return true;
-  };
 
   // ── Autenticación y registro ──
   const _base = (extra = {}) => ({
@@ -332,10 +262,11 @@ export const GameProvider = ({ children }) => {
     setVidasM(p => Math.min(MAX_VIDAS, p + 1));
   };
 
+  // sumarMonedas también avanza misiones relacionadas con monedas
   const sumarMonedas = async (cantidad) => {
     if (!usuarioId) return;
     await updateDoc(doc(db, 'usuarios', usuarioId), { monedas: increment(Number(cantidad)) });
-    if (cantidad > 0) await _avanzarMision('monedas', Number(cantidad));
+    if (cantidad > 0) await advanceMissions('monedas', Number(cantidad));
   };
 
   // ── Compra de corazón ──
@@ -628,9 +559,9 @@ export const GameProvider = ({ children }) => {
     if (!nivelId) return;
 
     // ✅ Siempre avanzar misiones de lecciones y niveles (incluso repeticiones)
-    await _avanzarMision('lecciones', 1);
-    await _avanzarMision('niveles', 1);
-    if (fueConPerfecta) await _avanzarMision('perfectas', 1);
+    await advanceMissions('lecciones', 1);
+    await advanceMissions('niveles', 1);
+    if (fueConPerfecta) await advanceMissions('perfectas', 1);
 
     // ========== RACHA: solo avanza si es primera lección del día ==========
     const hoy = hoyStr();
@@ -652,8 +583,7 @@ export const GameProvider = ({ children }) => {
         nivelesCompletados: arrayUnion(nivelId),
       });
 
-      // ✅ Avanzar misión de racha (solo una vez por día)
-      await _avanzarMision('racha', 1);
+     
     } else {
       // Si ya jugó hoy, solo actualiza nivel y lista de completados (no racha)
       await updateDoc(doc(db, 'usuarios', usuarioId), {
@@ -911,7 +841,6 @@ export const GameProvider = ({ children }) => {
     enLeccion,
     setEnLeccion,
     oracionActual,
-    misionesState,
     registrarNiño,
     registrarCatequista,
     iniciarSesion,
@@ -926,7 +855,6 @@ export const GameProvider = ({ children }) => {
     obtenerEstudiantesGrupo,
     obtenerRankingGlobal,
     obtenerRankingGrupos,
-    reclamarMision,
     aprobarExamen,
     cerrarCofre,
     minutosHastaVida,
@@ -963,8 +891,7 @@ export const GameProvider = ({ children }) => {
     comprarTituloLegendario,
     logrosPendientes,
     canjearLogro,
-    MISIONES_DIARIAS,
-    MISIONES_SEMANALES,
+   
     nivelesCompletados: userDoc?.nivelesCompletados || [],
     // ── Nuevas funciones para exámenes y analítica ──
     guardarResultadoExamen,

@@ -1,19 +1,11 @@
 import React, { useState } from 'react';
+import { useMissions } from '../context/MissionsContext';
 import { useGame } from '../context/GameContext';
 import confetti from 'canvas-confetti';
 
 const Misiones = () => {
-  const {
-    misionesState,
-    reclamarMision,
-    logrosPendientes,
-    canjearLogro,
-    titulosPorNivel,
-    listaTitulosPorNIvel,
-    MISIONES_DIARIAS,
-    MISIONES_SEMANALES,
-  } = useGame();
-
+  const { misionesState, reclamarMision, MISIONES_DIARIAS, MISIONES_SEMANALES } = useMissions();
+  const { logrosPendientes, canjearLogro, titulosPorNivel } = useGame();
   const [reclamando, setReclamando] = useState(null);
   const [canjeando, setCanjeando] = useState(null);
 
@@ -21,14 +13,18 @@ const Misiones = () => {
     setReclamando(id);
     const ok = await reclamarMision(grupo, id, recompensa);
     setReclamando(null);
-    if (ok) confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 }, colors: ['#facc15', '#fff'] });
+    if (ok) {
+      confetti({ particleCount: 80, spread: 50, origin: { y: 0.6 }, colors: ['#facc15', '#fff'] });
+    }
   };
 
   const handleCanjear = async (logroId) => {
     setCanjeando(logroId);
     const ok = await canjearLogro(logroId);
     setCanjeando(null);
-    if (ok) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#a855f7', '#facc15'] });
+    if (ok) {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#a855f7', '#facc15'] });
+    }
   };
 
   const diarias = misionesState?.diarias || {};
@@ -43,18 +39,18 @@ const Misiones = () => {
         <p className="text-white/40 text-xs mt-1">Completa desafíos diarios y semanales para ganar monedas</p>
       </div>
 
-      {/* LOGROS DE NIVEL (recompensas canjeables) */}
+      {/* LOGROS DE NIVEL */}
       {logrosPendientes && logrosPendientes.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-2xl">🏆</span>
             <h3 className="text-white font-black text-sm uppercase tracking-wider bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
-              Recompensas de nivel
+              Recompensas de nivel ({logrosPendientes.length})
             </h3>
           </div>
           <div className="space-y-3">
             {logrosPendientes.map(logro => {
-              const titulo = listaTitulosPorNivel?.find(t => t.id === logro.id);
+              const titulo = titulosPorNivel?.find(t => t.id === logro.id);
               if (!titulo) return null;
               return (
                 <div key={logro.id} className="glass-card rounded-2xl p-4 border border-purple-500/30 bg-purple-500/5 transition-all hover:scale-[1.01]">
@@ -93,21 +89,26 @@ const Misiones = () => {
             if (!mision) return null;
             const completada = mision.progreso >= def.meta;
             const reclamada = mision.reclamada;
+            const porcentaje = Math.min((mision.progreso / def.meta) * 100, 100);
+            const progresoMostrar = `${mision.progreso}/${def.meta}`;
+
             return (
-              <div key={def.id} className="glass-card rounded-2xl p-4 border border-white/10 transition-all hover:scale-[1.01]">
+              <div key={def.id} className={`glass-card rounded-2xl p-4 border transition-all hover:scale-[1.01] ${
+                completada && !reclamada ? 'border-yellow-400/60 bg-yellow-400/10' : 'border-white/10'
+              }`}>
                 <div className="flex items-center gap-4">
                   <span className="text-4xl">{def.icono}</span>
                   <div className="flex-1">
                     <p className="font-black text-white text-sm">{def.titulo}</p>
                     <p className="text-white/40 text-xs">{def.descripcion}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-yellow-400 to-amber-400 rounded-full" style={{ width: `${(mision.progreso / def.meta) * 100}%` }} />
+                      <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-yellow-400 to-amber-400 rounded-full transition-all duration-500" style={{ width: `${porcentaje}%` }} />
                       </div>
-                      <span className="text-white/40 text-[10px] font-black">{mision.progreso}/{def.meta}</span>
+                      <span className="text-white/40 text-[10px] font-black min-w-[30px] text-right">{progresoMostrar}</span>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right min-w-[80px]">
                     <p className="text-yellow-400 font-black text-sm">+{def.recompensa} 🪙</p>
                     {!reclamada && completada && (
                       <button
@@ -141,21 +142,26 @@ const Misiones = () => {
             if (!mision) return null;
             const completada = mision.progreso >= def.meta;
             const reclamada = mision.reclamada;
+            const porcentaje = Math.min((mision.progreso / def.meta) * 100, 100);
+            const progresoMostrar = `${mision.progreso}/${def.meta}`;
+
             return (
-              <div key={def.id} className="glass-card rounded-2xl p-4 border border-white/10 transition-all hover:scale-[1.01]">
+              <div key={def.id} className={`glass-card rounded-2xl p-4 border transition-all hover:scale-[1.01] ${
+                completada && !reclamada ? 'border-blue-400/60 bg-blue-400/10' : 'border-white/10'
+              }`}>
                 <div className="flex items-center gap-4">
                   <span className="text-4xl">{def.icono}</span>
                   <div className="flex-1">
                     <p className="font-black text-white text-sm">{def.titulo}</p>
                     <p className="text-white/40 text-xs">{def.descripcion}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full" style={{ width: `${(mision.progreso / def.meta) * 100}%` }} />
+                      <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full transition-all duration-500" style={{ width: `${porcentaje}%` }} />
                       </div>
-                      <span className="text-white/40 text-[10px] font-black">{mision.progreso}/{def.meta}</span>
+                      <span className="text-white/40 text-[10px] font-black min-w-[30px] text-right">{progresoMostrar}</span>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right min-w-[80px]">
                     <p className="text-yellow-400 font-black text-sm">+{def.recompensa} 🪙</p>
                     {!reclamada && completada && (
                       <button
