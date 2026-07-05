@@ -552,6 +552,7 @@ export const GameProvider = ({ children }) => {
   const titulosPorNivel = {};
   titulosData.porNivel.forEach(t => { titulosPorNivel[t.nivel] = { id: t.id, nombre: t.nombre, rareza: t.rareza }; });
   // ── Completar nivel ──
+  // ── Completar nivel ──
   const completarNivel = async (fueConPerfecta = false, esPrimeraVez = true) => {
     if (!usuarioId) return;
 
@@ -570,12 +571,13 @@ export const GameProvider = ({ children }) => {
     let nuevaRacha = rachaAct;
 
     if (jugóHoy !== hoy) {
-      const ayer = new Date(); ayer.setDate(ayer.getDate() - 1);
+      const ayer = new Date();
+      ayer.setDate(ayer.getDate() - 1);
       const ayerStr = ayer.toISOString().split('T')[0];
       if (jugóHoy === ayerStr || jugóHoy === null) nuevaRacha = rachaAct + 1;
       else nuevaRacha = 1;
 
-      // ✅ Aquí es donde realmente aumenta la racha (primera lección del día)
+      // ✅ Actualizar Firestore con la nueva racha
       await updateDoc(doc(db, 'usuarios', usuarioId), {
         nivelActual: increment(1),
         racha: nuevaRacha,
@@ -583,7 +585,9 @@ export const GameProvider = ({ children }) => {
         nivelesCompletados: arrayUnion(nivelId),
       });
 
-     
+      // ✅ REGISTRAR PRIMERA LECCIÓN DEL DÍA - ¡AQUÍ ESTÁ LA LÍNEA CLAVE!
+      await registrarPrimeraLeccionDelDia();
+
     } else {
       // Si ya jugó hoy, solo actualiza nivel y lista de completados (no racha)
       await updateDoc(doc(db, 'usuarios', usuarioId), {
@@ -600,7 +604,7 @@ export const GameProvider = ({ children }) => {
     const recompensa = await entregarSanto(tipoCofre);
     setCofrePendiente(recompensa ? { tipo: tipoCofre, recompensa } : null);
 
-    // Mapeo de niveles a títulos (sin cambios)
+    // Mapeo de niveles a títulos
     const mapaNivelATitulo = {
       'u1_padre_nuestro': 'protector_reino',
       'u1_ave_maria': 'caballero_mariano',

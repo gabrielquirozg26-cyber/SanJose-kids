@@ -73,7 +73,7 @@
           "texto": "Ángel de Dios, que eres mi custodio, pues la bondad divina me ha encomendado a ti, ilumíname, guárdame y gobiérname. Amén.",
           "versos": [
             { "id": "ag_1", "texto": "Ángel de la mi guarda", "palabraFaltante": "guarda", "opcionesSeleccion": ["custodio", "protección", "amigo", "guarda"], "palabrasOrdenar": ["Ángel", "de", "mi", "guarda"] },
-            { "id": "ag_2", "texto": "dulce compañia; no me desampares", "palabraFaltante": "desampares", "opcionesSeleccion": ["desapares", "abandones", "desprotejas", "olvides"], "palabrasOrdenar": ["dulce", "compañia", "no", "me", "desampares"] },
+            { "id": "ag_2", "texto": "dulce compañia; no me desampares", "palabraFaltante": "desampares", "opcionesSeleccion": ["desampares", "abandones", "desprotejas", "olvides"], "palabrasOrdenar": ["dulce", "compañia", "no", "me", "desampares"] },
             { "id": "ag_3", "texto": "ni de noche ni de día. Amén.", "palabraFaltante": "noche", "opcionesSeleccion": ["tarde", "mañana", "noche", "nunca"], "palabrasOrdenar": ["ni", "de", "noche", "ni", "de", "día.", "Amén."] }
           ]
         }
