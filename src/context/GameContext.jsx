@@ -211,7 +211,7 @@ export const GameProvider = ({ children }) => {
     
     ...extra,
   });
-
+  /*
   const registrarNiño = async (email, password, nombre, grupo) => {
     setLoading(true);
     try {
@@ -230,7 +230,7 @@ export const GameProvider = ({ children }) => {
       });
     } catch (e) { throw e; } finally { setLoading(false); }
   };
-
+  */
   const iniciarSesion = async (email, password) => {
     setLoading(true);
     try { await signInWithEmailAndPassword(auth, email, password); }
@@ -585,7 +585,13 @@ export const GameProvider = ({ children }) => {
         nivelesCompletados: arrayUnion(nivelId),
       });
 
-      // ✅ REGISTRAR PRIMERA LECCIÓN DEL DÍA - ¡AQUÍ ESTÁ LA LÍNEA CLAVE!
+      // ✅ AVANZAR MISIÓN DE RACHA - ¡LA LÍNEA CLAVE!
+      await advanceMissions('racha', 1);
+
+      // ✅ Avanzar misión SEMANAL de racha (Luz de la Semana) - ¡ESTA FALTA!
+      await advanceMissions('racha_semanal', 1);
+      
+      // ✅ Registrar primera lección del día (modal de racha)
       await registrarPrimeraLeccionDelDia();
 
     } else {
@@ -594,7 +600,6 @@ export const GameProvider = ({ children }) => {
         nivelActual: increment(1),
         nivelesCompletados: arrayUnion(nivelId),
       });
-      // ⚠️ No llamar a _avanzarMision('racha') aquí
     }
 
     // ========== A partir de aquí solo para primera vez (cofre, títulos) ==========
@@ -638,6 +643,7 @@ export const GameProvider = ({ children }) => {
       }
     }
   };
+  
   const aprobarExamen = async (claveUnidad) => {
     if (!usuarioId) return;
     await updateDoc(doc(db, 'usuarios', usuarioId), {
@@ -845,8 +851,6 @@ export const GameProvider = ({ children }) => {
     enLeccion,
     setEnLeccion,
     oracionActual,
-    registrarNiño,
-    registrarCatequista,
     iniciarSesion,
     cerrarSesion,
     restarVida,

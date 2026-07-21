@@ -13,11 +13,13 @@
     "@tailwindcss/postcss": "^4.2.4",
     "canvas-confetti": "^1.9.4",
     "firebase": "^12.13.0",
+    "firebase-admin": "^14.2.0",
     "framer-motion": "^12.40.0",
     "html-to-image": "^1.11.13",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.15.1"
+    "react-router-dom": "^7.15.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

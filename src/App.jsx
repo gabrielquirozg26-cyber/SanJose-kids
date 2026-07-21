@@ -20,6 +20,7 @@ import Header from './components/Header';
 import LoadingScreen from './components/LoadingScreen';
 import Perfil from './views/perfil';
 import DailyStreakModal from './components/DailyStreakModal';
+import Bienvenida from './views/Bienvenida';
 
 import LoginCatequista from './views/LoginCatequista';
 import PanelCatequista from './views/PanelCatequista';
@@ -52,13 +53,46 @@ const ContextConnector = ({ children }) => {
 
 // ── Shell estudiante ───────────────────────────────────────────────────────
 const AppShell = () => {
-  const { activeTab, enLeccion, cofrePendiente, cerrarCofre, mostrarModalRacha, setMostrarModalRacha, racha, recompensaRacha, tituloDesbloqueadoReciente, setTituloDesbloqueadoReciente } = useGame();
+  const { 
+    activeTab, 
+    enLeccion, 
+    cofrePendiente, 
+    cerrarCofre, 
+    mostrarModalRacha, 
+    setMostrarModalRacha, 
+    racha, 
+    recompensaRacha, 
+    tituloDesbloqueadoReciente, 
+    setTituloDesbloqueadoReciente,
+    userDoc,
+    usuarioId
+  } = useGame();
+  
   const [examenActivo, setExamenActivo] = useState(null);
   const [santoSeleccionado, setSantoSeleccionado] = useState(null);
   const [perfilPublico, setPerfilPublico] = useState(null);
-  
+  const [mostrarBienvenida, setMostrarBienvenida] = useState(false);
+
+  // Verificar si es la primera vez del usuario (para mostrar bienvenida)
+  useEffect(() => {
+    if (!userDoc || enLeccion) return;
+    
+    // Verificar si el usuario ya cambió la contraseña o ya pasó por la bienvenida
+    const contrasenaCambiada = userDoc?.contrasenaCambiada || false;
+    const esPrimeraVez = userDoc?.esPrimeraVez !== false; // por defecto true para nuevos usuarios
+    
+    // Si es primera vez y no ha cambiado la contraseña, mostrar bienvenida
+    if (esPrimeraVez && !contrasenaCambiada && !enLeccion) {
+      setMostrarBienvenida(true);
+    } else {
+      setMostrarBienvenida(false);
+    }
+  }, [userDoc, enLeccion]);
+
+  // Si está en una lección, mostrar la lección
   if (enLeccion) return <Leccion />;
 
+  // Si está en un examen, mostrar el examen
   if (examenActivo) return (
     <>
       <Examen
@@ -68,6 +102,11 @@ const AppShell = () => {
       />
     </>
   );
+
+  // Si es primera vez, mostrar la pantalla de bienvenida
+  if (mostrarBienvenida) {
+    return <Bienvenida onCompletado={() => setMostrarBienvenida(false)} />;
+  }
 
   return (
     <div className="min-h-screen text-white font-sans flex flex-col relative">
@@ -109,6 +148,7 @@ const AppShell = () => {
 
       <Navbar />
 
+      {/* Cofre global */}
       {cofrePendiente && (
         <CofreGracia
           tipoCofre={cofrePendiente.tipo}
@@ -116,12 +156,14 @@ const AppShell = () => {
           onCerrar={cerrarCofre}
         />
       )}
+      
       <DailyStreakModal
         isOpen={mostrarModalRacha}
         onClose={() => setMostrarModalRacha(false)}
         racha={racha}
         recompensa={recompensaRacha?.monedas}
       />
+      
       <TituloDesbloqueadoModal
         isOpen={tituloDesbloqueadoReciente.mostrar}
         onClose={() => setTituloDesbloqueadoReciente({ mostrar: false, titulo: null })}

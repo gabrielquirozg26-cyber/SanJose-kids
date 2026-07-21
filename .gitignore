@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencias
 node_modules
 dist
 dist-ssr
@@ -22,5 +23,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Variables de entorno
 .env
+.env.local
+.env.production
+
+# 🔥 ARCHIVOS DE FIREBASE (SENSIBLES)
 src/firebase.js
+scripts/serviceAccountKey.json
+scripts/*.xlsx
+scripts/*.xls
+scripts/resultados_usuarios_*.json
+
+# Scripts de usuarios (opcional - si no quieres subirlos)
+scripts/crearUsuarios.js
+scripts/actualizarUsuarios.js
+scripts/crearUsuarioTest.js
+
+# Archivos de respaldo
+*.backup
+*.bak
+.DS_Store
