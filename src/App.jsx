@@ -1,9 +1,16 @@
+// src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+
+// 🔥 CONTEXTOS EN EL ORDEN CORRECTO
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ShopProvider } from './context/ShopContext';
+import { TitlesProvider } from './context/TitlesContext';
 import { GameProvider, useGame } from './context/GameContext';
 import { MissionsProvider, useMissions } from './context/MissionsContext';
 import { setMissionAdvanceFn } from './utils/missionHelper';
 
+// 📦 VISTAS
 import Login from './views/Login';
 import Mapa from './views/Mapa';
 import Leccion from './views/Leccion';
@@ -18,26 +25,23 @@ import DetalleSantos from './views/DetalleSantos';
 import PerfilPublico from './views/PerfilPublico';
 import Header from './components/Header';
 import LoadingScreen from './components/LoadingScreen';
-import Perfil from './views/perfil';
+import Perfil from './views/Perfil';
 import DailyStreakModal from './components/DailyStreakModal';
 import Bienvenida from './views/Bienvenida';
+import BienvenidaCatequista from './views/BienvenidaCatequista';
 
+// 👨‍🏫 CATEQUISTAS
 import LoginCatequista from './views/LoginCatequista';
 import PanelCatequista from './views/PanelCatequista';
+
+// 🏆 TÍTULOS
 import TituloDesbloqueadoModal from './components/TituloDesbloqueadoModal';
+
+// 🎨 UI COMPONENTS
+import { ToastProvider } from './components/ui/Toast';
 
 // ── Cargando ───────────────────────────────────────────────────────────────
 const Cargando = () => <LoadingScreen />;
-
-// ── Helpers cosmética ──────────────────────────────────────────────────────
-const MARCOS = {
-  marco_vitral_azul:   { border: 'border-blue-400',   shadow: 'shadow-[0_0_20px_rgba(96,165,250,0.5)]',  gradiente: 'from-blue-600 to-cyan-400'   },
-  marco_vitral_dorado: { border: 'border-yellow-400', shadow: 'shadow-[0_0_20px_rgba(250,204,21,0.6)]',  gradiente: 'from-yellow-500 to-amber-300' },
-};
-const getMarco    = (inv) => inv.includes('marco_vitral_dorado') ? MARCOS.marco_vitral_dorado : inv.includes('marco_vitral_azul') ? MARCOS.marco_vitral_azul : null;
-const tieneAura   = (inv) => inv.includes('aura_santidad');
-const tieneEscudo = (inv) => inv.includes('escudo_miguel');
-const tieneSeguro = (inv) => inv.includes('seguro_racha');
 
 // ── Conector de contextos ──────────────────────────────────────────────────
 const ContextConnector = ({ children }) => {
@@ -65,7 +69,6 @@ const AppShell = () => {
     tituloDesbloqueadoReciente, 
     setTituloDesbloqueadoReciente,
     userDoc,
-    usuarioId
   } = useGame();
   
   const [examenActivo, setExamenActivo] = useState(null);
@@ -73,15 +76,16 @@ const AppShell = () => {
   const [perfilPublico, setPerfilPublico] = useState(null);
   const [mostrarBienvenida, setMostrarBienvenida] = useState(false);
 
-  // Verificar si es la primera vez del usuario (para mostrar bienvenida)
+  // Verificar si es la primera vez del usuario
   useEffect(() => {
     if (!userDoc || enLeccion) return;
     
-    // Verificar si el usuario ya cambió la contraseña o ya pasó por la bienvenida
     const contrasenaCambiada = userDoc?.contrasenaCambiada || false;
-    const esPrimeraVez = userDoc?.esPrimeraVez !== false; // por defecto true para nuevos usuarios
+    const esPrimeraVez = userDoc?.esPrimeraVez !== false;
     
-    // Si es primera vez y no ha cambiado la contraseña, mostrar bienvenida
+    console.log('🔍 AppShell - esPrimeraVez:', esPrimeraVez);
+    console.log('🔍 AppShell - contrasenaCambiada:', contrasenaCambiada);
+    
     if (esPrimeraVez && !contrasenaCambiada && !enLeccion) {
       setMostrarBienvenida(true);
     } else {
@@ -89,28 +93,22 @@ const AppShell = () => {
     }
   }, [userDoc, enLeccion]);
 
-  // Si está en una lección, mostrar la lección
   if (enLeccion) return <Leccion />;
 
-  // Si está en un examen, mostrar el examen
   if (examenActivo) return (
-    <>
-      <Examen
-        claveUnidad={examenActivo.clave}
-        unidadNombre={examenActivo.nombre}
-        onCerrar={() => setExamenActivo(null)}
-      />
-    </>
+    <Examen
+      claveUnidad={examenActivo.clave}
+      unidadNombre={examenActivo.nombre}
+      onCerrar={() => setExamenActivo(null)}
+    />
   );
 
-  // Si es primera vez, mostrar la pantalla de bienvenida
   if (mostrarBienvenida) {
     return <Bienvenida onCompletado={() => setMostrarBienvenida(false)} />;
   }
 
   return (
     <div className="min-h-screen text-white font-sans flex flex-col relative">
-      {/* Fondo fijo con imagen de iglesia + blur + overlay */}
       <div className="fixed inset-0 -z-10">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -148,7 +146,6 @@ const AppShell = () => {
 
       <Navbar />
 
-      {/* Cofre global */}
       {cofrePendiente && (
         <CofreGracia
           tipoCofre={cofrePendiente.tipo}
@@ -165,40 +162,98 @@ const AppShell = () => {
       />
       
       <TituloDesbloqueadoModal
-        isOpen={tituloDesbloqueadoReciente.mostrar}
+        isOpen={tituloDesbloqueadoReciente?.mostrar || false}
         onClose={() => setTituloDesbloqueadoReciente({ mostrar: false, titulo: null })}
-        titulo={tituloDesbloqueadoReciente.titulo}
+        titulo={tituloDesbloqueadoReciente?.titulo || null}
       />
     </div>
   );  
 };
 
+// ── Shell catequista ──────────────────────────────────────────────────────
+const AppShellCatequista = () => {
+  const { userDoc, enLeccion } = useGame();
+  const [mostrarBienvenida, setMostrarBienvenida] = useState(false);
+
+  // Verificar si es la primera vez del catequista
+  useEffect(() => {
+    console.log('🔍 AppShellCatequista - userDoc:', userDoc);
+    console.log('🔍 AppShellCatequista - enLeccion:', enLeccion);
+    
+    if (!userDoc) {
+      console.log('⚠️ userDoc es null o undefined');
+      return;
+    }
+    
+    const contrasenaCambiada = userDoc?.contrasenaCambiada || false;
+    const esPrimeraVez = userDoc?.esPrimeraVez !== false;
+    
+    console.log('🔍 AppShellCatequista - esPrimeraVez:', esPrimeraVez);
+    console.log('🔍 AppShellCatequista - contrasenaCambiada:', contrasenaCambiada);
+    
+    if (esPrimeraVez && !contrasenaCambiada && !enLeccion) {
+      console.log('✅ Mostrando BienvenidaCatequista');
+      setMostrarBienvenida(true);
+    } else {
+      console.log('❌ No se muestra bienvenida, mostrando PanelCatequista');
+      setMostrarBienvenida(false);
+    }
+  }, [userDoc, enLeccion]);
+
+  if (mostrarBienvenida) {
+    console.log('🔄 Renderizando BienvenidaCatequista');
+    return <BienvenidaCatequista onCompletado={() => setMostrarBienvenida(false)} />;
+  }
+
+  console.log('🔄 Renderizando PanelCatequista');
+  return <PanelCatequista />;
+};
+
 // ── Rutas ──────────────────────────────────────────────────────────────────
 const RutaEstudiante = () => {
-  const { usuarioId, loading } = useGame();
-  if (loading)    return <Cargando />;
+  const { usuarioId, loading } = useAuth();
+  if (loading) return <Cargando />;
   if (!usuarioId) return <Login />;
   return <AppShell />;
 };
 
 const RutaCatequista = () => {
-  const { usuarioId, loading, rol } = useGame();
+  const { usuarioId, loading, userDoc } = useAuth();
+  const rol = userDoc?.rol || 'estudiante';
+  
+  console.log('🔍 RutaCatequista - usuarioId:', usuarioId);
+  console.log('🔍 RutaCatequista - rol:', rol);
+  console.log('🔍 RutaCatequista - loading:', loading);
+  
   if (loading) return <Cargando />;
-  if (!usuarioId || (rol !== 'catequista' && rol !== 'coordinador')) return <LoginCatequista />;
-  return <PanelCatequista />;
+  if (!usuarioId || (rol !== 'catequista' && rol !== 'coordinador')) {
+    console.log('🔑 Redirigiendo a LoginCatequista');
+    return <LoginCatequista />;
+  }
+  console.log('✅ Usuario válido, mostrando AppShellCatequista');
+  return <AppShellCatequista />;
 };
 
+// ── App Principal ──────────────────────────────────────────────────────────
 export default function App() {
   return (
-    <GameProvider>
-      <MissionsProvider>
-        <ContextConnector>
-          <Routes>
-            <Route path="/" element={<RutaEstudiante />} />
-            <Route path="/catequista" element={<RutaCatequista />} />
-          </Routes>
-        </ContextConnector>
-      </MissionsProvider>
-    </GameProvider>
+    <AuthProvider>
+      <ShopProvider>
+        <TitlesProvider>
+          <GameProvider>
+            <MissionsProvider>
+              <ToastProvider>
+                <ContextConnector>
+                  <Routes>
+                    <Route path="/" element={<RutaEstudiante />} />
+                    <Route path="/catequista" element={<RutaCatequista />} />
+                  </Routes>
+                </ContextConnector>
+              </ToastProvider>
+            </MissionsProvider>
+          </GameProvider>
+        </TitlesProvider>
+      </ShopProvider>
+    </AuthProvider>
   );
 }

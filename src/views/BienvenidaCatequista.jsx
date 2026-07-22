@@ -1,3 +1,4 @@
+// src/views/BienvenidaCatequista.jsx
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,7 +8,7 @@ import { auth } from '../firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
-const Bienvenida = ({ onCompletado }) => {
+const BienvenidaCatequista = ({ onCompletado }) => {
   const { nombre, userDoc } = useGame();
   const { cerrarSesion } = useAuth();
   const { showToast } = useToast();
@@ -19,7 +20,7 @@ const Bienvenida = ({ onCompletado }) => {
   const [paso, setPaso] = useState(1);
   const [mostrarConfeti, setMostrarConfeti] = useState(false);
 
-  const avatar = userDoc?.avatar || '😇';
+  const avatar = userDoc?.avatar || '👨‍🏫';
   const esImagen = avatar?.startsWith('data:image') || avatar?.startsWith('http') || avatar?.startsWith('/images/');
 
   // ── CONFETI DE BIENVENIDA ──
@@ -30,14 +31,14 @@ const Bienvenida = ({ onCompletado }) => {
         particleCount: 200,
         spread: 120,
         origin: { y: 0.3 },
-        colors: ['#facc15', '#ffffff', '#3b82f6', '#10b981', '#a855f7']
+        colors: ['#3b82f6', '#ffffff', '#8b5cf6', '#60a5fa', '#a855f7']
       });
       setTimeout(() => {
         confetti({
           particleCount: 150,
           spread: 90,
           origin: { y: 0.5 },
-          colors: ['#facc15', '#ff8c00', '#ffdd00']
+          colors: ['#3b82f6', '#8b5cf6', '#60a5fa']
         });
       }, 500);
     }
@@ -77,14 +78,14 @@ const Bienvenida = ({ onCompletado }) => {
         particleCount: 300,
         spread: 150,
         origin: { y: 0.3 },
-        colors: ['#facc15', '#ffffff', '#10b981', '#3b82f6', '#a855f7']
+        colors: ['#3b82f6', '#ffffff', '#8b5cf6', '#60a5fa', '#a855f7']
       });
       setTimeout(() => {
         confetti({
           particleCount: 200,
           spread: 100,
           origin: { y: 0.5 },
-          colors: ['#facc15', '#ff8c00', '#ffdd00']
+          colors: ['#3b82f6', '#60a5fa', '#8b5cf6']
         });
       }, 300);
 
@@ -92,11 +93,12 @@ const Bienvenida = ({ onCompletado }) => {
       const { db } = await import('../firebase');
       const { doc, updateDoc } = await import('firebase/firestore');
       await updateDoc(doc(db, 'usuarios', user.uid), {
-        contrasenaCambiada: true
+        contrasenaCambiada: true,
+        esPrimeraVez: false,
       });
 
       setCargando(false);
-      showToast('🎉 ¡Contraseña actualizada con éxito!', 'success', 3000);
+      showToast('🎉 ¡Contraseña actualizada con éxito!', 'success');
       
       setTimeout(() => {
         onCompletado();
@@ -121,7 +123,6 @@ const Bienvenida = ({ onCompletado }) => {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
   };
-
   const stagger = {
     visible: { transition: { staggerChildren: 0.15 } }
   };
@@ -132,11 +133,11 @@ const Bienvenida = ({ onCompletado }) => {
       <div className="fixed inset-0 -z-10">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/fondo-iglesia.jpeg')", opacity: 0.5 }}
+          style={{ backgroundImage: "url('/fondo-iglesia.jpeg')", opacity: 0.4 }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/80 via-purple-900/70 to-slate-900/80" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400/15 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/80 via-indigo-900/70 to-slate-900/80" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-400/15 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px]" />
       </div>
 
       {/* ── ESTRELLAS ── */}
@@ -163,13 +164,13 @@ const Bienvenida = ({ onCompletado }) => {
         variants={stagger}
         className="relative w-full max-w-md"
       >
-        {/* Efecto de luz exterior */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/20 via-amber-400/20 to-yellow-400/20 rounded-3xl blur-xl" />
+        {/* Efecto de luz exterior (azul) */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-400/20 via-indigo-400/20 to-blue-400/20 rounded-3xl blur-xl" />
 
         <div className="relative glass-card rounded-3xl p-6 sm:p-8 border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl overflow-hidden">
           {/* Decoración interior */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/10 rounded-full blur-[80px]" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-400/10 rounded-full blur-[80px]" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-[80px]" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-400/10 rounded-full blur-[80px]" />
 
           <AnimatePresence mode="wait">
             {/* ── PASO 1: BIENVENIDA ── */}
@@ -190,8 +191,8 @@ const Bienvenida = ({ onCompletado }) => {
                   className="flex justify-center"
                 >
                   <div className="relative">
-                    <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-lg animate-pulse" />
-                    <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-yellow-400/60 shadow-[0_0_60px_rgba(250,204,21,0.3)] bg-gradient-to-br from-yellow-400/20 to-amber-400/20">
+                    <div className="absolute -inset-1 bg-blue-400/20 rounded-full blur-lg animate-pulse" />
+                    <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-blue-400/60 shadow-[0_0_60px_rgba(59,130,246,0.3)] bg-gradient-to-br from-blue-400/20 to-indigo-400/20">
                       <img src="/logo.jpg" alt="San JoseKids" className="w-full h-full object-cover rounded-full" />
                     </div>
                   </div>
@@ -199,11 +200,11 @@ const Bienvenida = ({ onCompletado }) => {
 
                 {/* Título */}
                 <motion.div variants={fadeInUp} className="space-y-2">
-                  <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-yellow-400/20 border border-yellow-400/40">
-                    <span className="text-yellow-400 text-xs">✨</span>
-                    <span className="text-yellow-400 font-black text-[10px] uppercase tracking-wider">¡Bienvenido!</span>
+                  <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-blue-400/20 border border-blue-400/40">
+                    <span className="text-blue-400 text-xs">👨‍🏫</span>
+                    <span className="text-blue-400 font-black text-[10px] uppercase tracking-wider">¡Bienvenido Catequista!</span>
                   </div>
-                  <h1 className="text-3xl sm:text-4xl font-black tracking-tighter bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent">
+                  <h1 className="text-3xl sm:text-4xl font-black tracking-tighter bg-gradient-to-r from-blue-300 via-indigo-400 to-blue-300 bg-clip-text text-transparent">
                     San JoseKids
                   </h1>
                   <p className="text-white/70 text-lg sm:text-xl font-bold">{nombre || 'Catequista'}</p>
@@ -212,10 +213,30 @@ const Bienvenida = ({ onCompletado }) => {
                 {/* Mensaje */}
                 <motion.div variants={fadeInUp} className="space-y-3">
                   <p className="text-white/80 text-sm sm:text-base leading-relaxed">
-                    ¡Qué alegría tenerte aquí! 🌟
+                    ¡Bienvenido al Panel de Catequistas! 🌟
                   </p>
+                  <div className="glass-card p-4 rounded-2xl border border-white/10 text-left space-y-2">
+                    <p className="text-white/60 text-xs font-black uppercase tracking-widest">📋 Lo que podrás hacer:</p>
+                    <ul className="space-y-1.5">
+                      <li className="flex items-center gap-2 text-white/70 text-sm">
+                        <span className="text-blue-400">📊</span>
+                        Ver estadísticas de tu grupo
+                      </li>
+                      <li className="flex items-center gap-2 text-white/70 text-sm">
+                        <span className="text-blue-400">👥</span>
+                        Gestionar tus alumnos
+                      </li>
+                      <li className="flex items-center gap-2 text-white/70 text-sm">
+                        <span className="text-blue-400">📝</span>
+                        Evaluar oraciones
+                      </li>
+                      <li className="flex items-center gap-2 text-white/70 text-sm">
+                        <span className="text-blue-400">👨‍🏫</span>
+                        Ver otros catequistas del grupo
+                      </li>
+                    </ul>
+                  </div>
                   <p className="text-white/50 text-xs sm:text-sm">
-                    Esta es tu primera vez en <span className="text-yellow-400 font-bold">San JoseKids</span>.
                     Para mantener tu cuenta segura, debes cambiar tu contraseña.
                   </p>
                 </motion.div>
@@ -223,7 +244,7 @@ const Bienvenida = ({ onCompletado }) => {
                 {/* Avatar */}
                 <motion.div variants={fadeInUp} className="flex justify-center">
                   <div className="relative">
-                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-yellow-400 to-amber-400 blur opacity-70 animate-pulse" />
+                    <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 blur opacity-70 animate-pulse" />
                     <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-white/30 bg-white/10 shadow-lg">
                       {esImagen ? (
                         <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
@@ -238,7 +259,7 @@ const Bienvenida = ({ onCompletado }) => {
                 <motion.button
                   variants={fadeInUp}
                   onClick={() => setPaso(2)}
-                  className="w-full py-3 sm:py-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-400 text-blue-900 font-black text-sm sm:text-base uppercase tracking-widest shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 sm:py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-black text-sm sm:text-base uppercase tracking-widest shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <span>🔐</span>
                   Cambiar mi contraseña
@@ -274,7 +295,7 @@ const Bienvenida = ({ onCompletado }) => {
                 {/* Formulario */}
                 <form onSubmit={handleCambiarContrasena} className="space-y-4">
                   <div>
-                    <label className="block text-[10px] text-yellow-400 font-black uppercase tracking-widest ml-2 mb-1">
+                    <label className="block text-[10px] text-blue-400 font-black uppercase tracking-widest ml-2 mb-1">
                       🔑 Nueva contraseña
                     </label>
                     <div className="relative">
@@ -284,14 +305,14 @@ const Bienvenida = ({ onCompletado }) => {
                         placeholder="Mínimo 8 caracteres"
                         value={nuevaContrasena}
                         onChange={(e) => setNuevaContrasena(e.target.value)}
-                        className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-3 pl-10 text-white font-medium outline-none transition-all placeholder:text-white/20 focus:border-yellow-400 focus:shadow-[0_0_20px_rgba(250,204,21,0.1)] disabled:opacity-50"
+                        className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-3 pl-10 text-white font-medium outline-none transition-all placeholder:text-white/20 focus:border-blue-400 focus:shadow-[0_0_20px_rgba(59,130,246,0.1)] disabled:opacity-50"
                         disabled={cargando}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] text-yellow-400 font-black uppercase tracking-widest ml-2 mb-1">
+                    <label className="block text-[10px] text-blue-400 font-black uppercase tracking-widest ml-2 mb-1">
                       ✓ Confirmar contraseña
                     </label>
                     <div className="relative">
@@ -301,7 +322,7 @@ const Bienvenida = ({ onCompletado }) => {
                         placeholder="Vuelve a escribir la contraseña"
                         value={confirmarContrasena}
                         onChange={(e) => setConfirmarContrasena(e.target.value)}
-                        className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-3 pl-10 text-white font-medium outline-none transition-all placeholder:text-white/20 focus:border-yellow-400 focus:shadow-[0_0_20px_rgba(250,204,21,0.1)] disabled:opacity-50"
+                        className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-3 pl-10 text-white font-medium outline-none transition-all placeholder:text-white/20 focus:border-blue-400 focus:shadow-[0_0_20px_rgba(59,130,246,0.1)] disabled:opacity-50"
                         disabled={cargando}
                       />
                     </div>
@@ -345,11 +366,11 @@ const Bienvenida = ({ onCompletado }) => {
                     <button
                       type="submit"
                       disabled={cargando || !nuevaContrasena || !confirmarContrasena}
-                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 text-blue-900 font-black text-xs sm:text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-black text-xs sm:text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {cargando ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           Guardando...
                         </>
                       ) : (
@@ -395,4 +416,4 @@ const Bienvenida = ({ onCompletado }) => {
   );
 };
 
-export default Bienvenida;
+export default BienvenidaCatequista;

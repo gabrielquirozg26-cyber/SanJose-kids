@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useAuth } from '../context/AuthContext';
+import { useTitles } from '../context/TitlesContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import santosData from '../data/santos.json';
 import AvatarSelector from '../components/AvatarSelector';
 import CompartirProgreso from '../components/CompartirProgreso';
+import MisEvaluaciones from '../components/MisEvaluaciones';
+import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Colores según rareza (igual)
 const RAREZA_COLOR = {
   comun: 'border-slate-500/30 bg-slate-500/10 text-slate-300',
   raro: 'border-blue-500/30 bg-blue-500/10 text-blue-300',
@@ -32,6 +35,8 @@ const NIVEL_NOMBRE = {
 };
 
 const Perfil = () => {
+  const { showToast } = useToast();
+  
   const {
     userDoc,
     usuarioId,
@@ -43,19 +48,26 @@ const Perfil = () => {
     racha,
     vidas,
     inventario,
-    cerrarSesion,
     cofresAbiertos,
+    examenesAprobados,
+    nivelesCompletados,
+    coleccion,
+  } = useGame();
+
+  const {
     actualizarAvatar,
+    cerrarSesion,
+  } = useAuth();
+
+  const {
     titulosDesbloqueados,
     tituloEquipado,
     equiparTitulo,
+    marcosDesbloqueados,
     marcoEquipado,
     equiparMarco,
-    coleccion,
-    examenesAprobados,
-    nivelesCompletados,
     logrosPendientes,
-  } = useGame();
+  } = useTitles();
 
   const [tab, setTab] = useState('info');
   const [selectorAbierto, setSelectorAbierto] = useState(false);
@@ -67,11 +79,18 @@ const Perfil = () => {
   const [equipando, setEquipando] = useState(null);
 
   const guardarBiografia = async () => {
-    if (usuarioId) await updateDoc(doc(db, 'usuarios', usuarioId), { biografia });
+    if (usuarioId) {
+      await updateDoc(doc(db, 'usuarios', usuarioId), { biografia });
+      showToast('📝 Biografía guardada', 'success');
+    }
     setEditandoBio(false);
   };
+
   const guardarSantoFavorito = async () => {
-    if (usuarioId) await updateDoc(doc(db, 'usuarios', usuarioId), { santoFavorito });
+    if (usuarioId) {
+      await updateDoc(doc(db, 'usuarios', usuarioId), { santoFavorito });
+      showToast('🙏 Santo favorito actualizado', 'success');
+    }
     setEditandoSanto(false);
   };
 
@@ -88,13 +107,21 @@ const Perfil = () => {
 
   const handleEquiparTitulo = async (id) => {
     setEquipando(id);
-    await equiparTitulo(id);
-    setTimeout(() => setEquipando(null), 500);
+    const ok = await equiparTitulo(id);
+    setEquipando(null);
+    if (ok) showToast('🏆 Título equipado', 'success');
   };
+
   const handleEquiparMarco = async (id) => {
     setEquipando(id);
-    await equiparMarco(id);
-    setTimeout(() => setEquipando(null), 500);
+    const ok = await equiparMarco(id);
+    setEquipando(null);
+    if (ok) showToast('🖼️ Marco equipado', 'success');
+  };
+
+  const handleCerrarSesion = async () => {
+    await cerrarSesion();
+    showToast('👋 Hasta luego', 'info');
   };
 
   const fadeInUp = {
@@ -112,9 +139,9 @@ const Perfil = () => {
       variants={stagger}
       className="min-h-screen text-white font-sans pb-28 relative"
     >
-      {/* Sin fondo propio: se ve el fondo de la App (iglesia) */}
+      {/* El fondo de la iglesia se ve a través del glassmorphism */}
 
-      {/* Cabecera */}
+      {/* Cabecera - Avatar y nombre */}
       <motion.div variants={fadeInUp} className="relative px-6 pt-8 pb-4">
         <div className="flex flex-col items-center text-center">
           <div className="relative group cursor-pointer" onClick={() => setSelectorAbierto(true)}>
@@ -134,12 +161,14 @@ const Perfil = () => {
               ) : (
                 <span className="text-6xl">{avatar}</span>
               )}
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                <span className="text-white text-xs font-black bg-black/60 px-2 py-1 rounded-full">✏️ Editar</span>
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                <span className="text-white text-xs font-black bg-black/60 px-3 py-1.5 rounded-full">✏️ Editar</span>
               </div>
             </div>
           </div>
-          <h2 className={`text-3xl font-black tracking-tighter mt-5 ${tieneAura ? 'text-yellow-100' : 'text-white'}`}>{nombre}</h2>
+          <h2 className={`text-3xl font-black tracking-tighter mt-5 ${tieneAura ? 'text-yellow-100' : 'text-white'}`}>
+            {nombre}
+          </h2>
           <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
             <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${RAREZA_COLOR[tituloObj?.rareza || 'comun']}`}>
               {tituloObj?.nombre || 'Sin título'}
@@ -151,23 +180,23 @@ const Perfil = () => {
         </div>
       </motion.div>
 
-      {/* Tarjetas estadísticas */}
-      <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-4 px-6 mt-6">
+      {/* Tarjetas de estadísticas */}
+      <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3 px-6 mt-6">
         <div className="glass-card rounded-2xl p-4 text-center border border-white/10 hover:border-yellow-400/30 transition-all">
-          <p className="text-white/40 text-[9px] font-black">🏅 Nivel</p>
+          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🏅 Nivel</p>
           <p className="text-3xl font-black text-white">{nivelActual}</p>
           <p className="text-[10px] text-yellow-400 font-black mt-1">{NIVEL_NOMBRE[nivelActual]}</p>
         </div>
         <div className="glass-card rounded-2xl p-4 text-center border border-yellow-400/20 hover:border-yellow-400/40 transition-all">
-          <p className="text-white/40 text-[9px] font-black">🪙 Monedas</p>
+          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🪙 Monedas</p>
           <p className="text-3xl font-black text-yellow-400">{monedas.toLocaleString()}</p>
         </div>
         <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
-          <p className="text-white/40 text-[9px] font-black">🔥 Racha</p>
+          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🔥 Racha</p>
           <p className="text-2xl font-black text-orange-400">{racha} días</p>
         </div>
         <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
-          <p className="text-white/40 text-[9px] font-black">❤️ Vidas</p>
+          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">❤️ Vidas</p>
           <div className="flex justify-center gap-1 mt-1">
             {[...Array(5)].map((_, i) => (
               <span key={i} className={`text-xl ${i < vidas ? 'text-red-500 drop-shadow-glow' : 'text-white/20'}`}>❤️</span>
@@ -178,7 +207,7 @@ const Perfil = () => {
 
       {/* Tabs */}
       <motion.div variants={fadeInUp} className="flex gap-2 mx-6 mt-8 bg-white/10 backdrop-blur-md rounded-full p-1 border border-white/10">
-        {['info', 'coleccion', 'stats'].map(t => (
+        {['info', 'coleccion', 'stats', 'evaluaciones'].map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -189,6 +218,7 @@ const Perfil = () => {
             {t === 'info' && '📋 Información'}
             {t === 'coleccion' && '📖 Colección'}
             {t === 'stats' && '📊 Estadísticas'}
+            {t === 'evaluaciones' && '📝 Evaluaciones'}
           </button>
         ))}
       </motion.div>
@@ -202,17 +232,18 @@ const Perfil = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="px-6 mt-6 space-y-5"
+            className="px-6 mt-6 space-y-4 pb-6"
           >
+            {/* Biografía */}
             <div className="glass-card rounded-2xl p-5 border border-white/10">
               <div className="flex justify-between items-center">
                 <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">📝 Biografía</p>
                 {!editandoBio ? (
-                  <button onClick={() => setEditandoBio(true)} className="text-white/40 hover:text-white text-xs">✏️ Editar</button>
+                  <button onClick={() => setEditandoBio(true)} className="text-white/40 hover:text-white text-xs transition-colors">✏️ Editar</button>
                 ) : (
                   <div className="flex gap-2">
-                    <button onClick={guardarBiografia} className="text-green-400 text-xs">✓ Guardar</button>
-                    <button onClick={() => { setEditandoBio(false); setBiografia(userDoc?.biografia || ''); }} className="text-red-400 text-xs">✗ Cancelar</button>
+                    <button onClick={guardarBiografia} className="text-green-400 text-xs hover:text-green-300">✓ Guardar</button>
+                    <button onClick={() => { setEditandoBio(false); setBiografia(userDoc?.biografia || ''); }} className="text-red-400 text-xs hover:text-red-300">✗ Cancelar</button>
                   </div>
                 )}
               </div>
@@ -221,24 +252,26 @@ const Perfil = () => {
                   value={biografia}
                   onChange={e => setBiografia(e.target.value.slice(0, 120))}
                   maxLength="120"
-                  className="w-full bg-white/10 rounded-xl p-3 text-sm text-white mt-2 outline-none focus:border-yellow-400 border border-transparent focus:border-yellow-400"
+                  className="w-full bg-white/10 rounded-xl p-3 text-sm text-white mt-2 outline-none focus:border-yellow-400 border border-transparent focus:border-yellow-400 transition-all"
                   rows="3"
                   placeholder="Escribe algo sobre ti..."
                 />
               ) : (
                 <p className="text-white/80 text-sm mt-2 leading-relaxed">{biografia || '✨ Aún no has escrito tu biografía. ¡Cuéntanos sobre ti!'}</p>
               )}
+              {editandoBio && <p className="text-right text-[9px] text-white/30 mt-1">{biografia.length}/120</p>}
             </div>
 
+            {/* Santo favorito */}
             <div className="glass-card rounded-2xl p-5 border border-white/10">
               <div className="flex justify-between items-center">
                 <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">🙏 Santo favorito</p>
                 {!editandoSanto ? (
-                  <button onClick={() => setEditandoSanto(true)} className="text-white/40 hover:text-white text-xs">✏️ Editar</button>
+                  <button onClick={() => setEditandoSanto(true)} className="text-white/40 hover:text-white text-xs transition-colors">✏️ Editar</button>
                 ) : (
                   <div className="flex gap-2">
-                    <button onClick={guardarSantoFavorito} className="text-green-400 text-xs">✓ Guardar</button>
-                    <button onClick={() => { setEditandoSanto(false); setSantoFavorito(userDoc?.santoFavorito || ''); }} className="text-red-400 text-xs">✗ Cancelar</button>
+                    <button onClick={guardarSantoFavorito} className="text-green-400 text-xs hover:text-green-300">✓ Guardar</button>
+                    <button onClick={() => { setEditandoSanto(false); setSantoFavorito(userDoc?.santoFavorito || ''); }} className="text-red-400 text-xs hover:text-red-300">✗ Cancelar</button>
                   </div>
                 )}
               </div>
@@ -248,7 +281,7 @@ const Perfil = () => {
                     <button
                       key={s.id}
                       onClick={() => setSantoFavorito(s.id)}
-                      className={`flex flex-col items-center p-2 rounded-xl transition-all ${santoFavorito === s.id ? 'bg-yellow-400/30 border border-yellow-400' : 'bg-white/5 border border-white/10'}`}
+                      className={`flex flex-col items-center p-2 rounded-xl transition-all ${santoFavorito === s.id ? 'bg-yellow-400/30 border border-yellow-400' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
                     >
                       <span className="text-2xl">{s.icono}</span>
                       <span className="text-[9px] font-black text-white truncate max-w-[60px]">{s.nombre}</span>
@@ -272,18 +305,19 @@ const Perfil = () => {
               )}
             </div>
 
+            {/* Acciones */}
             <button
               onClick={() => setMostrarCompartir(true)}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               📤 Compartir mi progreso
             </button>
 
             <button
-              onClick={cerrarSesion}
-              className="w-full py-4 rounded-2xl border border-red-500/30 text-red-400 font-black text-sm uppercase tracking-widest hover:bg-red-500/10 transition-all"
+              onClick={handleCerrarSesion}
+              className="w-full py-4 rounded-2xl border border-red-500/30 text-red-400 font-black text-sm uppercase tracking-widest hover:bg-red-500/10 transition-all flex items-center justify-center gap-2"
             >
-              Cerrar sesión
+              🚪 Cerrar sesión
             </button>
           </motion.div>
         )}
@@ -298,19 +332,29 @@ const Perfil = () => {
             transition={{ duration: 0.3 }}
             className="px-6 mt-6 space-y-6 pb-6"
           >
+            {/* Títulos */}
             {titulosDesbloqueados?.length > 0 && (
               <div>
-                <h3 className="text-white font-black text-sm uppercase tracking-wider mb-3 flex items-center gap-2">🏆 Títulos ({titulosDesbloqueados.length})</h3>
+                <h3 className="text-white font-black text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
+                  🏆 Títulos ({titulosDesbloqueados.length})
+                </h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                   {titulosDesbloqueados.map(t => {
                     const isEquipped = tituloEquipado === t.id;
                     return (
                       <div key={t.id} className={`glass-card rounded-xl p-3 flex justify-between items-center border transition-all ${isEquipped ? 'ring-2 ring-yellow-400 shadow-lg' : ''} ${RAREZA_COLOR[t.rareza]}`}>
-                        <div><p className="font-black text-sm">{t.nombre}</p><p className="text-[9px] text-white/50">{t.rareza}</p></div>
+                        <div>
+                          <p className="font-black text-sm">{t.nombre}</p>
+                          <p className="text-[9px] text-white/50">{t.rareza}</p>
+                        </div>
                         <button
                           onClick={() => handleEquiparTitulo(t.id)}
                           disabled={equipando === t.id || isEquipped}
-                          className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${isEquipped ? 'bg-green-500/20 text-green-300 cursor-default' : 'bg-yellow-400 text-blue-900 hover:scale-105'}`}
+                          className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                            isEquipped 
+                              ? 'bg-green-500/20 text-green-300 cursor-default' 
+                              : 'bg-yellow-400 text-blue-900 hover:scale-105'
+                          }`}
                         >
                           {equipando === t.id ? '...' : isEquipped ? '✓ Equipado' : 'Equipar'}
                         </button>
@@ -321,9 +365,12 @@ const Perfil = () => {
               </div>
             )}
 
+            {/* Marcos */}
             {inventario.filter(i => i.startsWith('marco_')).length > 0 && (
               <div>
-                <h3 className="text-white font-black text-sm uppercase tracking-wider mb-3 flex items-center gap-2">🖼️ Marcos</h3>
+                <h3 className="text-white font-black text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
+                  🖼️ Marcos
+                </h3>
                 <div className="space-y-2">
                   {inventario.filter(i => i.startsWith('marco_')).map(id => {
                     const estilo = MARCOS_ESTILOS[id];
@@ -331,11 +378,18 @@ const Perfil = () => {
                     const isEquipped = marcoEquipado === id;
                     return (
                       <div key={id} className={`glass-card rounded-xl p-3 flex justify-between items-center border ${isEquipped ? 'ring-2 ring-yellow-400' : 'border-white/10'}`}>
-                        <div><p className="font-black text-sm">{estilo.nombre}</p><p className="text-[9px] text-white/50">Cosmético</p></div>
+                        <div>
+                          <p className="font-black text-sm">{estilo.nombre}</p>
+                          <p className="text-[9px] text-white/50">Cosmético</p>
+                        </div>
                         <button
                           onClick={() => handleEquiparMarco(id)}
                           disabled={equipando === id || isEquipped}
-                          className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${isEquipped ? 'bg-green-500/20 text-green-300' : 'bg-yellow-400 text-blue-900 hover:scale-105'}`}
+                          className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                            isEquipped 
+                              ? 'bg-green-500/20 text-green-300' 
+                              : 'bg-yellow-400 text-blue-900 hover:scale-105'
+                          }`}
                         >
                           {equipando === id ? '...' : isEquipped ? '✓ Equipado' : 'Equipar'}
                         </button>
@@ -346,9 +400,12 @@ const Perfil = () => {
               </div>
             )}
 
+            {/* Santos */}
             {santosColeccion.length > 0 && (
               <div>
-                <h3 className="text-white font-black text-sm uppercase tracking-wider mb-3">📖 Santos ({santosColeccion.length}/{santosData.santos.length})</h3>
+                <h3 className="text-white font-black text-sm uppercase tracking-wider mb-3">
+                  📖 Santos ({santosColeccion.length}/{santosData.santos.length})
+                </h3>
                 <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                   {santosColeccion.map(s => (
                     <div key={s.id} className="glass-card rounded-xl p-2 text-center border border-white/10 hover:scale-105 transition-all">
@@ -372,6 +429,7 @@ const Perfil = () => {
             transition={{ duration: 0.3 }}
             className="px-6 mt-6 space-y-6 pb-6"
           >
+            {/* Progreso */}
             <div className="glass-card rounded-2xl p-5 border border-white/10">
               <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">📊 Progreso general</p>
               <div className="h-3 bg-white/10 rounded-full mt-3 overflow-hidden">
@@ -380,6 +438,7 @@ const Perfil = () => {
               <p className="text-white/60 text-sm mt-2">{Math.round(progresoGlobal)}% completado</p>
             </div>
 
+            {/* Logros pendientes */}
             {logrosPendientes?.length > 0 && (
               <div className="glass-card rounded-2xl p-5 border border-purple-500/30 bg-purple-500/5">
                 <p className="text-purple-300 text-[9px] font-black uppercase tracking-widest">✨ Logros por canjear</p>
@@ -392,25 +451,27 @@ const Perfil = () => {
               </div>
             )}
 
+            {/* Estadísticas numéricas */}
             <div className="grid grid-cols-2 gap-3">
               <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
-                <p className="text-white/40 text-[9px] font-black">✅ Niveles completados</p>
+                <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">✅ Niveles</p>
                 <p className="text-2xl font-black text-white">{nivelesCount}</p>
               </div>
               <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
-                <p className="text-white/40 text-[9px] font-black">🎓 Exámenes aprobados</p>
+                <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🎓 Exámenes</p>
                 <p className="text-2xl font-black text-white">{examenesCount}</p>
               </div>
               <div className="glass-card rounded-2xl p-4 text-center border border-amber-400/20">
-                <p className="text-white/40 text-[9px] font-black">📦 Cofres abiertos</p>
+                <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">📦 Cofres</p>
                 <p className="text-2xl font-black text-amber-400">{cofresAbiertos}</p>
               </div>
               <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
-                <p className="text-white/40 text-[9px] font-black">🛡️ Escudos activos</p>
+                <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🛡️ Escudos</p>
                 <p className="text-2xl font-black text-white">{inventario.filter(i => i === 'escudo_miguel').length}</p>
               </div>
             </div>
 
+            {/* Gráfico de evolución */}
             <div className="glass-card rounded-2xl p-5 border border-white/10">
               <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">📈 Evolución de nivel</p>
               <div className="flex items-end gap-1 h-32 mt-3">
@@ -425,9 +486,26 @@ const Perfil = () => {
             </div>
           </motion.div>
         )}
+
+        {/* TAB EVALUACIONES */}
+        {tab === 'evaluaciones' && (
+          <motion.div
+            key="evaluaciones"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="px-6 mt-6 pb-6"
+          >
+            <MisEvaluaciones />
+          </motion.div>
+        )}
       </AnimatePresence>
 
+      {/* Modal de avatar */}
       <AvatarSelector isOpen={selectorAbierto} onClose={() => setSelectorAbierto(false)} onSelectAvatar={actualizarAvatar} />
+
+      {/* Modal para compartir progreso */}
       <CompartirProgreso
         isOpen={mostrarCompartir}
         onClose={() => setMostrarCompartir(false)}

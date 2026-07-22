@@ -32,11 +32,10 @@ const initProgreso = (misiones) => {
 };
 
 export const MissionsProvider = ({ children }) => {
-  const { usuarioId } = useGame();
+  const { usuarioId, userDoc } = useGame();
   const [misionesState, setMisionesState] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Función para inicializar misiones
   const inicializarMisiones = () => {
     return {
       diaActual: hoyStr(),
@@ -46,7 +45,6 @@ export const MissionsProvider = ({ children }) => {
     };
   };
 
-  // Cargar misiones desde Firestore
   useEffect(() => {
     if (!usuarioId) {
       setMisionesState(null);
@@ -62,30 +60,28 @@ export const MissionsProvider = ({ children }) => {
         
         if (docSnap.exists()) {
           const data = docSnap.data();
-          console.log('📄 Datos del usuario:', data);
-          
           let misiones = data.misiones || {};
-          console.log('📋 Misiones en Firestore:', misiones);
           
-          // Si misiones está vacío o no tiene la estructura correcta, inicializar
-          if (!misiones.diaActual || !misiones.diarias || Object.keys(misiones.diarias).length === 0) {
+          if (!misiones.diaActual || Object.keys(misiones.diarias || {}).length === 0) {
             console.log('🔄 Inicializando misiones para usuario (vacías)');
             misiones = inicializarMisiones();
             await updateDoc(docRef, { misiones });
           }
           
-          // Verificar si hay que resetear diarias
           const hoy = hoyStr();
           const semana = semanaStr();
           let necesitaActualizacion = false;
           const nuevo = { ...misiones };
 
+          // Verificar si el día cambió
           if (misiones.diaActual !== hoy) {
             console.log('🔄 Resetear misiones diarias (nuevo día)');
             nuevo.diaActual = hoy;
             nuevo.diarias = initProgreso(MISIONES_DIARIAS);
             necesitaActualizacion = true;
           }
+
+          // Verificar si la semana cambió
           if (misiones.semanaActual !== semana) {
             console.log('🔄 Resetear misiones semanales (nueva semana)');
             nuevo.semanaActual = semana;
@@ -93,16 +89,27 @@ export const MissionsProvider = ({ children }) => {
             necesitaActualizacion = true;
           }
 
+          // ✅ FORZAR RESETEO DE SEMANALES SI ESTÁN MARCADAS COMO RECLAMADAS CON PROGRESO 0
+          if (nuevo.semanales) {
+            Object.keys(nuevo.semanales).forEach(key => {
+              const mision = nuevo.semanales[key];
+              if (mision.reclamada && mision.progreso === 0) {
+                console.log(`🔄 Forzando reset de misión ${key} (reclamada con progreso 0)`);
+                mision.reclamada = false;
+                necesitaActualizacion = true;
+              }
+            });
+          }
+
           if (necesitaActualizacion) {
-            console.log('💾 Guardando misiones actualizadas');
             await updateDoc(docRef, { misiones: nuevo });
             setMisionesState(nuevo);
+            console.log('📊 Misiones guardadas:', nuevo);
           } else {
-            console.log('✅ Misiones cargadas correctamente:', misiones);
             setMisionesState(misiones);
+            console.log('📊 Misiones cargadas:', misiones);
           }
         } else {
-          // Usuario no tiene documento - crear uno
           console.log('🔄 Creando documento de usuario con misiones');
           const inicial = inicializarMisiones();
           await updateDoc(doc(db, 'usuarios', usuarioId), { misiones: inicial });
@@ -110,7 +117,6 @@ export const MissionsProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('❌ Error cargando misiones:', error);
-        // Si hay error, inicializar misiones localmente
         const inicial = inicializarMisiones();
         setMisionesState(inicial);
       } finally {
@@ -121,7 +127,6 @@ export const MissionsProvider = ({ children }) => {
     cargarMisiones();
   }, [usuarioId]);
 
-  // Avanzar una misión específica
   const avanzarMision = async (tipo, cantidad = 1) => {
     if (!usuarioId || !misionesState) {
       console.warn('⚠️ No se puede avanzar misión: usuario o misionesState null');
@@ -141,7 +146,7 @@ export const MissionsProvider = ({ children }) => {
           if (nuevoProgreso !== mision.progreso) {
             mision.progreso = nuevoProgreso;
             hayCambios = true;
-            console.log(`   📊 ${def.id}: ${mision.progreso} → ${nuevoProgreso}`);
+            console.log(`   📊 ${def.id}: ${mision.progreso - cantidad} → ${nuevoProgreso}`);
           }
         });
       };
@@ -159,7 +164,6 @@ export const MissionsProvider = ({ children }) => {
     }
   };
 
-  // Reclamar una misión completada
   const reclamarMision = async (grupo, id, recompensa) => {
     if (!usuarioId || !misionesState) return false;
 
@@ -179,7 +183,6 @@ export const MissionsProvider = ({ children }) => {
       setMisionesState(nuevo);
       await updateDoc(doc(db, 'usuarios', usuarioId), { misiones: nuevo });
       
-      // Sumar recompensa
       const userRef = doc(db, 'usuarios', usuarioId);
       await updateDoc(userRef, { monedas: increment(recompensa) });
       

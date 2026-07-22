@@ -1,269 +1,525 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
-// ── Configuración de cofres ────────────────────────────────────────────────
-export const TIPOS_COFRE = {
+// ── EFECTOS DE SONIDO ────────────────────────────────────────────────────
+const playSound = (type) => {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    switch (type) {
+      case 'open':
+        oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
+        oscillator.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        oscillator.type = 'sine';
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.4);
+        break;
+        
+      case 'reveal':
+        const notes = [523, 659, 784, 1047];
+        notes.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.12 + 0.3);
+          osc.type = 'sine';
+          osc.start(audioCtx.currentTime + i * 0.12);
+          osc.stop(audioCtx.currentTime + i * 0.12 + 0.3);
+        });
+        break;
+        
+      case 'legendary':
+        const notes2 = [523, 659, 784, 1047, 1319];
+        notes2.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.4);
+          osc.type = 'square';
+          osc.start(audioCtx.currentTime + i * 0.1);
+          osc.stop(audioCtx.currentTime + i * 0.1 + 0.4);
+        });
+        break;
+        
+      case 'coin':
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        oscillator.type = 'sine';
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.15);
+        break;
+        
+      default:
+        break;
+    }
+    
+    audioCtx.resume();
+  } catch (e) {}
+};
+
+// ── VIBRACIÓN ────────────────────────────────────────────────────────────
+const vibrate = (pattern) => {
+  try {
+    if (window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(pattern);
+    }
+  } catch (e) {}
+};
+
+// ── CONFIGURACIÓN DE COFRES ─────────────────────────────────────────────
+const COFRE_CONFIG = {
   madera: {
-    id: 'madera',
     nombre: 'Cofre de Madera',
     icono: '📦',
-    color: 'from-amber-800 to-amber-600',
-    border: 'border-amber-600/60',
-    glow: 'shadow-[0_0_30px_rgba(180,83,9,0.4)]',
-    particulas: ['#92400e', '#d97706', '#fbbf24', '#ffffff'],
-    descripcion: 'Santo común',
+    color: 'from-amber-800/40 to-amber-600/20 border-amber-600/50',
+    glow: 'shadow-amber-600/20',
+    rareza: 'comun',
+    mensaje: '¡Has encontrado un santo!',
   },
   plata: {
-    id: 'plata',
     nombre: 'Cofre de Plata',
     icono: '🎁',
-    color: 'from-slate-400 to-slate-300',
-    border: 'border-slate-400/60',
-    glow: 'shadow-[0_0_40px_rgba(148,163,184,0.5)]',
-    particulas: ['#94a3b8', '#cbd5e1', '#ffffff', '#facc15'],
-    descripcion: 'Santo raro o común',
+    color: 'from-slate-400/40 to-slate-300/20 border-slate-400/50',
+    glow: 'shadow-slate-400/20',
+    rareza: 'raro',
+    mensaje: '¡Un santo raro te ha bendecido!',
   },
   oro: {
-    id: 'oro',
     nombre: 'Cofre de Oro',
     icono: '🏆',
-    color: 'from-yellow-400 to-amber-300',
-    border: 'border-yellow-400/80',
-    glow: 'shadow-[0_0_60px_rgba(250,204,21,0.7)]',
-    particulas: ['#facc15', '#fbbf24', '#ffffff', '#a78bfa'],
-    descripcion: '¡Santo legendario!',
+    color: 'from-yellow-400/40 to-amber-300/20 border-yellow-400/50',
+    glow: 'shadow-yellow-400/30',
+    rareza: 'legendario',
+    mensaje: '✨ ¡Un santo legendario aparece! ✨',
   },
 };
 
-// ── Colores según rareza para mostrar en la tarjeta ───────────────────────
-const RAREZA_CLASE = {
-  comun:      'bg-slate-500/30 text-slate-300 border-slate-500/30',
-  raro:       'bg-blue-500/30 text-blue-300 border-blue-500/30',
-  legendario: 'bg-yellow-500/30 text-yellow-300 border-yellow-500/30',
+const RAREZA_CONFIG = {
+  comun: { color: 'border-slate-500/30 bg-slate-500/10 text-slate-300', label: 'Común' },
+  raro: { color: 'border-blue-500/30 bg-blue-500/10 text-blue-300', label: 'Raro' },
+  legendario: { color: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300', label: 'Legendario' },
 };
 
-const CofreGracia = ({ tipoCofre = 'madera', recompensa, onCerrar }) => {
-  const [fase, setFase] = useState('idle'); // idle → sacudiendo → abriendo → revelando → listo
-  const config = TIPOS_COFRE[tipoCofre] ?? TIPOS_COFRE.madera;
-
-  // Secuencia de animación automática al tocar el cofre
-  const iniciarApertura = () => {
-    if (fase !== 'idle') return;
-    setFase('sacudiendo');
-    setTimeout(() => setFase('abriendo'), 800);
-    setTimeout(() => {
-      setFase('revelando');
-      const boom = () => confetti({
-        particleCount: 180,
-        spread: 120,
-        origin: { y: 0.5 },
-        colors: ['#facc15', '#ffffff', '#a855f7', '#34d399'],
-        startVelocity: 20,
-      });
-      boom();
-      if (tipoCofre === 'oro') {
-        setTimeout(boom, 400);
-        setTimeout(boom, 800);
-      } else if (tipoCofre === 'plata') {
-        setTimeout(boom, 500);
-      }
-    }, 1800);
-    setTimeout(() => setFase('listo'), 2600);
-  };
-
-  if (!recompensa) return null;
+// ── COMPONENTE DE CARTA DE SANTO ────────────────────────────────────────
+const CartaSanto = ({ santo, rarezaConfig, esNuevo, esLegendario, compensacion }) => {
+  const [imagenCargada, setImagenCargada] = useState(false);
+  const [errorImagen, setErrorImagen] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md px-6">
-      {/* Fondos dinámicos por tipo */}
-      <div className={`absolute inset-0 pointer-events-none transition-opacity duration-1000
-        ${fase === 'revelando' || fase === 'listo' ? 'opacity-100' : 'opacity-0'}`}>
-        {tipoCofre === 'oro' && (
-          <>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-yellow-400/15 rounded-full blur-[150px]" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px]" />
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-yellow-300/10 rounded-full blur-[80px]" />
-          </>
-        )}
-        {tipoCofre === 'plata' && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-slate-400/10 rounded-full blur-[120px]" />
-        )}
-        {tipoCofre === 'madera' && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-amber-700/10 rounded-full blur-[100px]" />
-        )}
-      </div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.3, rotateY: 90 }}
+      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+      transition={{ 
+        type: 'spring', 
+        stiffness: 300, 
+        damping: 20,
+        duration: 0.8,
+        delay: 0.3
+      }}
+      className={`glass-card rounded-2xl p-4 sm:p-6 border-2 ${rarezaConfig.color} relative overflow-hidden`}
+      style={{ perspective: 1000 }}
+    >
+      {/* Fondo decorativo para legendarios */}
+      {esLegendario && (
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 to-amber-400/10" />
+      )}
 
-      <div className="w-full max-w-sm flex flex-col items-center gap-6 relative">
-        {/* Tipo y descripción */}
-        <div className="text-center animate-slide-up">
-          <p className={`text-[10px] font-black uppercase tracking-[0.5em] mb-1
-            ${tipoCofre === 'oro' ? 'text-yellow-400' : tipoCofre === 'plata' ? 'text-slate-300' : 'text-amber-500'}`}>
-            {config.descripcion}
+      {/* Efecto de brillo en borde */}
+      {esLegendario && (
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-yellow-400/20 via-transparent to-yellow-400/20 animate-pulse" />
+      )}
+
+      <div className="flex flex-col items-center gap-3 relative z-10">
+        {/* Imagen del santo (como carta del mundial) */}
+        <motion.div
+          initial={{ scale: 0, rotate: -10 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 0.5 }}
+          className={`relative w-40 h-40 sm:w-56 sm:h-56 rounded-xl overflow-hidden border-2 ${
+            esLegendario ? 'border-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.3)]' : 'border-white/20'
+          } bg-gradient-to-b from-gray-800 to-gray-900`}
+        >
+          {!imagenCargada && !errorImagen && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+          
+          {errorImagen || !santo.imagen ? (
+            <div className="w-full h-full flex items-center justify-center text-6xl sm:text-7xl">
+              {santo.icono || '🙏'}
+            </div>
+          ) : (
+            <img
+              src={santo.imagen}
+              alt={santo.nombre}
+              className={`w-full h-full object-cover transition-opacity duration-500 ${
+                imagenCargada ? 'opacity-100' : 'opacity-0'
+              }`}
+              onLoad={() => setImagenCargada(true)}
+              onError={() => setErrorImagen(true)}
+              loading="lazy"
+            />
+          )}
+
+          {/* Efecto de brillo al cargar */}
+          {imagenCargada && esLegendario && (
+            <div className="absolute inset-0 bg-gradient-to-t from-yellow-400/20 via-transparent to-transparent" />
+          )}
+        </motion.div>
+
+        {/* Nombre y rareza */}
+        <div className="text-center">
+          <p className={`text-xl sm:text-2xl font-black ${rarezaConfig.color}`}>
+            {santo.nombre}
           </p>
-          <h2 className="text-2xl font-black text-white tracking-tighter">{config.nombre}</h2>
+          <div className={`inline-block px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${rarezaConfig.color}`}>
+            {santo.rareza}
+          </div>
         </div>
 
-        {/* El cofre */}
-        <div className="relative flex flex-col items-center">
-          {(fase === 'revelando' || fase === 'listo') && (
-            <>
-              <div className={`absolute inset-[-20px] rounded-full opacity-30 animate-ping bg-gradient-to-br ${config.color}`} />
-              <div className={`absolute inset-[-8px] rounded-full opacity-20 animate-pulse bg-gradient-to-br ${config.color}`} />
-            </>
-          )}
+        {/* Descripción */}
+        <p className="text-white/60 text-xs sm:text-sm text-center leading-relaxed max-w-xs">
+          {santo.descripcion}
+        </p>
 
-          <div
-            onClick={iniciarApertura}
-            className={`
-              relative w-40 h-40 rounded-3xl flex items-center justify-center cursor-pointer
-              bg-gradient-to-br ${config.color} border-4 ${config.border} ${config.glow}
-              transition-all duration-300 select-none
-              ${fase === 'idle' ? 'hover:scale-105 active:scale-95' : ''}
-              ${fase === 'sacudiendo' ? 'animate-[shake_0.15s_ease-in-out_infinite]' : ''}
-              ${fase === 'abriendo' ? 'scale-110' : ''}
-              ${fase === 'revelando' || fase === 'listo' ? 'scale-90 opacity-80' : ''}
-            `}
-            style={{
-              animation: fase === 'sacudiendo' ? 'shake 0.15s ease-in-out infinite' : undefined,
-            }}
-          >
-            <span className={`text-7xl transition-all duration-500 drop-shadow-2xl select-none
-              ${fase === 'abriendo' ? 'scale-125' : ''}
-              ${fase === 'revelando' || fase === 'listo' ? 'scale-75 opacity-60' : ''}`}>
-              {config.icono}
-            </span>
-
-            {fase === 'abriendo' && (
-              <div className="absolute inset-0 flex items-start justify-center overflow-hidden rounded-3xl">
-                <div className={`w-full h-1/2 bg-gradient-to-br ${config.color} border-b-4 ${config.border} rounded-t-3xl animate-[openLid_0.6s_ease-out_forwards]`} />
-              </div>
-            )}
-          </div>
-
-          {fase === 'idle' && (
-            <div className="mt-4 flex flex-col items-center gap-2 animate-bounce">
-              <p className="text-white/50 text-xs font-black uppercase tracking-widest">Toca para abrir</p>
-              <span className="text-white/30 text-lg">👆</span>
-            </div>
-          )}
-
-          {fase === 'abriendo' && (
-            <div className="absolute inset-0 pointer-events-none">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i}
-                  className={`absolute w-2 h-2 rounded-full bg-gradient-to-br ${config.color} animate-[float_0.8s_ease-out_forwards]`}
-                  style={{
-                    left: `${20 + (i * 10)}%`,
-                    top: `${30 + (i % 3) * 15}%`,
-                    animationDelay: `${i * 0.05}s`,
-                    opacity: 0,
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* ── Recompensa revelada (imagen del santo) ── */}
-        {(fase === 'revelando' || fase === 'listo') && recompensa && recompensa.santo && (
-          <div className="w-full animate-slide-up space-y-4">
-            <div className={`glass-card rounded-3xl p-6 border text-center space-y-3
-              ${tipoCofre === 'oro'   ? 'border-yellow-400/50 bg-yellow-400/5'
-              : tipoCofre === 'plata' ? 'border-slate-400/40 bg-slate-400/5'
-              :                        'border-amber-600/40 bg-amber-600/5'}`}>
-
-              <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.5em]">
-                {recompensa.tipo === 'nuevo' ? '✨ ¡Nuevo Santo! ✨' : '🪙 Santo repetido'}
-              </p>
-
-              {/* Aquí mostramos la imagen del santo o fallback a emoji */}
-              <div className={`w-28 h-28 rounded-2xl mx-auto flex items-center justify-center shadow-xl overflow-hidden bg-gradient-to-br ${config.color}`}>
-                {recompensa.santo.imagen ? (
-                  <img
-                    src={recompensa.santo.imagen}
-                    alt={recompensa.santo.nombre}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Si la imagen falla, mostrar emoji
-                      e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = `<span class="text-6xl">${recompensa.santo.icono || '📿'}</span>`;
-                    }}
-                  />
-                ) : (
-                  <span className="text-6xl">{recompensa.santo.icono || '📿'}</span>
-                )}
-              </div>
-
-              <div>
-                <p className={`font-black text-xl
-                  ${tipoCofre === 'oro' ? 'text-yellow-400'
-                  : tipoCofre === 'plata' ? 'text-slate-200'
-                  : 'text-amber-400'}`}>
-                  {recompensa.santo.nombre}
-                </p>
-                {recompensa.tipo === 'repetido' && (
-                  <p className="text-white/60 text-sm mt-1">
-                    🪙 +{recompensa.compensacion} monedas por duplicado
-                  </p>
-                )}
-              </div>
-
-              <span className={`inline-block text-[10px] font-black uppercase px-3 py-1 rounded-full border ${RAREZA_CLASE[recompensa.santo.rareza]}`}>
-                {recompensa.santo.rareza.toUpperCase()}
-                {recompensa.santo.rareza === 'legendario' && (
-                  <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full h-1 bg-yellow-400 animate-pulse" />
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-1 bg-yellow-400 animate-pulse" />
-                  </div>
-                )}
-              </span>
-
-              {recompensa.tipo === 'nuevo' && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest bg-green-500/20 border-green-500/40 text-green-300">
-                  📖 Añadido al álbum
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Botón cerrar */}
-        {fase === 'listo' && (
-          <button onClick={onCerrar}
-            className="w-full py-4 rounded-2xl bg-white text-black font-black text-base
-              uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all animate-slide-up">
-            ¡Genial! 🙏
-          </button>
-        )}
-
-        {/* Saltarse la animación */}
-        {fase !== 'idle' && fase !== 'listo' && (
-          <button
-            onClick={() => {
-              setFase('listo');
-              confetti({ particleCount: 80, spread: 80, origin: { y: 0.5 }, colors: config.particulas });
-            }}
-            className="text-white/20 text-[10px] font-black uppercase tracking-widest hover:text-white/40 transition-colors mt-2">
-            Saltar animación
-          </button>
-        )}
+        {/* Badge de nuevo/repetido */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7 }}
+          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+            esNuevo 
+              ? 'bg-green-500/20 border border-green-400/40 text-green-400' 
+              : 'bg-yellow-500/20 border border-yellow-400/40 text-yellow-400'
+          }`}
+        >
+          {esNuevo ? '🆕 ¡Nuevo!' : `🔄 Repetido · +${compensacion} 🪙`}
+        </motion.div>
       </div>
+    </motion.div>
+  );
+};
+
+// ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────
+const CofreGracia = ({ tipoCofre, recompensa, onCerrar }) => {
+  const [estado, setEstado] = useState('cerrado');
+  const [mostrarSanto, setMostrarSanto] = useState(false);
+  const [particulas, setParticulas] = useState([]);
+  const [brilloIntensidad, setBrilloIntensidad] = useState(0);
+  const containerRef = useRef(null);
+
+  const config = COFRE_CONFIG[tipoCofre] || COFRE_CONFIG.madera;
+  const rarezaConfig = RAREZA_CONFIG[recompensa?.santo?.rareza] || RAREZA_CONFIG.comun;
+  const esNuevo = recompensa?.tipo === 'nuevo';
+  const esRepetido = recompensa?.tipo === 'repetido';
+  const esLegendario = recompensa?.santo?.rareza === 'legendario';
+
+  // ── GENERAR PARTÍCULAS ──
+  useEffect(() => {
+    if (estado === 'abriendo') {
+      const nuevasParticulas = [];
+      const colores = esLegendario 
+        ? ['#facc15', '#ffffff', '#ff8c00', '#ffdd00', '#ff6b6b', '#a855f7']
+        : ['#facc15', '#ffffff', '#ff8c00', '#ffdd00', '#3b82f6'];
+      
+      for (let i = 0; i < (esLegendario ? 50 : 30); i++) {
+        nuevasParticulas.push({
+          id: i,
+          x: 10 + Math.random() * 80,
+          y: 10 + Math.random() * 80,
+          size: 2 + Math.random() * (esLegendario ? 10 : 6),
+          delay: Math.random() * 0.5,
+          duration: 0.8 + Math.random() * 0.6,
+          color: colores[Math.floor(Math.random() * colores.length)]
+        });
+      }
+      setParticulas(nuevasParticulas);
+    }
+  }, [estado, esLegendario]);
+
+  // ── EFECTO DE BRILLO ──
+  useEffect(() => {
+    if (estado === 'abriendo') {
+      const interval = setInterval(() => {
+        setBrilloIntensidad(prev => prev === 0 ? 1 : 0);
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, [estado]);
+
+  // ── ANIMACIÓN DE APERTURA ──
+  useEffect(() => {
+    if (estado === 'cerrado') {
+      const timer = setTimeout(() => {
+        setEstado('abriendo');
+        
+        playSound('open');
+        vibrate([50, 50, 50]);
+        
+        confetti({
+          particleCount: 80,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#facc15', '#ffffff', '#ff8c00', '#ffdd00']
+        });
+        
+        setTimeout(() => {
+          setEstado('abierto');
+          setMostrarSanto(true);
+          
+          if (esLegendario) {
+            playSound('legendary');
+            vibrate([100, 50, 100, 50, 200]);
+          } else {
+            playSound('reveal');
+            vibrate([80, 50, 80]);
+          }
+          
+          if (esNuevo) {
+            const intensity = esLegendario ? 400 : 250;
+            const colors = esLegendario 
+              ? ['#facc15', '#ffffff', '#ff8c00', '#ffdd00', '#ff6b6b', '#a855f7']
+              : ['#facc15', '#ffffff', '#ff8c00', '#ffdd00'];
+            
+            confetti({
+              particleCount: intensity,
+              spread: 150,
+              origin: { y: 0.3 },
+              colors: colors
+            });
+            
+            setTimeout(() => {
+              confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.5 },
+                colors: ['#facc15', '#ffdd00', '#ffffff']
+              });
+            }, 300);
+            
+            if (esLegendario) {
+              setTimeout(() => {
+                confetti({
+                  particleCount: 200,
+                  spread: 130,
+                  origin: { y: 0.2 },
+                  colors: ['#facc15', '#ff6b6b', '#ffd93d', '#a855f7', '#4d96ff']
+                });
+              }, 600);
+            }
+          } else if (esRepetido) {
+            playSound('coin');
+            confetti({
+              particleCount: 60,
+              spread: 60,
+              origin: { y: 0.6 },
+              colors: ['#facc15', '#ffdd00']
+            });
+          }
+        }, 1200);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [estado, esLegendario, esNuevo, esRepetido]);
+
+  // ── ANIMACIONES ──
+  const cofreVariants = {
+    cerrado: {
+      scale: 1,
+      rotateX: 0,
+      transition: { duration: 0.5 }
+    },
+    abriendo: {
+      scale: [1, 1.15, 1],
+      rotateX: [0, -15, 0],
+      transition: { duration: 0.8, times: [0, 0.5, 1] }
+    },
+    abierto: {
+      scale: 1,
+      rotateX: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+      <motion.div
+        ref={containerRef}
+        initial={{ opacity: 0, scale: 0.8, y: 50 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.8, y: 50 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="relative w-full max-w-md"
+      >
+        {/* Efecto de luz exterior */}
+        <div 
+          className={`absolute -inset-1 rounded-3xl bg-gradient-to-r ${config.color} blur-xl transition-opacity duration-300 ${
+            estado === 'abriendo' ? 'opacity-70' : 'opacity-50'
+          }`}
+          style={{ 
+            opacity: estado === 'abriendo' ? 0.5 + brilloIntensidad * 0.3 : 0.5,
+            animation: estado === 'abriendo' ? 'pulse-glow 0.6s ease-in-out infinite alternate' : 'none'
+          }}
+        />
+
+        <div className={`relative glass-card rounded-3xl p-6 sm:p-8 border-2 ${config.color} bg-black/70 backdrop-blur-xl shadow-2xl overflow-hidden`}>
+          {/* Decoración de fondo */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-yellow-400/5 rounded-full blur-[80px]" />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-400/5 rounded-full blur-[80px]" />
+
+          {/* Partículas flotantes */}
+          {estado === 'abriendo' && particulas.map((p, i) => (
+            <motion.div
+              key={p.id}
+              custom={i}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                opacity: [0, 1, 0],
+                scale: [0, 1.5, 0],
+                y: [0, -60 + Math.random() * 120],
+                x: [0, -40 + Math.random() * 80],
+              }}
+              transition={{
+                delay: i * 0.05,
+                duration: 1.8 + Math.random() * 0.6,
+                ease: 'easeOut'
+              }}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                width: p.size,
+                height: p.size,
+                backgroundColor: p.color,
+                boxShadow: `0 0 ${p.size * 2}px ${p.color}`
+              }}
+            />
+          ))}
+
+          <div className="relative z-10 text-center space-y-5">
+            {/* Título */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-1"
+            >
+              <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.4em]">
+                Has recibido un
+              </p>
+              <h2 className={`text-2xl sm:text-3xl font-black bg-gradient-to-r ${config.color} bg-clip-text text-transparent`}>
+                {config.nombre}
+              </h2>
+            </motion.div>
+
+            {/* Cofre */}
+            <motion.div
+              variants={cofreVariants}
+              initial="cerrado"
+              animate={estado}
+              className="flex justify-center py-4"
+              style={{ perspective: 800 }}
+            >
+              <div className="relative">
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-32 h-4 bg-black/40 rounded-full blur-md" />
+                
+                <motion.div
+                  className={`text-8xl sm:text-9xl drop-shadow-2xl transition-all duration-500 ${
+                    estado === 'abriendo' ? 'scale-110' : ''
+                  }`}
+                  animate={{
+                    rotateY: estado === 'abriendo' ? [0, 25, 0] : 0,
+                    scale: estado === 'abierto' ? 1.1 : 1,
+                    filter: estado === 'abriendo' ? 'brightness(1.3)' : 'brightness(1)'
+                  }}
+                  transition={{ duration: 0.8 }}
+                >
+                  {estado === 'abierto' ? '✨' : config.icono}
+                </motion.div>
+
+                {estado === 'abriendo' && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 0.6, scale: 2 }}
+                    transition={{ duration: 0.6, repeat: Infinity, repeatType: 'reverse' }}
+                    className="absolute inset-0 bg-yellow-400/30 rounded-full blur-3xl"
+                  />
+                )}
+              </div>
+            </motion.div>
+
+            {/* Mensaje de apertura */}
+            <AnimatePresence>
+              {estado === 'abriendo' && (
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="text-yellow-400 font-black text-sm animate-pulse"
+                >
+                  {esLegendario ? '✨ Abriendo cofre legendario...' : '🔓 Abriendo cofre...'}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            {/* Santo revelado (con imagen) */}
+            <AnimatePresence>
+              {mostrarSanto && recompensa?.santo && (
+                <CartaSanto
+                  santo={recompensa.santo}
+                  rarezaConfig={rarezaConfig}
+                  esNuevo={esNuevo}
+                  esLegendario={esLegendario}
+                  compensacion={recompensa.compensacion}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Botón cerrar */}
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: estado === 'abierto' ? 1 : 0.5 }}
+              whileHover={estado === 'abierto' ? { scale: 1.05 } : {}}
+              whileTap={estado === 'abierto' ? { scale: 0.95 } : {}}
+              onClick={() => {
+                if (estado === 'abierto') {
+                  playSound('coin');
+                  onCerrar();
+                }
+              }}
+              className={`w-full py-3 sm:py-4 rounded-2xl font-black text-sm sm:text-base uppercase tracking-widest transition-all ${
+                estado === 'abierto'
+                  ? `bg-gradient-to-r ${config.color} text-white hover:shadow-2xl shadow-xl`
+                  : 'bg-white/10 text-white/30 cursor-not-allowed'
+              }`}
+              disabled={estado !== 'abierto'}
+            >
+              {estado === 'abierto' ? '✨ Continuar' : '⏳ Espera...'}
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
 
       <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0) rotate(0deg); }
-          20%       { transform: translateX(-6px) rotate(-3deg); }
-          40%       { transform: translateX(6px)  rotate(3deg); }
-          60%       { transform: translateX(-4px) rotate(-2deg); }
-          80%       { transform: translateX(4px)  rotate(2deg); }
-        }
-        @keyframes openLid {
-          0%   { transform: rotateX(0deg)   translateY(0); opacity: 1; }
-          100% { transform: rotateX(-120deg) translateY(-40px); opacity: 0; }
-        }
-        @keyframes float {
-          0%   { transform: translateY(0)    scale(1);   opacity: 1; }
-          100% { transform: translateY(-60px) scale(0);  opacity: 0; }
+        @keyframes pulse-glow {
+          0% { opacity: 0.5; }
+          100% { opacity: 0.8; }
         }
       `}</style>
     </div>
