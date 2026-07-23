@@ -1,0 +1,11 @@
+# netlify.toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# ✅ Esto redirige TODAS las rutas a index.html
+# Así React Router puede manejar las rutas
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
