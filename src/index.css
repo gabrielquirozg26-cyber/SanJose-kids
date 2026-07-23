@@ -300,3 +300,101 @@ html {
 .hover\:shadow-yellow-400\/50:hover {
   box-shadow: 0 0 15px rgba(250,204,21,0.5);
 }
+
+/* src/index.css */
+/* Agregar al final del archivo */
+
+/* ── PANTALLA COMPLETA EN MÓVILES ── */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── OCULTAR SCROLLBAR EN MÓVIL (OPCIONAL) ── */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
+
+/* ── EVITAR ZOOM EN INPUTS (MÓVIL) ── */
+input, select, textarea, button {
+  font-size: 16px !important;
+}
+
+/* ── SAFARI: OCULTAR BARRA DE NAVEGACIÓN INFERIOR ── */
+@media (display-mode: standalone) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+/* src/index.css - Agregar al final */
+
+/* ── EVITAR BOUNCE EN IOS ── */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* ✅ Evita el bounce en Safari */
+  overscroll-behavior: none;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+/* ── OCULTAR SCROLLBAR ── */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
+
+/* ── EVITAR ZOOM EN INPUTS (MÓVIL) ── */
+input, select, textarea, button {
+  font-size: 16px !important;
+}
+
+/* ── SAFARI: OCULTAR BARRA DE NAVEGACIÓN ── */
+@media (display-mode: standalone) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* ── TRUCO PARA OCULTAR BARRA EN SAFARI ── */
+/* Al hacer scroll, la barra se oculta */
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+html {
+  height: -webkit-fill-available;
+}

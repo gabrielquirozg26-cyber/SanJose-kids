@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>San JoseKids - Offline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      padding: 20px;
+    }
+    .container {
+      text-align: center;
+      max-width: 400px;
+    }
+    .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      background: linear-gradient(to right, #facc15, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p {
+      color: rgba(255,255,255,0.6);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 30px;
+      background: linear-gradient(to right, #facc15, #fbbf24);
+      color: #0f0c29;
+      font-weight: 900;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+    }
+    .status {
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>Sin conexión</h1>
+    <p>
+      Parece que no tienes conexión a internet.<br>
+      Vuelve a intentarlo cuando tengas señal.
+    </p>
+    <button class="btn" onclick="location.reload()">
+      🔄 Reintentar
+    </button>
+    <p class="status">San JoseKids · Caminando en la fe</p>
+  </div>
+</body>
+</html>

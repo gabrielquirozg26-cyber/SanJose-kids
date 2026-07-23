@@ -1,12 +1,15 @@
+// src/context/ShopContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../firebase';
-import { doc, updateDoc, increment, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import santosData from '../data/santos.json';
+import { sendLocalNotification } from '../utils/serviceWorker';
 
 const ShopContext = createContext();
 
 const MAX_VIDAS = 5;
+const MS_REGEN_VIDA = 4 * 60 * 60 * 1000;
 const hoyStr = () => new Date().toISOString().split('T')[0];
 
 const obtenerSantoPorRareza = (tipoCofre) => {
@@ -44,7 +47,10 @@ export const ShopProvider = ({ children }) => {
   const [ultimaFechaCofreOro, setUltimaFechaCofreOro] = useState(null);
   const [pocionesCompradasHoy, setPocionesCompradasHoy] = useState(0);
   const [ultimaFechaPocion, setUltimaFechaPocion] = useState(null);
-  const [ultimoTiqueteOroUsado, setUltimoTiqueteOroUsado] = useState(null);
+  const [dobleXpCompradosHoy, setDobleXpCompradosHoy] = useState(0);
+  const [ultimaFechaDobleXp, setUltimaFechaDobleXp] = useState(null);
+  const [protectorRachaCompradosHoy, setProtectorRachaCompradosHoy] = useState(0);
+  const [ultimaFechaProtectorRacha, setUltimaFechaProtectorRacha] = useState(null);
 
   // ── Cargar datos desde userDoc ──
   useEffect(() => {
@@ -60,243 +66,574 @@ export const ShopProvider = ({ children }) => {
       setUltimaFechaCofreOro(userDoc.ultimaFechaCofreOro || null);
       setPocionesCompradasHoy(userDoc.pocionesHoy || 0);
       setUltimaFechaPocion(userDoc.ultimaFechaPocion || null);
-      setUltimoTiqueteOroUsado(userDoc.ultimoTiqueteOroUsado || null);
+      setDobleXpCompradosHoy(userDoc.dobleXpHoy || 0);
+      setUltimaFechaDobleXp(userDoc.ultimaFechaDobleXp || null);
+      setProtectorRachaCompradosHoy(userDoc.protectorRachaHoy || 0);
+      setUltimaFechaProtectorRacha(userDoc.ultimaFechaProtectorRacha || null);
     }
   }, [userDoc]);
 
-  // ── Consumir item ──
+  // ── CONSUMIR ITEM ──
   const consumirItem = async (itemId) => {
-    if (!usuarioId) return false;
-    const nuevoInventario = (userDoc?.inventario || []).filter(id => id !== itemId);
-    await actualizarUserDoc({ inventario: nuevoInventario });
-    setUserDoc(prev => ({ ...prev, inventario: nuevoInventario }));
-    return true;
+    if (!usuarioId) {
+      console.warn('❌ consumirItem: usuarioId no disponible');
+      return false;
+    }
+    
+    const inventarioActual = userDoc?.inventario || [];
+    
+    if (!inventarioActual.includes(itemId)) {
+      console.warn(`❌ Item ${itemId} no encontrado en inventario`);
+      return false;
+    }
+    
+    try {
+      await actualizarUserDoc({ 
+        inventario: arrayRemove(itemId) 
+      });
+      
+      const nuevoInventario = inventarioActual.filter(id => id !== itemId);
+      setUserDoc(prev => {
+        if (!prev) return prev;
+        return { 
+          ...prev, 
+          inventario: nuevoInventario 
+        };
+      });
+      
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Error al consumir item:', error);
+      return false;
+    }
   };
 
-  // ── Entregar santo ──
+  // ── ENTREGAR SANTO ──
   const entregarSanto = async (tipoCofre) => {
+    if (!usuarioId) {
+      console.warn('⚠️ entregarSanto: usuarioId no disponible');
+      return null;
+    }
+
     const santo = obtenerSantoPorRareza(tipoCofre);
-    if (!santo) return null;
+    if (!santo) {
+      console.warn('⚠️ entregarSanto: no se pudo obtener un santo');
+      return null;
+    }
+
     const yaTiene = coleccion.includes(santo.id);
+
     if (yaTiene) {
       let compensacion = 50;
       if (santo.rareza === 'raro') compensacion = 100;
       if (santo.rareza === 'legendario') compensacion = 200;
-      await actualizarUserDoc({ monedas: increment(compensacion), cofresAbiertos: increment(1) });
+
+      await actualizarUserDoc({
+        monedas: increment(compensacion),
+        cofresAbiertos: increment(1),
+      });
+
+      sendLocalNotification(
+        `🔄 Santo repetido: ${santo.nombre}`,
+        `Has recibido ${compensacion} monedas de compensación por ${santo.nombre}.`,
+        '/album'
+      );
+
       return { tipo: 'repetido', santo, compensacion };
     } else {
-      await actualizarUserDoc({ coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
-      setColeccion(prev => [...prev, santo.id]);
+      await actualizarUserDoc({
+        coleccion: arrayUnion(santo.id),
+        cofresAbiertos: increment(1),
+      });
+      setColeccion((prev) => [...prev, santo.id]);
+
+      sendLocalNotification(
+        `🕊️ ¡Nuevo santo! ${santo.nombre}`,
+        `Has desbloqueado a ${santo.nombre} (${santo.rareza.toUpperCase()})`,
+        '/album'
+      );
+
       return { tipo: 'nuevo', santo };
     }
   };
 
-  // ── Añadir vida ──
+  // ── AÑADIR VIDA ──
   const añadirVida = async () => {
-    if (!usuarioId) return;
+    if (!usuarioId) return false;
     const vp = userDoc?.vidasPerdidas ?? [];
-    if (!vp.length) return;
-    await actualizarUserDoc({ vidasPerdidas: [...vp].sort((a,b)=>a-b).slice(1) });
+    if (!vp.length) return false;
+    try {
+      await actualizarUserDoc({ vidasPerdidas: [...vp].sort((a,b)=>a-b).slice(1) });
+      return true;
+    } catch (error) {
+      console.error('Error al añadir vida:', error);
+      return false;
+    }
   };
 
-  // ── Compra de corazón ──
+  // ── COMPRAR CORAZÓN ──
   const comprarCorazon = async () => {
-    if (!usuarioId) return false;
+    if (!usuarioId) {
+      console.warn('❌ comprarCorazon: usuarioId no disponible');
+      return false;
+    }
+    
     const hoy = hoyStr();
+    
     if (ultimaFechaCompraCorazon !== hoy) {
       setCorazonesCompradosHoy(0);
       setUltimaFechaCompraCorazon(hoy);
+      await actualizarUserDoc({ 
+        corazonComprasHoy: 0,
+        ultimaCompraCorazon: hoy 
+      });
     }
-    if (corazonesCompradosHoy >= 3) return false;
-    if ((userDoc?.vidas || 5) >= MAX_VIDAS) return false;
-    if ((userDoc?.monedas ?? 0) < 200) return false;
     
-    await actualizarUserDoc({ monedas: increment(-200) });
-    await añadirVida();
-    setCorazonesCompradosHoy(prev => prev + 1);
-    await actualizarUserDoc({
-      corazonComprasHoy: increment(1),
-      ultimaCompraCorazon: hoy,
-    });
-    return true;
+    if (corazonesCompradosHoy >= 3) {
+      console.warn('❌ comprarCorazon: límite diario alcanzado (3)');
+      return false;
+    }
+    
+    const vp = userDoc?.vidasPerdidas ?? [];
+    const ahora = Date.now();
+    const nuevas = vp.filter((ts) => ahora - ts < MS_REGEN_VIDA);
+    const vidasActuales = Math.min(MAX_VIDAS, MAX_VIDAS - nuevas.length);
+    
+    if (vidasActuales >= MAX_VIDAS) {
+      console.warn('❌ comprarCorazon: vidas completas');
+      return false;
+    }
+    
+    const monedasActuales = userDoc?.monedas || 0;
+    if (monedasActuales < 150) {
+      console.warn(`❌ comprarCorazon: monedas insuficientes (${monedasActuales}/150)`);
+      return false;
+    }
+    
+    try {
+      await actualizarUserDoc({ monedas: increment(-150) });
+      
+      if (vp.length > 0) {
+        const nuevasVidasPerdidas = [...vp].sort((a, b) => a - b).slice(1);
+        await actualizarUserDoc({ vidasPerdidas: nuevasVidasPerdidas });
+      } else {
+        await actualizarUserDoc({ monedas: increment(150) });
+        return false;
+      }
+      
+      const nuevasCompras = corazonesCompradosHoy + 1;
+      setCorazonesCompradosHoy(nuevasCompras);
+      
+      await actualizarUserDoc({
+        corazonComprasHoy: nuevasCompras,
+        ultimaCompraCorazon: hoy,
+      });
+
+      sendLocalNotification(
+        '❤️ Corazón Extra',
+        'Has recuperado 1 vida. ¡Sigue adelante en tu camino de fe!',
+        '/'
+      );
+      
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Error comprando corazón:', error);
+      try {
+        await actualizarUserDoc({ monedas: increment(150) });
+      } catch (e) {
+        console.error('❌ Error al devolver monedas:', e);
+      }
+      return false;
+    }
   };
 
-  // ── Compra de cofres ──
+  // ── COMPRAR ESCUDO (se maneja con comprarItem) ──
+
+  // ── COMPRAR POCIÓN ──
+  const comprarPocion = async () => {
+    if (!usuarioId) return false;
+    const hoy = hoyStr();
+    
+    if (ultimaFechaPocion !== hoy) {
+      setPocionesCompradasHoy(0);
+      setUltimaFechaPocion(hoy);
+    }
+    if (pocionesCompradasHoy >= 2) {
+      console.warn('❌ comprarPocion: límite diario alcanzado (2)');
+      return false;
+    }
+    
+    const cantidadActual = (userDoc?.inventario || []).filter(id => id === 'pocion_sabiduria').length;
+    if (cantidadActual >= 3) {
+      console.warn('❌ comprarPocion: inventario lleno (3)');
+      return false;
+    }
+    if ((userDoc?.monedas ?? 0) < 120) {
+      console.warn(`❌ comprarPocion: monedas insuficientes (${userDoc?.monedas}/120)`);
+      return false;
+    }
+    
+    try {
+      await actualizarUserDoc({ monedas: increment(-120) });
+      await actualizarUserDoc({ inventario: arrayUnion('pocion_sabiduria') });
+      
+      const nuevoInventario = [...(userDoc?.inventario || []), 'pocion_sabiduria'];
+      setUserDoc((prev) => ({ ...prev, inventario: nuevoInventario }));
+      
+      const nuevasCompras = pocionesCompradasHoy + 1;
+      setPocionesCompradasHoy(nuevasCompras);
+      
+      await actualizarUserDoc({ 
+        pocionesHoy: nuevasCompras, 
+        ultimaFechaPocion: hoy 
+      });
+
+      sendLocalNotification(
+        '🧪 Poción de Sabiduría',
+        'Has adquirido una poción. Úsala sabiamente en las lecciones.',
+        '/tienda'
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Error comprando poción:', error);
+      return false;
+    }
+  };
+
+  // ── COMPRAR DOBLE XP ──
+  const comprarDobleXp = async () => {
+    if (!usuarioId) {
+      console.warn('❌ comprarDobleXp: usuarioId no disponible');
+      return false;
+    }
+    
+    const hoy = hoyStr();
+    
+    if (ultimaFechaDobleXp !== hoy) {
+      setDobleXpCompradosHoy(0);
+      setUltimaFechaDobleXp(hoy);
+      await actualizarUserDoc({ 
+        dobleXpHoy: 0,
+        ultimaFechaDobleXp: hoy 
+      });
+    }
+    
+    if (dobleXpCompradosHoy >= 3) {
+      console.warn('❌ comprarDobleXp: límite diario alcanzado (3)');
+      return false;
+    }
+    
+    if ((userDoc?.monedas ?? 0) < 80) {
+      console.warn(`❌ comprarDobleXp: monedas insuficientes (${userDoc?.monedas}/80)`);
+      return false;
+    }
+    
+    try {
+      await actualizarUserDoc({ monedas: increment(-80) });
+      await actualizarUserDoc({ inventario: arrayUnion('doble_xp') });
+      
+      const nuevoInventario = [...(userDoc?.inventario || []), 'doble_xp'];
+      setUserDoc((prev) => ({ ...prev, inventario: nuevoInventario }));
+      
+      const nuevasCompras = dobleXpCompradosHoy + 1;
+      setDobleXpCompradosHoy(nuevasCompras);
+      
+      await actualizarUserDoc({ 
+        dobleXpHoy: nuevasCompras, 
+        ultimaFechaDobleXp: hoy 
+      });
+
+      sendLocalNotification(
+        '⚡ Doble XP',
+        'Has adquirido Doble XP para tu próxima lección.',
+        '/tienda'
+      );
+      
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Error comprando Doble XP:', error);
+      return false;
+    }
+  };
+
+  // ── COMPRAR PROTECTOR DE RACHA ──
+  const comprarProtectorRacha = async () => {
+    if (!usuarioId) {
+      console.warn('❌ comprarProtectorRacha: usuarioId no disponible');
+      return false;
+    }
+    
+    const hoy = hoyStr();
+    
+    if (ultimaFechaProtectorRacha !== hoy) {
+      setProtectorRachaCompradosHoy(0);
+      setUltimaFechaProtectorRacha(hoy);
+      await actualizarUserDoc({ 
+        protectorRachaHoy: 0,
+        ultimaFechaProtectorRacha: hoy 
+      });
+    }
+    
+    if (protectorRachaCompradosHoy >= 1) {
+      console.warn('❌ comprarProtectorRacha: límite diario alcanzado (1)');
+      return false;
+    }
+    
+    if ((userDoc?.monedas ?? 0) < 100) {
+      console.warn(`❌ comprarProtectorRacha: monedas insuficientes (${userDoc?.monedas}/100)`);
+      return false;
+    }
+    
+    try {
+      await actualizarUserDoc({ monedas: increment(-100) });
+      await actualizarUserDoc({ inventario: arrayUnion('protector_racha') });
+      
+      const nuevoInventario = [...(userDoc?.inventario || []), 'protector_racha'];
+      setUserDoc((prev) => ({ ...prev, inventario: nuevoInventario }));
+      
+      const nuevasCompras = protectorRachaCompradosHoy + 1;
+      setProtectorRachaCompradosHoy(nuevasCompras);
+      
+      await actualizarUserDoc({ 
+        protectorRachaHoy: nuevasCompras, 
+        ultimaFechaProtectorRacha: hoy 
+      });
+
+      sendLocalNotification(
+        '🔥 Protector de Racha',
+        'Tu racha está protegida por 1 día. ¡No la pierdas!',
+        '/tienda'
+      );
+      
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Error comprando Protector de Racha:', error);
+      return false;
+    }
+  };
+
+  // ── COMPRAR ITEM (cosméticos, escudo, etc.) ──
+  const comprarItem = async (item) => {
+    if (!usuarioId) return false;
+    const inv = userDoc?.inventario ?? [];
+    if (inv.includes(item.id)) {
+      console.warn(`❌ comprarItem: ${item.id} ya está en el inventario`);
+      return false;
+    }
+    if ((userDoc?.monedas ?? 0) < item.precio) {
+      console.warn(`❌ comprarItem: monedas insuficientes (${userDoc?.monedas}/${item.precio})`);
+      return false;
+    }
+    
+    try {
+      await actualizarUserDoc({ monedas: increment(-item.precio) });
+      await actualizarUserDoc({ inventario: arrayUnion(item.id) });
+      
+      const nuevoInventario = [...(userDoc?.inventario || []), item.id];
+      setUserDoc((prev) => ({ ...prev, inventario: nuevoInventario }));
+      
+      if (item.id === 'titulo_guardian') {
+        await actualizarUserDoc({ rango: 'Guardián del Credo' });
+      }
+      if (item.id === 'titulo_maestro') {
+        await actualizarUserDoc({ rango: 'Maestro de la Fe' });
+      }
+
+      const emojis = {
+        escudo_miguel: '🛡️',
+        aura_santidad: '✨',
+        marco_vitral_azul: '🔵',
+        marco_vitral_dorado: '🟡',
+        titulo_guardian: '⚜️',
+        titulo_maestro: '👑',
+      };
+
+      const emoji = emojis[item.id] || '🎁';
+
+      sendLocalNotification(
+        `${emoji} ${item.nombre}`,
+        `Has adquirido ${item.nombre} para tu perfil. ¡Luce con orgullo tu fe!`,
+        '/perfil'
+      );
+      
+      return true;
+    } catch (error) {
+      console.error(`Error comprando ${item.nombre}:`, error);
+      return false;
+    }
+  };
+
+  // ── COMPRAR COFRES ──
   const comprarCofreMadera = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
+    
     if (ultimaFechaCofreMadera !== hoy) {
       setCofresMaderaCompradosHoy(0);
       setUltimaFechaCofreMadera(hoy);
     }
-    if (cofresMaderaCompradosHoy >= 3) return false;
-    if ((userDoc?.monedas ?? 0) < 250) return false;
-    
-    await actualizarUserDoc({ monedas: increment(-250) });
-    const santo = obtenerSantoPorRareza('madera');
-    if (!santo) return false;
-    
-    const yaTiene = coleccion.includes(santo.id);
-    if (yaTiene) {
-      let compensacion = 50;
-      if (santo.rareza === 'raro') compensacion = 100;
-      else if (santo.rareza === 'legendario') compensacion = 200;
-      await actualizarUserDoc({ monedas: increment(compensacion), cofresAbiertos: increment(1) });
-      setCofrePendiente({ tipo: 'madera', recompensa: { tipo: 'repetido', santo, compensacion } });
-    } else {
-      await actualizarUserDoc({ coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
-      setColeccion(prev => [...prev, santo.id]);
-      setCofrePendiente({ tipo: 'madera', recompensa: { tipo: 'nuevo', santo } });
+    if (cofresMaderaCompradosHoy >= 3) {
+      console.warn('❌ comprarCofreMadera: límite diario alcanzado (3)');
+      return false;
     }
-    setCofresMaderaCompradosHoy(prev => prev + 1);
-    await actualizarUserDoc({ cofresMaderaHoy: increment(1), ultimaFechaCofreMadera: hoy });
-    return true;
+    if ((userDoc?.monedas ?? 0) < 200) {
+      console.warn(`❌ comprarCofreMadera: monedas insuficientes (${userDoc?.monedas}/200)`);
+      return false;
+    }
+    
+    try {
+      await actualizarUserDoc({ monedas: increment(-200) });
+      const santo = obtenerSantoPorRareza('madera');
+      if (!santo) return false;
+      
+      const yaTiene = coleccion.includes(santo.id);
+      let recompensa;
+      
+      if (yaTiene) {
+        let compensacion = 50;
+        if (santo.rareza === 'raro') compensacion = 100;
+        else if (santo.rareza === 'legendario') compensacion = 200;
+        await actualizarUserDoc({ monedas: increment(compensacion), cofresAbiertos: increment(1) });
+        recompensa = { tipo: 'repetido', santo, compensacion };
+      } else {
+        await actualizarUserDoc({ coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
+        setColeccion(prev => [...prev, santo.id]);
+        recompensa = { tipo: 'nuevo', santo };
+      }
+      
+      const nuevasCompras = cofresMaderaCompradosHoy + 1;
+      setCofresMaderaCompradosHoy(nuevasCompras);
+      setCofrePendiente({ tipo: 'madera', recompensa });
+      
+      await actualizarUserDoc({ 
+        cofresMaderaHoy: nuevasCompras, 
+        ultimaFechaCofreMadera: hoy 
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error comprando cofre de madera:', error);
+      return false;
+    }
   };
 
   const comprarCofrePlata = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
+    
     if (ultimaFechaCofrePlata !== hoy) {
       setCofresPlataCompradosHoy(0);
       setUltimaFechaCofrePlata(hoy);
     }
-    if (cofresPlataCompradosHoy >= 2) return false;
-    if ((userDoc?.monedas ?? 0) < 350) return false;
-    
-    await actualizarUserDoc({ monedas: increment(-350) });
-    const santo = obtenerSantoPorRareza('plata');
-    if (!santo) return false;
-    
-    const yaTiene = coleccion.includes(santo.id);
-    if (yaTiene) {
-      let compensacion = 100;
-      if (santo.rareza === 'legendario') compensacion = 200;
-      await actualizarUserDoc({ monedas: increment(compensacion), cofresAbiertos: increment(1) });
-      setCofrePendiente({ tipo: 'plata', recompensa: { tipo: 'repetido', santo, compensacion } });
-    } else {
-      await actualizarUserDoc({ coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
-      setColeccion(prev => [...prev, santo.id]);
-      setCofrePendiente({ tipo: 'plata', recompensa: { tipo: 'nuevo', santo } });
+    if (cofresPlataCompradosHoy >= 2) {
+      console.warn('❌ comprarCofrePlata: límite diario alcanzado (2)');
+      return false;
     }
-    setCofresPlataCompradosHoy(prev => prev + 1);
-    await actualizarUserDoc({ cofresPlataHoy: increment(1), ultimaFechaCofrePlata: hoy });
-    return true;
+    if ((userDoc?.monedas ?? 0) < 300) {
+      console.warn(`❌ comprarCofrePlata: monedas insuficientes (${userDoc?.monedas}/300)`);
+      return false;
+    }
+    
+    try {
+      await actualizarUserDoc({ monedas: increment(-300) });
+      const santo = obtenerSantoPorRareza('plata');
+      if (!santo) return false;
+      
+      const yaTiene = coleccion.includes(santo.id);
+      let recompensa;
+      
+      if (yaTiene) {
+        let compensacion = 100;
+        if (santo.rareza === 'legendario') compensacion = 200;
+        await actualizarUserDoc({ monedas: increment(compensacion), cofresAbiertos: increment(1) });
+        recompensa = { tipo: 'repetido', santo, compensacion };
+      } else {
+        await actualizarUserDoc({ coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
+        setColeccion(prev => [...prev, santo.id]);
+        recompensa = { tipo: 'nuevo', santo };
+      }
+      
+      const nuevasCompras = cofresPlataCompradosHoy + 1;
+      setCofresPlataCompradosHoy(nuevasCompras);
+      setCofrePendiente({ tipo: 'plata', recompensa });
+      
+      await actualizarUserDoc({ 
+        cofresPlataHoy: nuevasCompras, 
+        ultimaFechaCofrePlata: hoy 
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error comprando cofre de plata:', error);
+      return false;
+    }
   };
 
   const comprarCofreOro = async () => {
     if (!usuarioId) return false;
     const hoy = hoyStr();
+    
     if (ultimaFechaCofreOro !== hoy) {
       setCofresOroCompradosHoy(0);
       setUltimaFechaCofreOro(hoy);
     }
-    if (cofresOroCompradosHoy >= 1) return false;
-    if ((userDoc?.monedas ?? 0) < 500) return false;
-    
-    await actualizarUserDoc({ monedas: increment(-500) });
-    const santo = obtenerSantoPorRareza('oro');
-    if (!santo) return false;
-    
-    const yaTiene = coleccion.includes(santo.id);
-    if (yaTiene) {
-      let compensacion = 200;
-      await actualizarUserDoc({ monedas: increment(compensacion), cofresAbiertos: increment(1) });
-      setCofrePendiente({ tipo: 'oro', recompensa: { tipo: 'repetido', santo, compensacion } });
-    } else {
-      await actualizarUserDoc({ coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
-      setColeccion(prev => [...prev, santo.id]);
-      setCofrePendiente({ tipo: 'oro', recompensa: { tipo: 'nuevo', santo } });
+    if (cofresOroCompradosHoy >= 1) {
+      console.warn('❌ comprarCofreOro: límite diario alcanzado (1)');
+      return false;
     }
-    setCofresOroCompradosHoy(prev => prev + 1);
-    await actualizarUserDoc({ cofresOroHoy: increment(1), ultimaFechaCofreOro: hoy });
-    return true;
-  };
-
-  // ── Compra de poción ──
-  const comprarPocion = async () => {
-    if (!usuarioId) return false;
-    const hoy = hoyStr();
-    if (ultimaFechaPocion !== hoy) {
-      setPocionesCompradasHoy(0);
-      setUltimaFechaPocion(hoy);
+    if ((userDoc?.monedas ?? 0) < 450) {
+      console.warn(`❌ comprarCofreOro: monedas insuficientes (${userDoc?.monedas}/450)`);
+      return false;
     }
-    if (pocionesCompradasHoy >= 2) return false;
-    const cantidadActual = (userDoc?.inventario || []).filter(id => id === 'pocion_sabiduria').length;
-    if (cantidadActual >= 3) return false;
-    if ((userDoc?.monedas ?? 0) < 150) return false;
     
-    await actualizarUserDoc({ monedas: increment(-150) });
-    await actualizarUserDoc({ inventario: arrayUnion('pocion_sabiduria') });
-    setUserDoc(prev => ({ ...prev, inventario: [...(prev?.inventario || []), 'pocion_sabiduria'] }));
-    setPocionesCompradasHoy(prev => prev + 1);
-    await actualizarUserDoc({ pocionesHoy: increment(1), ultimaFechaPocion: hoy });
-    return true;
-  };
-
-  // ── Tiquete de oro ──
-  const usarTiqueteOro = async () => {
-    if (!usuarioId) return false;
-    const tieneTiquete = (userDoc?.inventario || []).includes('tiquete_oro');
-    if (!tieneTiquete) return false;
-    const hoy = hoyStr();
-    if (ultimoTiqueteOroUsado === hoy) return false;
-    
-    const nuevoInventario = (userDoc?.inventario || []).filter(id => id !== 'tiquete_oro');
-    await actualizarUserDoc({ inventario: nuevoInventario });
-    setUserDoc(prev => ({ ...prev, inventario: nuevoInventario }));
-    
-    const santo = obtenerSantoPorRareza('oro');
-    if (!santo) return false;
-    
-    const yaTiene = coleccion.includes(santo.id);
-    if (yaTiene) {
-      let compensacion = 200;
-      await actualizarUserDoc({ monedas: increment(compensacion), cofresAbiertos: increment(1) });
-      setCofrePendiente({ tipo: 'oro', recompensa: { tipo: 'repetido', santo, compensacion } });
-    } else {
-      await actualizarUserDoc({ coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
-      setColeccion(prev => [...prev, santo.id]);
-      setCofrePendiente({ tipo: 'oro', recompensa: { tipo: 'nuevo', santo } });
+    try {
+      await actualizarUserDoc({ monedas: increment(-450) });
+      const santo = obtenerSantoPorRareza('oro');
+      if (!santo) return false;
+      
+      const yaTiene = coleccion.includes(santo.id);
+      let recompensa;
+      
+      if (yaTiene) {
+        let compensacion = 200;
+        await actualizarUserDoc({ monedas: increment(compensacion), cofresAbiertos: increment(1) });
+        recompensa = { tipo: 'repetido', santo, compensacion };
+      } else {
+        await actualizarUserDoc({ coleccion: arrayUnion(santo.id), cofresAbiertos: increment(1) });
+        setColeccion(prev => [...prev, santo.id]);
+        recompensa = { tipo: 'nuevo', santo };
+      }
+      
+      const nuevasCompras = cofresOroCompradosHoy + 1;
+      setCofresOroCompradosHoy(nuevasCompras);
+      setCofrePendiente({ tipo: 'oro', recompensa });
+      
+      await actualizarUserDoc({ 
+        cofresOroHoy: nuevasCompras, 
+        ultimaFechaCofreOro: hoy 
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error comprando cofre de oro:', error);
+      return false;
     }
-    setUltimoTiqueteOroUsado(hoy);
-    await actualizarUserDoc({ ultimoTiqueteOroUsado: hoy });
-    return true;
   };
 
-  const comprarTiqueteOro = async () => {
-    if (!usuarioId) return false;
-    if ((userDoc?.monedas ?? 0) < 350) return false;
-    await actualizarUserDoc({ monedas: increment(-350) });
-    await actualizarUserDoc({ inventario: arrayUnion('tiquete_oro') });
-    setUserDoc(prev => ({ ...prev, inventario: [...(prev?.inventario || []), 'tiquete_oro'] }));
-    return true;
-  };
-
-  // ── Compra de objetos (cosméticos) ──
-  const comprarItem = async (item) => {
-    if (!usuarioId) return false;
-    const inv = userDoc?.inventario ?? [];
-    if (inv.includes(item.id)) return false;
-    if ((userDoc?.monedas ?? 0) < item.precio) return false;
-    
-    await actualizarUserDoc({ monedas: increment(-item.precio) });
-    await actualizarUserDoc({ inventario: arrayUnion(item.id) });
-    setUserDoc(prev => ({ ...prev, inventario: [...(prev?.inventario || []), item.id] }));
-    
-    if (item.id === 'titulo_guardian') await actualizarUserDoc({ rango: 'Guardián del Credo' });
-    if (item.id === 'titulo_maestro') await actualizarUserDoc({ rango: 'Maestro de la Fe' });
-    return true;
-  };
-
-  // ── Oferta diaria ──
+  // ── OFERTA DIARIA ──
   const obtenerOfertaDiaria = () => {
     const hoy = new Date().toISOString().split('T')[0];
     const seed = hoy.split('-').join('');
     const items = [
-      { id: 'corazon_extra', nombre: 'Corazón Extra', icono: '❤️', precioOriginal: 200, descuento: 40, precioOferta: 120 },
-      { id: 'tiquete_oro', nombre: 'Tiquete de Oro', icono: '🎫', precioOriginal: 350, descuento: 30, precioOferta: 245 },
-      { id: 'doble_xp', nombre: 'Doble XP', icono: '⚡', precioOriginal: 150, descuento: 50, precioOferta: 75 },
-      { id: 'pocion_sabiduria', nombre: 'Poción de Sabiduría', icono: '🧪', precioOriginal: 150, descuento: 20, precioOferta: 120 },
+      { id: 'corazon_extra', nombre: 'Corazón Extra', icono: '❤️', precioOriginal: 150, descuento: 30, precioOferta: 105 },
+      { id: 'doble_xp', nombre: 'Doble XP', icono: '⚡', precioOriginal: 80, descuento: 25, precioOferta: 60 },
+      { id: 'protector_racha', nombre: 'Protector de Racha', icono: '🔥', precioOriginal: 100, descuento: 20, precioOferta: 80 },
+      { id: 'pocion_sabiduria', nombre: 'Poción de Sabiduría', icono: '🧪', precioOriginal: 120, descuento: 20, precioOferta: 96 },
     ];
     const idx = parseInt(seed.slice(-2)) % items.length;
     return items[idx];
@@ -304,6 +641,7 @@ export const ShopProvider = ({ children }) => {
 
   const cerrarCofre = () => setCofrePendiente(null);
 
+  // ── VALORES EXPUESTOS ──
   const value = {
     cofrePendiente,
     setCofrePendiente,
@@ -315,7 +653,8 @@ export const ShopProvider = ({ children }) => {
     cofresPlataCompradosHoy,
     cofresOroCompradosHoy,
     pocionesCompradasHoy,
-    ultimoTiqueteOroUsado,
+    dobleXpCompradosHoy,
+    protectorRachaCompradosHoy,
     obtenerOfertaDiaria,
     consumirItem,
     entregarSanto,
@@ -324,10 +663,9 @@ export const ShopProvider = ({ children }) => {
     comprarCofrePlata,
     comprarCofreOro,
     comprarPocion,
-    comprarTiqueteOro,
-    usarTiqueteOro,
+    comprarDobleXp,
+    comprarProtectorRacha,
     comprarItem,
-     // ✅ EXPUESTO
     cerrarCofre,
   };
 

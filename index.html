@@ -1,10 +1,34 @@
-<!doctype html>
-<html lang="es" class="notranslate" translate="no"></html>
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
+    
+    <!-- ✅ METAS PARA PANTALLA COMPLETA -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="San JoseKids" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0f0c29" />
+    
+    <!-- ✅ MANIFEST -->
+    <link rel="manifest" href="/manifest.json" />
+    
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>catequesis-app</title>
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    
+    <title>San JoseKids</title>
+    
+    <!-- ✅ TRUCO PARA OCULTAR LA BARRA EN SAFARI (iOS) -->
+    <script>
+      // Esto oculta la barra de navegación en Safari al hacer scroll
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          window.scrollTo(0, 1);
+        }, 100);
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

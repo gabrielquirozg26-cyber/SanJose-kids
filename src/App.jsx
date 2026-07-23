@@ -40,6 +40,8 @@ import TituloDesbloqueadoModal from './components/TituloDesbloqueadoModal';
 // 🎨 UI COMPONENTS
 import { ToastProvider } from './components/ui/Toast';
 
+import OfflineIndicator from './components/OfflineIndicator';
+
 // ── Cargando ───────────────────────────────────────────────────────────────
 const Cargando = () => <LoadingScreen />;
 
@@ -109,6 +111,7 @@ const AppShell = () => {
 
   return (
     <div className="min-h-screen text-white font-sans flex flex-col relative">
+      <OfflineIndicator />  {/* ← AGREGAR AQUÍ */}
       <div className="fixed inset-0 -z-10">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"

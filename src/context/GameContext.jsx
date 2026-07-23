@@ -1,8 +1,10 @@
+// src/context/GameContext.jsx
 import React, { createContext, useContext, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { useShop } from './ShopContext';
 import { useTitles } from './TitlesContext';
 import { advanceMissions } from '../utils/missionHelper';
+import { sendLocalNotification } from '../utils/serviceWorker';
 import { db } from '../firebase';
 import { doc, increment, arrayUnion, collection, query, where, getDocs, addDoc, orderBy, getDoc } from 'firebase/firestore';
 import santosData from '../data/santos.json';
@@ -59,6 +61,12 @@ export const GameProvider = ({ children }) => {
     coleccion,
     cofrePendiente,
     cerrarCofre,
+    comprarDobleXp,
+    comprarProtectorRacha,
+    comprarItem,
+    comprarCorazon,
+    comprarPocion,
+    consumirItem,
   } = shopContext;
 
   const {
@@ -77,17 +85,6 @@ export const GameProvider = ({ children }) => {
 
   /**
    * Guardar una evaluación de oraciones (presencial)
-   * @param {Object} datos - Datos de la evaluación
-   * @param {string} datos.estudianteId - UID del niño
-   * @param {string} datos.estudianteNombre - Nombre del niño
-   * @param {string} datos.catequistaId - UID del catequista
-   * @param {string} datos.catequistaNombre - Nombre del catequista
-   * @param {string} datos.grupo - Grupo del niño
-   * @param {number} datos.rangoInicio - Rango de oraciones inicio
-   * @param {number} datos.rangoFin - Rango de oraciones fin
-   * @param {Array} datos.oraciones - Array de objetos { id, nombre, resultado }
-   * @param {string} datos.observaciones - Observaciones (opcional)
-   * @returns {Promise<{success: boolean, id: string}>}
    */
   const guardarEvaluacion = async (datos) => {
     try {
@@ -95,7 +92,6 @@ export const GameProvider = ({ children }) => {
         throw new Error('Faltan datos obligatorios');
       }
 
-      // Calcular totales
       const totalSabe = datos.oraciones.filter(o => o.resultado === 'sabe').length;
       const totalNoSabe = datos.oraciones.filter(o => o.resultado === 'no_sabe').length;
 
@@ -115,8 +111,6 @@ export const GameProvider = ({ children }) => {
       };
 
       const docRef = await addDoc(collection(db, 'evaluaciones'), evaluacionData);
-      
-      // Actualizar el campo ultimaEvaluacion en el usuario
       await actualizarUserDoc({ ultimaEvaluacion: new Date() });
 
       return { success: true, id: docRef.id };
@@ -128,12 +122,7 @@ export const GameProvider = ({ children }) => {
 
   /**
    * Obtener todas las evaluaciones de un niño
-   * @param {string} estudianteId - UID del niño
-   * @returns {Promise<Array>}
    */
-  // src/context/GameContext.jsx
-  // Busca la función obtenerEvaluaciones y reemplázala con esto:
-
   const obtenerEvaluaciones = async (estudianteId) => {
     try {
       const q = query(
@@ -142,7 +131,6 @@ export const GameProvider = ({ children }) => {
       );
       const snapshot = await getDocs(q);
       const datos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Ordenar manualmente por fecha (más reciente primero)
       return datos.sort((a, b) => {
         const fechaA = a.fecha?.toDate?.() || new Date(0);
         const fechaB = b.fecha?.toDate?.() || new Date(0);
@@ -156,8 +144,6 @@ export const GameProvider = ({ children }) => {
 
   /**
    * Obtener evaluaciones de un grupo específico
-   * @param {string} grupo - Nombre del grupo
-   * @returns {Promise<Array>}
    */
   const obtenerEvaluacionesGrupo = async (grupo) => {
     try {
@@ -176,8 +162,6 @@ export const GameProvider = ({ children }) => {
 
   /**
    * Obtener la última evaluación de un niño
-   * @param {string} estudianteId - UID del niño
-   * @returns {Promise<Object|null>}
    */
   const obtenerUltimaEvaluacion = async (estudianteId) => {
     try {
@@ -199,8 +183,6 @@ export const GameProvider = ({ children }) => {
 
   /**
    * Obtener estadísticas de evaluaciones de un niño
-   * @param {string} estudianteId - UID del niño
-   * @returns {Promise<{total: number, promedioSabe: number, ultima: Object|null}>}
    */
   const obtenerEstadisticasEvaluaciones = async (estudianteId) => {
     try {
@@ -248,8 +230,12 @@ export const GameProvider = ({ children }) => {
 
   const completarNivel = async (fueConPerfecta = false, esPrimeraVez = true) => {
     if (!usuarioId) return;
+    
     const nivelId = oracionActual?.id;
-    if (!nivelId) return;
+    if (!nivelId) {
+      console.warn('⚠️ completarNivel: no se pudo obtener el ID de la lección');
+      return;
+    }
 
     await advanceMissions('lecciones', 1);
     await advanceMissions('niveles', 1);
@@ -265,8 +251,11 @@ export const GameProvider = ({ children }) => {
       ayer.setDate(ayer.getDate() - 1);
       const ayerStr = ayer.toISOString().split('T')[0];
 
-      if (jugóHoy === ayerStr || jugóHoy === null) nuevaRacha = rachaAct + 1;
-      else nuevaRacha = 1;
+      if (jugóHoy === ayerStr || jugóHoy === null) {
+        nuevaRacha = rachaAct + 1;
+      } else {
+        nuevaRacha = 1;
+      }
 
       await actualizarUserDoc({
         nivelActual: increment(1),
@@ -282,6 +271,12 @@ export const GameProvider = ({ children }) => {
       if (resultado) {
         setRecompensaRacha(resultado);
         setMostrarModalRacha(true);
+
+        sendLocalNotification(
+          `🔥 Racha de ${resultado.racha} días`,
+          `¡Has ganado ${resultado.monedas} monedas por tu constancia!`,
+          '/'
+        );
       }
     } else {
       await actualizarUserDoc({
@@ -438,6 +433,14 @@ export const GameProvider = ({ children }) => {
     // Logros (desde TitlesContext)
     logrosPendientes: logrosPendientes ?? [],
 
+    // ✅ Funciones de ShopContext
+    consumirItem,
+    comprarItem,
+    comprarCorazon,
+    comprarPocion,
+    comprarDobleXp,
+    comprarProtectorRacha,
+
     // Acciones
     iniciarLeccion: iniciarLeccion ?? (() => {}),
     cerrarLeccion: cerrarLeccion ?? (() => {}),
@@ -460,7 +463,6 @@ export const GameProvider = ({ children }) => {
     obtenerEstadisticasEvaluaciones,
   };
 
-  // ✅ SIEMPRE renderizar el Provider, NUNCA retornar null
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 };
 

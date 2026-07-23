@@ -1,3 +1,4 @@
+// src/views/Perfil.jsx
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
@@ -34,6 +35,226 @@ const NIVEL_NOMBRE = {
   16:'Misterios Gloriosos',17:'Misterios Luminosos',
 };
 
+// ── COMPONENTE DE CABECERA ──────────────────────────────────────────────
+const ProfileHeader = ({ avatar, esImagen, tieneAura, marcoActivo, nombre, tituloObj, grupo, onEditAvatar }) => {
+  return (
+    <div className="relative px-4 sm:px-6 pt-6 sm:pt-8 pb-4">
+      <div className="flex flex-col items-center text-center">
+        {/* Avatar con efectos */}
+        <div className="relative group cursor-pointer" onClick={onEditAvatar}>
+          {/* Aura */}
+          {tieneAura && !marcoActivo && (
+            <div className="absolute -inset-4 rounded-full bg-yellow-400/20 animate-pulse blur-xl" />
+          )}
+          
+          {/* Marco */}
+          {marcoActivo && (
+            <div className={`absolute -inset-3 rounded-full bg-gradient-to-br ${marcoActivo.gradiente} opacity-80 blur-xl animate-pulse`} />
+          )}
+          
+          {/* Avatar */}
+          <div className={`relative w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center overflow-hidden border-4 bg-white/5 shadow-2xl transition-all duration-300 group-hover:scale-105 ${
+            marcoActivo ? `${marcoActivo.border} ${marcoActivo.shadow}` : 
+            tieneAura ? 'border-yellow-400/60 shadow-[0_0_30px_rgba(250,204,21,0.5)]' : 
+            'border-white/20'
+          }`}>
+            {esImagen ? (
+              <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-5xl sm:text-6xl">{avatar}</span>
+            )}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+              <span className="text-white text-[10px] sm:text-xs font-black bg-black/70 px-3 py-1.5 rounded-full">✏️ Editar</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Nombre */}
+        <h2 className={`text-2xl sm:text-3xl font-black tracking-tighter mt-4 ${tieneAura ? 'text-yellow-100' : 'text-white'}`}>
+          {nombre}
+        </h2>
+        
+        {/* Título y Grupo */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+          <div className={`px-3 py-1 rounded-full border text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${RAREZA_COLOR[tituloObj?.rareza || 'comun']}`}>
+            {tituloObj?.nombre || 'Sin título'}
+          </div>
+          <div className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 text-[9px] sm:text-[10px] font-black text-white/70">
+            {grupo}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── COMPONENTE DE STATS ──────────────────────────────────────────────────
+const StatsGrid = ({ nivelActual, monedas, racha, vidas, nivelNombre }) => {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-4 sm:px-6 mt-4">
+      <div className="glass-card rounded-2xl p-3 sm:p-4 text-center border border-white/10 hover:border-yellow-400/30 transition-all">
+        <p className="text-white/40 text-[8px] sm:text-[9px] font-black uppercase tracking-widest">🏅 Nivel</p>
+        <p className="text-xl sm:text-3xl font-black text-white">{nivelActual}</p>
+        <p className="text-[8px] sm:text-[10px] text-yellow-400 font-black mt-0.5 truncate">{nivelNombre}</p>
+      </div>
+      
+      <div className="glass-card rounded-2xl p-3 sm:p-4 text-center border border-yellow-400/20 hover:border-yellow-400/40 transition-all">
+        <p className="text-white/40 text-[8px] sm:text-[9px] font-black uppercase tracking-widest">🪙 Monedas</p>
+        <p className="text-xl sm:text-3xl font-black text-yellow-400">{monedas.toLocaleString()}</p>
+      </div>
+      
+      <div className="glass-card rounded-2xl p-3 sm:p-4 text-center border border-orange-400/20 hover:border-orange-400/40 transition-all">
+        <p className="text-white/40 text-[8px] sm:text-[9px] font-black uppercase tracking-widest">🔥 Racha</p>
+        <p className="text-xl sm:text-2xl font-black text-orange-400">{racha} días</p>
+      </div>
+      
+      <div className="glass-card rounded-2xl p-3 sm:p-4 text-center border border-white/10 hover:border-red-400/30 transition-all">
+        <p className="text-white/40 text-[8px] sm:text-[9px] font-black uppercase tracking-widest">❤️ Vidas</p>
+        <div className="flex justify-center gap-0.5 sm:gap-1 mt-1">
+          {[...Array(5)].map((_, i) => (
+            <span key={i} className={`text-lg sm:text-xl ${i < vidas ? 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.3)]' : 'text-white/20'}`}>❤️</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── COMPONENTE DE TABS ──────────────────────────────────────────────────
+const ProfileTabs = ({ tab, setTab }) => {
+  const tabs = [
+    { id: 'info', label: '📋 Información', icon: '📋' },
+    { id: 'coleccion', label: '📖 Colección', icon: '📖' },
+    { id: 'stats', label: '📊 Estadísticas', icon: '📊' },
+    { id: 'evaluaciones', label: '📝 Evaluaciones', icon: '📝' },
+  ];
+
+  return (
+    <div className="flex gap-1 sm:gap-2 mx-4 sm:mx-6 mt-6 bg-white/5 backdrop-blur-sm rounded-full p-1 border border-white/10 overflow-x-auto scrollbar-hide">
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          onClick={() => setTab(t.id)}
+          className={`flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-full font-black text-[8px] sm:text-xs uppercase tracking-widest transition-all whitespace-nowrap ${
+            tab === t.id 
+              ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-blue-900 shadow-lg' 
+              : 'text-white/50 hover:text-white/80'
+          }`}
+        >
+          <span className="sm:hidden">{t.icon}</span>
+          <span className="hidden sm:inline">{t.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// ── COMPONENTES DE CADA TAB ─────────────────────────────────────────────
+
+// TAB INFO
+const TabInfo = ({ 
+  biografia, setBiografia, editandoBio, setEditandoBio, guardarBiografia,
+  santoFavorito, setSantoFavorito, editandoSanto, setEditandoSanto, guardarSantoFavorito,
+  santoFavObj, userDoc, onCompartir, onCerrarSesion 
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="px-4 sm:px-6 mt-6 space-y-4 pb-6"
+    >
+      {/* Biografía */}
+      <div className="glass-card rounded-2xl p-4 sm:p-5 border border-white/10">
+        <div className="flex justify-between items-center">
+          <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">📝 Biografía</p>
+          {!editandoBio ? (
+            <button onClick={() => setEditandoBio(true)} className="text-white/40 hover:text-white text-xs transition-colors">✏️ Editar</button>
+          ) : (
+            <div className="flex gap-2">
+              <button onClick={guardarBiografia} className="text-green-400 text-xs hover:text-green-300">✓ Guardar</button>
+              <button onClick={() => { setEditandoBio(false); setBiografia(userDoc?.biografia || ''); }} className="text-red-400 text-xs hover:text-red-300">✗ Cancelar</button>
+            </div>
+          )}
+        </div>
+        {editandoBio ? (
+          <textarea
+            value={biografia}
+            onChange={e => setBiografia(e.target.value.slice(0, 120))}
+            maxLength="120"
+            className="w-full bg-white/10 rounded-xl p-3 text-sm text-white mt-2 outline-none focus:border-yellow-400 border border-transparent focus:border-yellow-400 transition-all resize-none"
+            rows="3"
+            placeholder="Escribe algo sobre ti..."
+          />
+        ) : (
+          <p className="text-white/70 text-sm mt-2 leading-relaxed">{biografia || '✨ Aún no has escrito tu biografía. ¡Cuéntanos sobre ti!'}</p>
+        )}
+        {editandoBio && <p className="text-right text-[9px] text-white/30 mt-1">{biografia.length}/120</p>}
+      </div>
+
+      {/* Santo favorito */}
+      <div className="glass-card rounded-2xl p-4 sm:p-5 border border-white/10">
+        <div className="flex justify-between items-center">
+          <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">🙏 Santo favorito</p>
+          {!editandoSanto ? (
+            <button onClick={() => setEditandoSanto(true)} className="text-white/40 hover:text-white text-xs transition-colors">✏️ Editar</button>
+          ) : (
+            <div className="flex gap-2">
+              <button onClick={guardarSantoFavorito} className="text-green-400 text-xs hover:text-green-300">✓ Guardar</button>
+              <button onClick={() => { setEditandoSanto(false); setSantoFavorito(userDoc?.santoFavorito || ''); }} className="text-red-400 text-xs hover:text-red-300">✗ Cancelar</button>
+            </div>
+          )}
+        </div>
+        {editandoSanto ? (
+          <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+            {santosData.santos.map(s => (
+              <button
+                key={s.id}
+                onClick={() => setSantoFavorito(s.id)}
+                className={`flex flex-col items-center p-2 rounded-xl transition-all ${santoFavorito === s.id ? 'bg-yellow-400/30 border border-yellow-400' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
+              >
+                <span className="text-2xl">{s.icono}</span>
+                <span className="text-[7px] sm:text-[9px] font-black text-white truncate max-w-[50px]">{s.nombre}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center gap-4 mt-3">
+            {santoFavObj ? (
+              <>
+                <span className="text-4xl sm:text-5xl">{santoFavObj.icono}</span>
+                <div>
+                  <p className="font-black text-white text-sm sm:text-base">{santoFavObj.nombre}</p>
+                  <p className="text-white/50 text-[10px]">{santoFavObj.rareza}</p>
+                </div>
+              </>
+            ) : (
+              <p className="text-white/50 text-sm">No has elegido un santo favorito aún.</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Acciones */}
+      <button
+        onClick={onCompartir}
+        className="w-full py-3 sm:py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-black text-xs sm:text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+      >
+        📤 Compartir mi progreso
+      </button>
+
+      <button
+        onClick={onCerrarSesion}
+        className="w-full py-3 sm:py-4 rounded-2xl border border-red-500/30 text-red-400 font-black text-xs sm:text-sm uppercase tracking-widest hover:bg-red-500/10 transition-all flex items-center justify-center gap-2"
+      >
+        🚪 Cerrar sesión
+      </button>
+    </motion.div>
+  );
+};
+
+// ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────
 const Perfil = () => {
   const { showToast } = useToast();
   
@@ -124,205 +345,60 @@ const Perfil = () => {
     showToast('👋 Hasta luego', 'info');
   };
 
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
-  };
-  const stagger = {
-    visible: { transition: { staggerChildren: 0.1 } }
-  };
-
   return (
-    <motion.div 
-      initial="hidden"
-      animate="visible"
-      variants={stagger}
-      className="min-h-screen text-white font-sans pb-28 relative"
-    >
-      {/* El fondo de la iglesia se ve a través del glassmorphism */}
+    <div className="min-h-screen text-white font-sans pb-28 relative">
+      {/* Fondo con efecto de luz */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/50 via-purple-900/30 to-slate-900/50" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-yellow-400/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-[100px]" />
+      </div>
 
-      {/* Cabecera - Avatar y nombre */}
-      <motion.div variants={fadeInUp} className="relative px-6 pt-8 pb-4">
-        <div className="flex flex-col items-center text-center">
-          <div className="relative group cursor-pointer" onClick={() => setSelectorAbierto(true)}>
-            {tieneAura && !marcoActivo && (
-              <div className="absolute -inset-3 rounded-full bg-yellow-400/30 animate-pulse blur-md" />
-            )}
-            {marcoActivo && (
-              <div className={`absolute -inset-2 rounded-full bg-gradient-to-br ${marcoActivo.gradiente} opacity-80 blur-md animate-pulse`} />
-            )}
-            <div className={`relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden border-4 bg-white/5 shadow-2xl transition-all duration-300 group-hover:scale-105 ${
-              marcoActivo ? `${marcoActivo.border} ${marcoActivo.shadow}` : 
-              tieneAura ? 'border-yellow-400/60 shadow-[0_0_30px_rgba(250,204,21,0.5)]' : 
-              'border-white/20'
-            }`}>
-              {esImagen ? (
-                <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-6xl">{avatar}</span>
-              )}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                <span className="text-white text-xs font-black bg-black/60 px-3 py-1.5 rounded-full">✏️ Editar</span>
-              </div>
-            </div>
-          </div>
-          <h2 className={`text-3xl font-black tracking-tighter mt-5 ${tieneAura ? 'text-yellow-100' : 'text-white'}`}>
-            {nombre}
-          </h2>
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-            <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${RAREZA_COLOR[tituloObj?.rareza || 'comun']}`}>
-              {tituloObj?.nombre || 'Sin título'}
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 text-[10px] font-black text-white/70">
-              {grupo}
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      {/* ── HEADER ── */}
+      <ProfileHeader
+        avatar={avatar}
+        esImagen={esImagen}
+        tieneAura={tieneAura}
+        marcoActivo={marcoActivo}
+        nombre={nombre}
+        tituloObj={tituloObj}
+        grupo={grupo}
+        onEditAvatar={() => setSelectorAbierto(true)}
+      />
 
-      {/* Tarjetas de estadísticas */}
-      <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3 px-6 mt-6">
-        <div className="glass-card rounded-2xl p-4 text-center border border-white/10 hover:border-yellow-400/30 transition-all">
-          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🏅 Nivel</p>
-          <p className="text-3xl font-black text-white">{nivelActual}</p>
-          <p className="text-[10px] text-yellow-400 font-black mt-1">{NIVEL_NOMBRE[nivelActual]}</p>
-        </div>
-        <div className="glass-card rounded-2xl p-4 text-center border border-yellow-400/20 hover:border-yellow-400/40 transition-all">
-          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🪙 Monedas</p>
-          <p className="text-3xl font-black text-yellow-400">{monedas.toLocaleString()}</p>
-        </div>
-        <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
-          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🔥 Racha</p>
-          <p className="text-2xl font-black text-orange-400">{racha} días</p>
-        </div>
-        <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
-          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">❤️ Vidas</p>
-          <div className="flex justify-center gap-1 mt-1">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className={`text-xl ${i < vidas ? 'text-red-500 drop-shadow-glow' : 'text-white/20'}`}>❤️</span>
-            ))}
-          </div>
-        </div>
-      </motion.div>
+      {/* ── STATS ── */}
+      <StatsGrid
+        nivelActual={nivelActual}
+        monedas={monedas}
+        racha={racha}
+        vidas={vidas}
+        nivelNombre={NIVEL_NOMBRE[nivelActual] || 'Iniciado'}
+      />
 
-      {/* Tabs */}
-      <motion.div variants={fadeInUp} className="flex gap-2 mx-6 mt-8 bg-white/10 backdrop-blur-md rounded-full p-1 border border-white/10">
-        {['info', 'coleccion', 'stats', 'evaluaciones'].map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 py-2 rounded-full font-black text-sm uppercase tracking-widest transition-all ${
-              tab === t ? 'bg-yellow-400 text-blue-900 shadow-lg' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            {t === 'info' && '📋 Información'}
-            {t === 'coleccion' && '📖 Colección'}
-            {t === 'stats' && '📊 Estadísticas'}
-            {t === 'evaluaciones' && '📝 Evaluaciones'}
-          </button>
-        ))}
-      </motion.div>
+      {/* ── TABS ── */}
+      <ProfileTabs tab={tab} setTab={setTab} />
 
+      {/* ── CONTENIDO ── */}
       <AnimatePresence mode="wait">
-        {/* TAB INFO */}
         {tab === 'info' && (
-          <motion.div
-            key="info"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="px-6 mt-6 space-y-4 pb-6"
-          >
-            {/* Biografía */}
-            <div className="glass-card rounded-2xl p-5 border border-white/10">
-              <div className="flex justify-between items-center">
-                <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">📝 Biografía</p>
-                {!editandoBio ? (
-                  <button onClick={() => setEditandoBio(true)} className="text-white/40 hover:text-white text-xs transition-colors">✏️ Editar</button>
-                ) : (
-                  <div className="flex gap-2">
-                    <button onClick={guardarBiografia} className="text-green-400 text-xs hover:text-green-300">✓ Guardar</button>
-                    <button onClick={() => { setEditandoBio(false); setBiografia(userDoc?.biografia || ''); }} className="text-red-400 text-xs hover:text-red-300">✗ Cancelar</button>
-                  </div>
-                )}
-              </div>
-              {editandoBio ? (
-                <textarea
-                  value={biografia}
-                  onChange={e => setBiografia(e.target.value.slice(0, 120))}
-                  maxLength="120"
-                  className="w-full bg-white/10 rounded-xl p-3 text-sm text-white mt-2 outline-none focus:border-yellow-400 border border-transparent focus:border-yellow-400 transition-all"
-                  rows="3"
-                  placeholder="Escribe algo sobre ti..."
-                />
-              ) : (
-                <p className="text-white/80 text-sm mt-2 leading-relaxed">{biografia || '✨ Aún no has escrito tu biografía. ¡Cuéntanos sobre ti!'}</p>
-              )}
-              {editandoBio && <p className="text-right text-[9px] text-white/30 mt-1">{biografia.length}/120</p>}
-            </div>
-
-            {/* Santo favorito */}
-            <div className="glass-card rounded-2xl p-5 border border-white/10">
-              <div className="flex justify-between items-center">
-                <p className="text-yellow-400 text-[10px] font-black uppercase tracking-widest">🙏 Santo favorito</p>
-                {!editandoSanto ? (
-                  <button onClick={() => setEditandoSanto(true)} className="text-white/40 hover:text-white text-xs transition-colors">✏️ Editar</button>
-                ) : (
-                  <div className="flex gap-2">
-                    <button onClick={guardarSantoFavorito} className="text-green-400 text-xs hover:text-green-300">✓ Guardar</button>
-                    <button onClick={() => { setEditandoSanto(false); setSantoFavorito(userDoc?.santoFavorito || ''); }} className="text-red-400 text-xs hover:text-red-300">✗ Cancelar</button>
-                  </div>
-                )}
-              </div>
-              {editandoSanto ? (
-                <div className="mt-3 grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                  {santosData.santos.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => setSantoFavorito(s.id)}
-                      className={`flex flex-col items-center p-2 rounded-xl transition-all ${santoFavorito === s.id ? 'bg-yellow-400/30 border border-yellow-400' : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
-                    >
-                      <span className="text-2xl">{s.icono}</span>
-                      <span className="text-[9px] font-black text-white truncate max-w-[60px]">{s.nombre}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex items-center gap-4 mt-3">
-                  {santoFavObj ? (
-                    <>
-                      <span className="text-5xl">{santoFavObj.icono}</span>
-                      <div>
-                        <p className="font-black text-white">{santoFavObj.nombre}</p>
-                        <p className="text-white/50 text-[10px]">{santoFavObj.rareza}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-white/50 text-sm">No has elegido un santo favorito aún.</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Acciones */}
-            <button
-              onClick={() => setMostrarCompartir(true)}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
-            >
-              📤 Compartir mi progreso
-            </button>
-
-            <button
-              onClick={handleCerrarSesion}
-              className="w-full py-4 rounded-2xl border border-red-500/30 text-red-400 font-black text-sm uppercase tracking-widest hover:bg-red-500/10 transition-all flex items-center justify-center gap-2"
-            >
-              🚪 Cerrar sesión
-            </button>
-          </motion.div>
+          <TabInfo
+            biografia={biografia}
+            setBiografia={setBiografia}
+            editandoBio={editandoBio}
+            setEditandoBio={setEditandoBio}
+            guardarBiografia={guardarBiografia}
+            santoFavorito={santoFavorito}
+            setSantoFavorito={setSantoFavorito}
+            editandoSanto={editandoSanto}
+            setEditandoSanto={setEditandoSanto}
+            guardarSantoFavorito={guardarSantoFavorito}
+            santoFavObj={santoFavObj}
+            userDoc={userDoc}
+            onCompartir={() => setMostrarCompartir(true)}
+            onCerrarSesion={handleCerrarSesion}
+          />
         )}
 
-        {/* TAB COLECCIÓN */}
         {tab === 'coleccion' && (
           <motion.div
             key="coleccion"
@@ -330,7 +406,7 @@ const Perfil = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="px-6 mt-6 space-y-6 pb-6"
+            className="px-4 sm:px-6 mt-6 space-y-6 pb-6"
           >
             {/* Títulos */}
             {titulosDesbloqueados?.length > 0 && (
@@ -350,7 +426,7 @@ const Perfil = () => {
                         <button
                           onClick={() => handleEquiparTitulo(t.id)}
                           disabled={equipando === t.id || isEquipped}
-                          className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                          className={`px-3 py-1 rounded-xl text-[10px] font-black transition-all ${
                             isEquipped 
                               ? 'bg-green-500/20 text-green-300 cursor-default' 
                               : 'bg-yellow-400 text-blue-900 hover:scale-105'
@@ -385,7 +461,7 @@ const Perfil = () => {
                         <button
                           onClick={() => handleEquiparMarco(id)}
                           disabled={equipando === id || isEquipped}
-                          className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                          className={`px-3 py-1 rounded-xl text-[10px] font-black transition-all ${
                             isEquipped 
                               ? 'bg-green-500/20 text-green-300' 
                               : 'bg-yellow-400 text-blue-900 hover:scale-105'
@@ -406,11 +482,11 @@ const Perfil = () => {
                 <h3 className="text-white font-black text-sm uppercase tracking-wider mb-3">
                   📖 Santos ({santosColeccion.length}/{santosData.santos.length})
                 </h3>
-                <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
                   {santosColeccion.map(s => (
                     <div key={s.id} className="glass-card rounded-xl p-2 text-center border border-white/10 hover:scale-105 transition-all">
-                      <span className="text-3xl">{s.icono}</span>
-                      <p className="font-black text-[9px] truncate mt-1">{s.nombre}</p>
+                      <span className="text-2xl sm:text-3xl">{s.icono}</span>
+                      <p className="font-black text-[8px] sm:text-[9px] truncate mt-1">{s.nombre}</p>
                     </div>
                   ))}
                 </div>
@@ -419,7 +495,6 @@ const Perfil = () => {
           </motion.div>
         )}
 
-        {/* TAB ESTADÍSTICAS */}
         {tab === 'stats' && (
           <motion.div
             key="stats"
@@ -427,20 +502,20 @@ const Perfil = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="px-6 mt-6 space-y-6 pb-6"
+            className="px-4 sm:px-6 mt-6 space-y-6 pb-6"
           >
             {/* Progreso */}
-            <div className="glass-card rounded-2xl p-5 border border-white/10">
+            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-white/10">
               <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">📊 Progreso general</p>
-              <div className="h-3 bg-white/10 rounded-full mt-3 overflow-hidden">
+              <div className="h-2 sm:h-3 bg-white/10 rounded-full mt-3 overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-1000" style={{ width: `${progresoGlobal}%` }} />
               </div>
-              <p className="text-white/60 text-sm mt-2">{Math.round(progresoGlobal)}% completado</p>
+              <p className="text-white/60 text-xs sm:text-sm mt-2">{Math.round(progresoGlobal)}% completado</p>
             </div>
 
             {/* Logros pendientes */}
             {logrosPendientes?.length > 0 && (
-              <div className="glass-card rounded-2xl p-5 border border-purple-500/30 bg-purple-500/5">
+              <div className="glass-card rounded-2xl p-4 sm:p-5 border border-purple-500/30 bg-purple-500/5">
                 <p className="text-purple-300 text-[9px] font-black uppercase tracking-widest">✨ Logros por canjear</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {logrosPendientes.map(l => {
@@ -453,32 +528,32 @@ const Perfil = () => {
 
             {/* Estadísticas numéricas */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
+              <div className="glass-card rounded-2xl p-3 sm:p-4 text-center border border-white/10">
                 <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">✅ Niveles</p>
-                <p className="text-2xl font-black text-white">{nivelesCount}</p>
+                <p className="text-xl sm:text-2xl font-black text-white">{nivelesCount}</p>
               </div>
-              <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
+              <div className="glass-card rounded-2xl p-3 sm:p-4 text-center border border-white/10">
                 <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🎓 Exámenes</p>
-                <p className="text-2xl font-black text-white">{examenesCount}</p>
+                <p className="text-xl sm:text-2xl font-black text-white">{examenesCount}</p>
               </div>
-              <div className="glass-card rounded-2xl p-4 text-center border border-amber-400/20">
+              <div className="glass-card rounded-2xl p-3 sm:p-4 text-center border border-amber-400/20">
                 <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">📦 Cofres</p>
-                <p className="text-2xl font-black text-amber-400">{cofresAbiertos}</p>
+                <p className="text-xl sm:text-2xl font-black text-amber-400">{cofresAbiertos}</p>
               </div>
-              <div className="glass-card rounded-2xl p-4 text-center border border-white/10">
+              <div className="glass-card rounded-2xl p-3 sm:p-4 text-center border border-white/10">
                 <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">🛡️ Escudos</p>
-                <p className="text-2xl font-black text-white">{inventario.filter(i => i === 'escudo_miguel').length}</p>
+                <p className="text-xl sm:text-2xl font-black text-white">{inventario.filter(i => i === 'escudo_miguel').length}</p>
               </div>
             </div>
 
             {/* Gráfico de evolución */}
-            <div className="glass-card rounded-2xl p-5 border border-white/10">
+            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-white/10">
               <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">📈 Evolución de nivel</p>
-              <div className="flex items-end gap-1 h-32 mt-3">
+              <div className="flex items-end gap-0.5 sm:gap-1 h-24 sm:h-32 mt-3">
                 {Array.from({ length: 17 }, (_, i) => i + 1).map(n => (
                   <div key={n} className="flex-1 flex flex-col items-center">
-                    <div className="w-full bg-yellow-400/30 rounded-t transition-all" style={{ height: `${n <= nivelActual ? 40 : 0}px` }} />
-                    <span className="text-[8px] text-white/40 mt-1">{n}</span>
+                    <div className="w-full bg-yellow-400/30 rounded-t transition-all" style={{ height: `${n <= nivelActual ? 30 : 0}px` }} />
+                    <span className="text-[6px] sm:text-[8px] text-white/40 mt-0.5">{n}</span>
                   </div>
                 ))}
               </div>
@@ -487,7 +562,6 @@ const Perfil = () => {
           </motion.div>
         )}
 
-        {/* TAB EVALUACIONES */}
         {tab === 'evaluaciones' && (
           <motion.div
             key="evaluaciones"
@@ -495,17 +569,15 @@ const Perfil = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="px-6 mt-6 pb-6"
+            className="px-4 sm:px-6 mt-6 pb-6"
           >
             <MisEvaluaciones />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Modal de avatar */}
+      {/* Modales */}
       <AvatarSelector isOpen={selectorAbierto} onClose={() => setSelectorAbierto(false)} onSelectAvatar={actualizarAvatar} />
-
-      {/* Modal para compartir progreso */}
       <CompartirProgreso
         isOpen={mostrarCompartir}
         onClose={() => setMostrarCompartir(false)}
@@ -521,7 +593,7 @@ const Perfil = () => {
           cofres: cofresAbiertos,
         }}
       />
-    </motion.div>
+    </div>
   );
 };
 
