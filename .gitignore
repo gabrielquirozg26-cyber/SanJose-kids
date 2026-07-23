@@ -30,7 +30,7 @@ dist-ssr
 .env.production
 
 # 🔥 ARCHIVOS DE FIREBASE (SENSIBLES)
-src/firebase.js
+
 scripts/serviceAccountKey.json
 scripts/*.xlsx
 scripts/*.xls
