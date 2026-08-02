@@ -7,13 +7,13 @@ import { getStorage } from "firebase/storage";
 
 // Tu configuración (está perfecta)
 const firebaseConfig = {
-  apiKey: "AIzaSyA5f4_wk0n6ar0ni1W5t0AdT3uj7-1fpCU",
-  authDomain: "san-josekids.firebaseapp.com",
-  projectId: "san-josekids",
-  storageBucket: "san-josekids.firebasestorage.app",
-  messagingSenderId: "1093498868735",
-  appId: "1:1093498868735:web:1e3d18cc07ca676ad64dca",
-  measurementId: "G-HFF706EJV0"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // 2. Inicializamos la App
