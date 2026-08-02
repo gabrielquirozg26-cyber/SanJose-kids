@@ -1,87 +1,147 @@
 // src/components/leccion/EjercicioOrdenar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useReducer } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mezclar } from '../../utils/leccionHelpers';
 
-const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
-  const [disponibles, setDisponibles] = useState([]);
-  const [armada, setArmada] = useState([]);
+// ── REDUCER PARA MANEJAR EL ESTADO DE ORDENAMIENTO ──
+const ordenarReducer = (state, action) => {
+  switch (action.type) {
+    case 'INICIAR':
+      return {
+        disponibles: mezclar(action.palabras),
+        armada: [],
+      };
 
+    case 'AGREGAR': {
+      const { palabra, idx } = action.payload;
+      // Verificar que la palabra existe en la posición indicada
+      if (idx >= state.disponibles.length || state.disponibles[idx] !== palabra) {
+        return state; // Estado inválido, no hacer nada
+      }
+      return {
+        disponibles: state.disponibles.filter((_, i) => i !== idx),
+        armada: [...state.armada, palabra],
+      };
+    }
+
+    case 'QUITAR': {
+      const { palabra, idx } = action.payload;
+      // Verificar que la palabra existe en la posición indicada de armada
+      if (idx >= state.armada.length || state.armada[idx] !== palabra) {
+        return state;
+      }
+      return {
+        disponibles: [...state.disponibles, palabra],
+        armada: state.armada.filter((_, i) => i !== idx),
+      };
+    }
+
+    case 'QUITAR_ULTIMA': {
+      if (state.armada.length === 0) return state;
+      const ultima = state.armada[state.armada.length - 1];
+      return {
+        disponibles: [...state.disponibles, ultima],
+        armada: state.armada.slice(0, -1),
+      };
+    }
+
+    default:
+      return state;
+  }
+};
+
+const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
+  // ✅ Usar useReducer para estado atómico
+  const [state, dispatch] = useReducer(ordenarReducer, {
+    disponibles: [],
+    armada: [],
+  });
+
+  // ✅ Referencia para bloquear interacciones durante transiciones
+  const bloqueadoRef = useRef(false);
+
+  // Inicializar al cambiar el verso
   useEffect(() => {
-    setDisponibles(mezclar(verso.palabrasOrdenar));
-    setArmada([]);
+    dispatch({ type: 'INICIAR', palabras: verso.palabrasOrdenar });
+    bloqueadoRef.current = false;
   }, [verso.id]);
 
+  // Notificar al padre la frase armada
   useEffect(() => {
-    onRespuesta(armada.join(' '));
-  }, [armada, onRespuesta]);
+    const frase = state.armada.join(' ');
+    onRespuesta(frase);
+  }, [state.armada, onRespuesta]);
 
-  const agregarPalabra = (palabra, idx) => {
+  // ✅ Agregar palabra con bloqueo
+  const agregarPalabra = useCallback((palabra, idx) => {
+    if (bloqueadoRef.current) return;
     if (resultado && resultado !== 'escudo') return;
-    setArmada(prev => [...prev, palabra]);
-    setDisponibles(prev => prev.filter((_, i) => i !== idx));
-  };
 
-  const quitarPalabra = (palabra, idx) => {
+    bloqueadoRef.current = true;
+    dispatch({ type: 'AGREGAR', payload: { palabra, idx } });
+
+    // Desbloquear después de que el reducer procese
+    requestAnimationFrame(() => {
+      bloqueadoRef.current = false;
+    });
+  }, [resultado]);
+
+  // ✅ Quitar palabra con bloqueo
+  const quitarPalabra = useCallback((palabra, idx) => {
+    if (bloqueadoRef.current) return;
     if (resultado && resultado !== 'escudo') return;
-    setArmada(prev => prev.filter((_, i) => i !== idx));
-    setDisponibles(prev => [...prev, palabra]);
-  };
 
-  const quitarUltima = () => {
+    bloqueadoRef.current = true;
+    dispatch({ type: 'QUITAR', payload: { palabra, idx } });
+
+    requestAnimationFrame(() => {
+      bloqueadoRef.current = false;
+    });
+  }, [resultado]);
+
+  // ✅ Quitar última palabra con bloqueo
+  const quitarUltima = useCallback(() => {
+    if (bloqueadoRef.current) return;
     if (resultado && resultado !== 'escudo') return;
-    if (armada.length === 0) return;
-    const ultima = armada[armada.length - 1];
-    setArmada(prev => prev.slice(0, -1));
-    setDisponibles(prev => [...prev, ultima]);
-  };
+    if (state.armada.length === 0) return;
 
-  const isDisabled = resultado && resultado !== 'escudo';
+    bloqueadoRef.current = true;
+    dispatch({ type: 'QUITAR_ULTIMA' });
+
+    requestAnimationFrame(() => {
+      bloqueadoRef.current = false;
+    });
+  }, [state.armada, resultado]);
+
+  const isDisabled = (resultado && resultado !== 'escudo') || bloqueadoRef.current;
 
   return (
-    <motion.div
-      className="w-full"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      {/* ── TÍTULO ── */}
-      <motion.p
-        className="text-[9px] font-black text-yellow-400 uppercase tracking-[0.3em] mb-3"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
+    <div className="w-full">
+      <p className="text-[9px] font-black text-yellow-400 uppercase tracking-[0.3em] mb-3">
         Ordena las palabras
-      </motion.p>
+      </p>
 
       {/* ── ÁREA DE ARMADO ── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className={`min-h-[72px] glass-card p-4 rounded-3xl border-2 mb-4 flex flex-wrap gap-2 items-start transition-all duration-300 shadow-xl ${
+        className={`min-h-[72px] glass-card p-4 rounded-3xl border-2 mb-4 flex flex-wrap gap-2 items-start transition-all duration-300 ${
           resultado === 'acierto'
-            ? 'border-green-400/60 bg-green-500/10 shadow-[0_0_30px_rgba(34,197,94,0.15)]'
+            ? 'border-green-400/60 bg-green-500/10'
             : resultado === 'error'
-            ? 'border-red-400/60 bg-red-500/10 shadow-[0_0_30px_rgba(239,68,68,0.15)]'
-            : armada.length > 0
-            ? 'border-blue-400/40 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
+            ? 'border-red-400/60 bg-red-500/10'
+            : state.armada.length > 0
+            ? 'border-blue-400/40'
             : 'border-white/10'
         }`}
       >
-        {armada.length === 0 ? (
-          <motion.span
-            className="text-white/20 text-sm font-bold self-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
+        {state.armada.length === 0 ? (
+          <span className="text-white/20 text-sm font-bold self-center">
             Toca las palabras para ordenarlas…
-          </motion.span>
+          </span>
         ) : (
           <AnimatePresence>
-            {armada.map((p, i) => (
+            {state.armada.map((p, i) => (
               <motion.span
                 key={`${p}-${i}`}
                 initial={{ scale: 0.8, opacity: 0, rotateX: 30 }}
@@ -105,7 +165,7 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
         )}
       </motion.div>
 
-      {/* ── RESPUESTA CORRECTA (EN CASO DE ERROR) ── */}
+      {/* ── RESPUESTA CORRECTA (SI ERROR) ── */}
       {resultado === 'error' && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -123,7 +183,7 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
 
       {/* ── PALABRAS DISPONIBLES ── */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {disponibles.map((p, i) => (
+        {state.disponibles.map((p, i) => (
           <motion.button
             key={`${p}-${i}`}
             initial={{ opacity: 0, scale: 0.8 }}
@@ -131,8 +191,8 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
             transition={{ delay: i * 0.03 }}
             whileHover={!isDisabled ? { scale: 1.08, y: -2 } : {}}
             whileTap={!isDisabled ? { scale: 0.92 } : {}}
-            onClick={() => agregarPalabra(p, i)}
-            disabled={!!isDisabled}
+            onClick={() => !isDisabled && agregarPalabra(p, i)}
+            disabled={isDisabled}
             className="px-3 py-2 rounded-xl border font-black text-sm transition-all active:scale-95 bg-white/15 border-white/20 text-white hover:bg-white/25 hover:border-white/40 disabled:opacity-50 disabled:hover:scale-100 shadow-lg"
           >
             {p}
@@ -141,7 +201,7 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
       </div>
 
       {/* ── BOTÓN BORRAR ÚLTIMA ── */}
-      {!isDisabled && armada.length > 0 && (
+      {!isDisabled && state.armada.length > 0 && (
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -154,7 +214,7 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
           ← Borrar última
         </motion.button>
       )}
-    </motion.div>
+    </div>
   );
 };
 

@@ -474,12 +474,76 @@
           "tipo": "oracion",
           "texto": "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra; Dios te salve. A ti clamamos los desterrados hijos de Eva; a ti suspiramos, gimiendo y llorando en este valle de lágrimas. Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos; y después de este destierro, muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh clementísima, oh piadosa, oh dulce Virgen María! Amén.",
           "versos": [
-            { "id": "sv_1", "texto": "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra; Dios te salve.", "palabraFaltante": "misericordia", "opcionesSeleccion": ["misericordia", "compasión", "amor", "gracia"], "palabrasOrdenar": ["Dios", "te", "salve", "Reina", "y", "Madre", "de", "misericordia", "vida", "dulzura", "y", "esperanza", "nuestra", "Dios", "te", "salve"] },
-            { "id": "sv_2", "texto": "A ti clamamos los desterrados hijos de Eva;", "palabraFaltante": "desterrados", "opcionesSeleccion": ["desterrados", "exiliados", "apartados", "alejados"], "palabrasOrdenar": ["A", "ti", "clamamos", "los", "desterrados", "hijos", "de", "Eva"] },
-            { "id": "sv_3", "texto": "a ti suspiramos, gimiendo y llorando en este valle de lágrimas.", "palabraFaltante": "lágrimas", "opcionesSeleccion": ["lágrimas", "penas", "tristezas", "aflicciones"], "palabrasOrdenar": ["a", "ti", "suspiramos", "gimiendo", "y", "llorando", "en", "este", "valle", "de", "lágrimas"] },
-            { "id": "sv_4", "texto": "Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos;", "palabraFaltante": "abogada", "opcionesSeleccion": ["abogada", "intercesora", "mediadora", "defensora"], "palabrasOrdenar": ["Ea", "pues", "Señora", "abogada", "nuestra", "vuelve", "a", "nosotros", "esos", "tus", "ojos", "misericordiosos"] },
-            { "id": "sv_5", "texto": "y después de este destierro, muéstranos a Jesús, fruto bendito de tu vientre.", "palabraFaltante": "destierro", "opcionesSeleccion": ["destierro", "exilio", "cautiverio", "separación"], "palabrasOrdenar": ["y", "después", "de", "este", "destierro", "muéstranos", "a", "Jesús", "fruto", "bendito", "de", "tu", "vientre"] },
-            { "id": "sv_6", "texto": "¡Oh clementísima, oh piadosa, oh dulce Virgen María! Amén.", "palabraFaltante": "clementísima", "opcionesSeleccion": ["clementísima", "misericordiosísima", "bondadosísima", "piadosísima"], "palabrasOrdenar": ["Oh", "clementísima", "oh", "piadosa", "oh", "dulce", "Virgen", "María", "Amén"] }
+            {
+              "id": "sv_1",
+              "texto": "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra; Dios te salve.",
+              "palabraFaltante": "misericordia",
+              "opcionesSeleccion": ["misericordia", "compasión", "amor", "gracia"],
+              "palabrasOrdenar": ["Dios", "te", "salve", "Reina", "y", "Madre", "de", "misericordia", "vida", "dulzura", "y", "esperanza", "nuestra", "Dios", "te", "salve"]
+            },
+            {
+              "id": "sv_2",
+              "texto": "A ti clamamos los desterrados hijos de Eva;",
+              "palabraFaltante": "desterrados",
+              "opcionesSeleccion": ["desterrados", "exiliados", "apartados", "alejados"],
+              "palabrasOrdenar": ["A", "ti", "clamamos", "los", "desterrados", "hijos", "de", "Eva"]
+            },
+            {
+              "id": "sv_3",
+              "texto": "a ti suspiramos, gimiendo y llorando en este valle de lágrimas.",
+              "palabraFaltante": "lágrimas",
+              "opcionesSeleccion": ["lágrimas", "penas", "tristezas", "aflicciones"],
+              "palabrasOrdenar": ["a", "ti", "suspiramos", "gimiendo", "y", "llorando", "en", "este", "valle", "de", "lágrimas"]
+            },
+            {
+              "id": "sv_4",
+              "texto": "Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos;",
+              "palabraFaltante": "abogada",
+              "opcionesSeleccion": ["abogada", "intercesora", "mediadora", "defensora"],
+              "palabrasOrdenar": ["Ea", "pues", "Señora", "abogada", "nuestra", "vuelve", "a", "nosotros", "esos", "tus", "ojos", "misericordiosos"]
+            },
+            {
+              "id": "sv_5",
+              "texto": "y después de este destierro, muéstranos a Jesús, fruto bendito de tu vientre.",
+              "palabraFaltante": "destierro",
+              "opcionesSeleccion": ["destierro", "exilio", "cautiverio", "separación"],
+              "palabrasOrdenar": ["y", "después", "de", "este", "destierro", "muéstranos", "a", "Jesús", "fruto", "bendito", "de", "tu", "vientre"]
+            },
+            {
+              "id": "sv_6",
+              "texto": "¡Oh clementísima, oh piadosa, oh dulce Virgen María! Amén.",
+              "palabraFaltante": "clementísima",
+              "opcionesSeleccion": ["clementísima", "misericordiosísima", "bondadosísima", "piadosísima"],
+              "palabrasOrdenar": ["Oh", "clementísima", "oh", "piadosa", "oh", "dulce", "Virgen", "María", "Amén"]
+            },
+            {
+              "id": "sv_7",
+              "texto": "Virgen Santa, Madre de Dios, ruega por nosotros que acudimos a ti.",
+              "palabraFaltante": "acudimos",
+              "opcionesSeleccion": ["acudimos", "venimos", "corremos", "llegamos"],
+              "palabrasOrdenar": ["Virgen", "Santa", "Madre", "de", "Dios", "ruega", "por", "nosotros", "que", "acudimos", "a", "ti"]
+            },
+            {
+              "id": "sv_8",
+              "texto": "Bendita eres entre todas las mujeres y bendito es el fruto de tu vientre.",
+              "palabraFaltante": "vientre",
+              "opcionesSeleccion": ["vientre", "corazón", "amor", "santidad"],
+              "palabrasOrdenar": ["Bendita", "eres", "entre", "todas", "las", "mujeres", "y", "bendito", "es", "el", "fruto", "de", "tu", "vientre"]
+            },
+            {
+              "id": "sv_9",
+              "texto": "Señora nuestra, refugio de los pecadores, no nos abandones en nuestras necesidades.",
+              "palabraFaltante": "refugio",
+              "opcionesSeleccion": ["refugio", "amparo", "protección", "manto"],
+              "palabrasOrdenar": ["Señora", "nuestra", "refugio", "de", "los", "pecadores", "no", "nos", "abandones", "en", "nuestras", "necesidades"]
+            },
+            {
+              "id": "sv_10",
+              "texto": "Ruega por nosotros, Santa Madre de Dios, para que seamos dignos de alcanzar las promesas de Cristo.",
+              "palabraFaltante": "dignos",
+              "opcionesSeleccion": ["dignos", "merecedores", "capaces", "fuertes"],
+              "palabrasOrdenar": ["Ruega", "por", "nosotros", "Santa", "Madre", "de", "Dios", "para", "que", "seamos", "dignos", "de", "alcanzar", "las", "promesas", "de", "Cristo"]
+            }
           ]
         },
         {
@@ -514,7 +578,14 @@
             { "id": "m1", "pregunta": "¿Cuál es el primer mandamiento?", "opciones": ["Amarás a Dios sobre todas las cosas", "No tomarás el nombre de Dios en vano", "Santificarás las fiestas", "Honrarás a tu padre y a tu madre"], "correcta": "Amarás a Dios sobre todas las cosas" },
             { "id": "m2", "pregunta": "¿Qué mandamiento prohíbe robar?", "opciones": ["Quinto", "Sexto", "Séptimo", "Octavo"], "correcta": "Séptimo" },
             { "id": "m3", "pregunta": "El cuarto mandamiento manda:", "opciones": ["Honrar a los padres", "No matar", "No mentir", "No adulterar"], "correcta": "Honrar a los padres" },
-            { "id": "m4", "pregunta": "¿Cuál es el mandamiento que prohíbe decir mentiras o dar falso testimonio?", "opciones": ["Sexto", "Séptimo", "Octavo", "Noveno"], "correcta": "Octavo" }
+            { "id": "m4", "pregunta": "¿Cuál es el mandamiento que prohíbe decir mentiras o dar falso testimonio?", "opciones": ["Sexto", "Séptimo", "Octavo", "Noveno"], "correcta": "Octavo" },
+            { "id": "m6", "pregunta": "El segundo mandamiento nos prohíbe:", "opciones": ["Tomar el nombre de Dios en vano", "Robar", "Matar", "Mentir"], "correcta": "Tomar el nombre de Dios en vano" },
+            { "id": "m7", "pregunta": "¿Qué día debemos santificar según el tercer mandamiento?", "opciones": ["El domingo", "El lunes", "El viernes", "El sábado"], "correcta": "El domingo" },
+            { "id": "m8", "pregunta": "¿Qué mandamiento nos enseña a respetar a nuestros papás?", "opciones": ["Cuarto", "Quinto", "Sexto", "Séptimo"], "correcta": "Cuarto" },
+            { "id": "m9", "pregunta": "El sexto mandamiento nos dice:", "opciones": ["No cometerás actos impuros", "No robarás", "No mentirás", "No matarás"], "correcta": "No cometerás actos impuros" },
+            { "id": "m10", "pregunta": "¿Qué mandamiento prohíbe desear lo que es de otro?", "opciones": ["Noveno y Décimo", "Séptimo y Octavo", "Quinto y Sexto", "Tercero y Cuarto"], "correcta": "Noveno y Décimo" }
+          
+        
           ]
         },
         {
@@ -524,8 +595,15 @@
           "tipo": "concepto",
           "preguntas": [
             { "id": "mi1", "pregunta": "¿Cuántos son los mandamientos de la Iglesia?", "opciones": ["5", "6", "7", "10"], "correcta": "5" },
-            { "id": "mi2", "pregunta": "¿Cuál de estos es un mandamiento de la Iglesia?", "opciones": ["Oír misa entera los domingos y fiestas de guardar", "No robar", "No matar", "Honrar a los padres"], "correcta": "Oír misa entera los domingos y fiestas de guardar" },
-            { "id": "mi3", "pregunta": "¿Qué dice el segundo mandamiento de la Iglesia?", "opciones": ["Confesar los pecados mortales al menos una vez al año", "Comulgar por Pascua de Resurrección", "Ayunar y abstenerse de comer carne cuando lo manda la Santa Madre Iglesia", "Contribuir con las necesidades de la Iglesia"], "correcta": "Confesar los pecados mortales al menos una vez al año" }
+            { "id": "mi2", "pregunta": "¿Cuál de estos es un mandamiento de la Iglesia?", "opciones": ["Oír misa entera los domingos", "No robar", "No matar", "Honrar a los padres"], "correcta": "Oír misa entera los domingos" },
+            { "id": "mi3", "pregunta": "¿Qué manda el segundo mandamiento de la Iglesia?", "opciones": ["Confesar los pecados una vez al año", "Comulgar en Pascua", "Ayunar cuando lo manda la Iglesia", "Ayudar a la Iglesia"], "correcta": "Confesar los pecados una vez al año" },
+            { "id": "mi4", "pregunta": "¿Qué debemos hacer en el primer mandamiento de la Iglesia?", "opciones": ["Oír misa los domingos", "Confesarnos", "Comulgar", "Ayunar"], "correcta": "Oír misa los domingos" },
+            { "id": "mi5", "pregunta": "El tercer mandamiento de la Iglesia nos pide:", "opciones": ["Comulgar en Pascua de Resurrección", "Ayunar", "Confesarnos", "Oír misa"], "correcta": "Comulgar en Pascua de Resurrección" },
+            { "id": "mi6", "pregunta": "¿Qué debemos hacer en Cuaresma según la Iglesia?", "opciones": ["Ayunar y abstenernos de carne", "Comer mucho", "Dormir más", "Ver televisión"], "correcta": "Ayunar y abstenernos de carne" },
+            { "id": "mi7", "pregunta": "El quinto mandamiento de la Iglesia es:", "opciones": ["Ayudar a la Iglesia en sus necesidades", "Confesarse", "Comulgar", "Oír misa"], "correcta": "Ayudar a la Iglesia en sus necesidades" },
+            { "id": "mi8", "pregunta": "¿Cuántas veces al año debemos confesarnos?", "opciones": ["Al menos una vez", "Ninguna", "Todas las semanas", "Una vez al mes"], "correcta": "Al menos una vez" },
+            { "id": "mi9", "pregunta": "¿Qué significa 'comulgar'?", "opciones": ["Recibir la Eucaristía", "Confesarse", "Rezar", "Cantar"], "correcta": "Recibir la Eucaristía" },
+            { "id": "mi10", "pregunta": "¿Por qué la Iglesia nos pide ayudar en sus necesidades?", "opciones": ["Para que pueda cumplir su misión", "Para ser ricos", "Para viajar", "Para tener poder"], "correcta": "Para que pueda cumplir su misión" }          
           ]
         },
         {
@@ -536,7 +614,14 @@
           "preguntas": [
             { "id": "om1", "pregunta": "¿Cuántas son las obras de misericordia corporales?", "opciones": ["7", "6", "8", "5"], "correcta": "7" },
             { "id": "om2", "pregunta": "Dar de comer al hambriento es una obra de misericordia:", "opciones": ["Corporal", "Espiritual", "Ambas", "Ninguna"], "correcta": "Corporal" },
-            { "id": "om3", "pregunta": "¿Cuál de estas es una obra de misericordia espiritual?", "opciones": ["Visitar a los enfermos", "Dar posada al peregrino", "Enseñar al que no sabe", "Enterrar a los muertos"], "correcta": "Enseñar al que no sabe" }
+            { "id": "om3", "pregunta": "¿Cuál de estas es una obra de misericordia espiritual?", "opciones": ["Visitar a los enfermos", "Dar posada al peregrino", "Enseñar al que no sabe", "Enterrar a los muertos"], "correcta": "Enseñar al que no sabe" },
+            { "id": "om4", "pregunta": "Visitar a los enfermos es una obra de misericordia:", "opciones": ["Corporal", "Espiritual", "Ambas", "Ninguna"], "correcta": "Corporal" },
+            { "id": "om5", "pregunta": "¿Qué obra de misericordia consiste en dar techo al que no tiene?", "opciones": ["Dar posada al peregrino", "Dar de comer", "Vestir al desnudo", "Visitar al enfermo"], "correcta": "Dar posada al peregrino" },
+            { "id": "om6", "pregunta": "¿Cuántas son las obras de misericordia espirituales?", "opciones": ["7", "6", "8", "5"], "correcta": "7" },
+            { "id": "om7", "pregunta": "¿Qué obra de misericordia es 'dar buen consejo'?", "opciones": ["Espiritual", "Corporal", "Ambas", "Ninguna"], "correcta": "Espiritual" },
+            { "id": "om8", "pregunta": "Perdonar las ofensas es una obra de misericordia:", "opciones": ["Espiritual", "Corporal", "Ambas", "Ninguna"], "correcta": "Espiritual" },
+            { "id": "om9", "pregunta": "¿Qué obra de misericordia debemos hacer con los que están tristes?", "opciones": ["Consolar al triste", "Visitar al enfermo", "Dar de comer", "Enseñar"], "correcta": "Consolar al triste" },
+            { "id": "om10", "pregunta": "¿Qué obra de misericordia es 'sufrir con paciencia los defectos del prójimo'?", "opciones": ["Espiritual", "Corporal", "Ambas", "Ninguna"], "correcta": "Espiritual" }
           ]
         }
       ]
@@ -557,8 +642,15 @@
           "tipo": "concepto",
           "preguntas": [
             { "id": "des1", "pregunta": "¿Cuántos son los dones del Espíritu Santo?", "opciones": ["7", "9", "12", "5"], "correcta": "7" },
-            { "id": "des2", "pregunta": "El don que nos ayuda a conocer y amar a Dios como Padre se llama:", "opciones": ["Piedad", "Temor de Dios", "Sabiduría", "Consejo"], "correcta": "Piedad" },
-            { "id": "des3", "pregunta": "El don que nos da la valentía para defender la fe es:", "opciones": ["Fortaleza", "Consejo", "Ciencia", "Entendimiento"], "correcta": "Fortaleza" }
+            { "id": "des2", "pregunta": "El don de Sabiduría nos ayuda a:", "opciones": ["Conocer a Dios como Padre", "Tener valentía", "Tomar buenas decisiones", "Entender la Biblia"], "correcta": "Conocer a Dios como Padre" },
+            { "id": "des3", "pregunta": "El don de Fortaleza nos da:", "opciones": ["Valentía para defender la fe", "Sabiduría", "Entendimiento", "Piedad"], "correcta": "Valentía para defender la fe" },
+            { "id": "des4", "pregunta": "El don de Consejo nos ayuda a:", "opciones": ["Tomar buenas decisiones", "Conocer a Dios", "Ser valientes", "Entender la fe"], "correcta": "Tomar buenas decisiones" },
+            { "id": "des5", "pregunta": "El don de Entendimiento nos ayuda a:", "opciones": ["Comprender mejor la fe", "Ser valientes", "Dar consejos", "Amar a Dios"], "correcta": "Comprender mejor la fe" },
+            { "id": "des6", "pregunta": "El don de Ciencia nos permite:", "opciones": ["Conocer a Dios en la creación", "Entender la Biblia", "Tener valentía", "Dar consejos"], "correcta": "Conocer a Dios en la creación" },
+            { "id": "des7", "pregunta": "El don de Piedad nos ayuda a:", "opciones": ["Amar a Dios como Padre", "Ser valientes", "Entender la fe", "Tomar decisiones"], "correcta": "Amar a Dios como Padre" },
+            { "id": "des8", "pregunta": "El Temor de Dios nos ayuda a:", "opciones": ["No ofender a Dios por amor", "Tener miedo", "Ser valientes", "Entender la fe"], "correcta": "No ofender a Dios por amor" },
+            { "id": "des9", "pregunta": "¿Qué don nos da el Espíritu Santo para entender la Palabra de Dios?", "opciones": ["Entendimiento", "Fortaleza", "Consejo", "Piedad"], "correcta": "Entendimiento" },
+            { "id": "des10", "pregunta": "¿Cuál de estos NO es un don del Espíritu Santo?", "opciones": ["Paciencia", "Sabiduría", "Fortaleza", "Consejo"], "correcta": "Paciencia" }
           ]
         },
         {
@@ -567,8 +659,16 @@
           "icono": "🍎",
           "tipo": "concepto",
           "preguntas": [
-            { "id": "fes1", "pregunta": "¿Cuántos frutos del Espíritu Santo hay (según la enumeración tradicional)?", "opciones": ["12", "9", "7", "5"], "correcta": "12" },
-            { "id": "fes2", "pregunta": "La alegría que viene de saber que Dios nos ama es el fruto del:", "opciones": ["Gozo", "Paz", "Caridad", "Bondad"], "correcta": "Gozo" }
+            { "id": "fes1", "pregunta": "¿Cuántos frutos del Espíritu Santo hay?", "opciones": ["12", "9", "7", "5"], "correcta": "12" },
+            { "id": "fes2", "pregunta": "La alegría que viene de saber que Dios nos ama se llama:", "opciones": ["Gozo", "Paz", "Caridad", "Bondad"], "correcta": "Gozo" },
+            { "id": "fes3", "pregunta": "El fruto de la Paz nos ayuda a:", "opciones": ["Estar tranquilos y en armonía", "Ser valientes", "Tener alegría", "Ser pacientes"], "correcta": "Estar tranquilos y en armonía" },
+            { "id": "fes4", "pregunta": "La Paciencia es un fruto que nos ayuda a:", "opciones": ["Esperar con calma", "Ser alegres", "Ser buenos", "Ser fieles"], "correcta": "Esperar con calma" },
+            { "id": "fes5", "pregunta": "El fruto de la Bondad nos hace:", "opciones": ["Ser buenos con los demás", "Ser alegres", "Ser pacientes", "Ser fieles"], "correcta": "Ser buenos con los demás" },
+            { "id": "fes6", "pregunta": "La Mansedumbre es:", "opciones": ["Ser amable y humilde", "Ser fuerte", "Ser alegre", "Ser paciente"], "correcta": "Ser amable y humilde" },
+            { "id": "fes7", "pregunta": "El fruto de la Fe nos ayuda a:", "opciones": ["Creer en Dios", "Ser alegres", "Ser pacientes", "Ser buenos"], "correcta": "Creer en Dios" },
+            { "id": "fes8", "pregunta": "La Templanza nos ayuda a:", "opciones": ["Tener control sobre nosotros mismos", "Ser alegres", "Ser pacientes", "Ser buenos"], "correcta": "Tener control sobre nosotros mismos" },
+            { "id": "fes9", "pregunta": "¿Cuál de estos es un fruto del Espíritu Santo?", "opciones": ["Caridad", "Pereza", "Egoísmo", "Orgullo"], "correcta": "Caridad" },
+            { "id": "fes10", "pregunta": "La Caridad es el fruto que nos hace:", "opciones": ["Amar a Dios y al prójimo", "Ser alegres", "Ser pacientes", "Ser buenos"], "correcta": "Amar a Dios y al prójimo" }
           ]
         },
         {
@@ -578,7 +678,15 @@
           "tipo": "concepto",
           "preguntas": [
             { "id": "vt1", "pregunta": "¿Cuáles son las tres virtudes teologales?", "opciones": ["Fe, Esperanza y Caridad", "Prudencia, Justicia y Fortaleza", "Templanza, Paciencia y Humildad", "Sabiduría, Entendimiento y Consejo"], "correcta": "Fe, Esperanza y Caridad" },
-            { "id": "vt2", "pregunta": "La virtud teologal que nos permite creer en Dios y en todo lo que Él nos revela es:", "opciones": ["Fe", "Esperanza", "Caridad", "Prudencia"], "correcta": "Fe" }
+            { "id": "vt2", "pregunta": "La Fe nos permite:", "opciones": ["Creer en Dios", "Tener esperanza", "Amar", "Ser prudentes"], "correcta": "Creer en Dios" },
+            { "id": "vt3", "pregunta": "La Esperanza nos ayuda a:", "opciones": ["Confiar en que Dios nos dará el cielo", "Creer en Dios", "Amar a los demás", "Tomar buenas decisiones"], "correcta": "Confiar en que Dios nos dará el cielo" },
+            { "id": "vt4", "pregunta": "La Caridad nos hace:", "opciones": ["Amar a Dios y al prójimo", "Creer en Dios", "Tener esperanza", "Ser prudentes"], "correcta": "Amar a Dios y al prójimo" },
+            { "id": "vt5", "pregunta": "¿Qué virtud teologal es la más grande de todas?", "opciones": ["Caridad", "Fe", "Esperanza", "Todas son iguales"], "correcta": "Caridad" },
+            { "id": "vt6", "pregunta": "La Fe es un regalo de:", "opciones": ["Dios", "Los papás", "Los maestros", "Los amigos"], "correcta": "Dios" },
+            { "id": "vt7", "pregunta": "¿Qué virtud teologal se relaciona con el cielo?", "opciones": ["Esperanza", "Fe", "Caridad", "Prudencia"], "correcta": "Esperanza" },
+            { "id": "vt8", "pregunta": "La Caridad es también llamada:", "opciones": ["Amor", "Fe", "Esperanza", "Fortaleza"], "correcta": "Amor" },
+            { "id": "vt9", "pregunta": "¿Cómo recibimos las virtudes teologales?", "opciones": ["En el Bautismo", "Estudiando", "Trabajando", "Con esfuerzo"], "correcta": "En el Bautismo" },
+            { "id": "vt10", "pregunta": "¿Qué virtud teologal nos falta cuando no confiamos en Dios?", "opciones": ["Esperanza", "Fe", "Caridad", "Ninguna"], "correcta": "Esperanza" }
           ]
         },
         {
@@ -588,7 +696,15 @@
           "tipo": "concepto",
           "preguntas": [
             { "id": "vc1", "pregunta": "¿Cuáles son las cuatro virtudes cardinales?", "opciones": ["Prudencia, Justicia, Fortaleza, Templanza", "Fe, Esperanza, Caridad, Humildad", "Sabiduría, Entendimiento, Ciencia, Consejo", "Paciencia, Bondad, Mansedumbre, Castidad"], "correcta": "Prudencia, Justicia, Fortaleza, Templanza" },
-            { "id": "vc2", "pregunta": "La virtud que nos ayuda a tomar decisiones correctas en cada situación es:", "opciones": ["Prudencia", "Justicia", "Fortaleza", "Templanza"], "correcta": "Prudencia" }
+            { "id": "vc2", "pregunta": "La Prudencia nos ayuda a:", "opciones": ["Tomar buenas decisiones", "Ser justos", "Ser valientes", "Tener control"], "correcta": "Tomar buenas decisiones" },
+            { "id": "vc3", "pregunta": "La Justicia nos enseña a:", "opciones": ["Dar a cada uno lo que le corresponde", "Tomar decisiones", "Ser valientes", "Tener control"], "correcta": "Dar a cada uno lo que le corresponde" },
+            { "id": "vc4", "pregunta": "La Fortaleza nos da:", "opciones": ["Valentía para hacer el bien", "Sabiduría", "Justicia", "Control"], "correcta": "Valentía para hacer el bien" },
+            { "id": "vc5", "pregunta": "La Templanza nos ayuda a:", "opciones": ["Tener control sobre nosotros mismos", "Ser justos", "Ser valientes", "Tomar decisiones"], "correcta": "Tener control sobre nosotros mismos" },
+            { "id": "vc6", "pregunta": "¿Qué virtud cardinal nos ayuda a ser fuertes ante las dificultades?", "opciones": ["Fortaleza", "Prudencia", "Justicia", "Templanza"], "correcta": "Fortaleza" },
+            { "id": "vc7", "pregunta": "¿Qué virtud cardinal nos ayuda a no excedernos en nada?", "opciones": ["Templanza", "Prudencia", "Justicia", "Fortaleza"], "correcta": "Templanza" },
+            { "id": "vc8", "pregunta": "¿Qué virtud cardinal se relaciona con la verdad?", "opciones": ["Justicia", "Prudencia", "Fortaleza", "Templanza"], "correcta": "Justicia" },
+            { "id": "vc9", "pregunta": "¿Cuál es la virtud que nos ayuda a pensar antes de actuar?", "opciones": ["Prudencia", "Justicia", "Fortaleza", "Templanza"], "correcta": "Prudencia" },
+            { "id": "vc10", "pregunta": "Las virtudes cardinales son importantes porque:", "opciones": ["Nos ayudan a vivir bien", "Solo sirven para adultos", "No son necesarias", "Solo para santos"], "correcta": "Nos ayudan a vivir bien" }
           ]
         }
       ]
@@ -609,10 +725,15 @@
           "tipo": "concepto",
           "preguntas": [
             { "id": "sac1", "pregunta": "¿Cuántos sacramentos instituyó Jesucristo?", "opciones": ["7", "5", "10", "12"], "correcta": "7" },
-            { "id": "sac2", "pregunta": "¿Cuál es el sacramento que nos hace hijos de Dios y borra el pecado original?", "opciones": ["Bautismo", "Confirmación", "Eucaristía", "Penitencia"], "correcta": "Bautismo" },
-            { "id": "sac3", "pregunta": "El sacramento que nos da el Espíritu Santo para fortalecer nuestra fe es:", "opciones": ["Confirmación", "Orden sacerdotal", "Matrimonio", "Eucaristía"], "correcta": "Confirmación" },
-            { "id": "sac4", "pregunta": "¿Cuál es el sacramento que perdona los pecados cometidos después del Bautismo?", "opciones": ["Penitencia", "Unción de los enfermos", "Eucaristía", "Matrimonio"], "correcta": "Penitencia" },
-            { "id": "sac5", "pregunta": "¿Cuál sacramento no es de iniciacion cristiana?", "opciones": ["Penitencia", "Bautismo", "Eucaristía", "Confirmación"], "correcta": "Penitencia"}
+            { "id": "sac2", "pregunta": "¿Qué sacramento nos hace hijos de Dios?", "opciones": ["Bautismo", "Confirmación", "Eucaristía", "Penitencia"], "correcta": "Bautismo" },
+            { "id": "sac3", "pregunta": "El sacramento que nos da el Espíritu Santo es:", "opciones": ["Confirmación", "Orden sacerdotal", "Matrimonio", "Eucaristía"], "correcta": "Confirmación" },
+            { "id": "sac4", "pregunta": "¿Qué sacramento perdona los pecados?", "opciones": ["Penitencia", "Unción de los enfermos", "Eucaristía", "Matrimonio"], "correcta": "Penitencia" },
+            { "id": "sac5", "pregunta": "¿Cuál NO es un sacramento de iniciación?", "opciones": ["Penitencia", "Bautismo", "Eucaristía", "Confirmación"], "correcta": "Penitencia" },
+            { "id": "sac6", "pregunta": "En la Eucaristía recibimos:", "opciones": ["El Cuerpo y Sangre de Cristo", "El Espíritu Santo", "El perdón", "La fuerza"], "correcta": "El Cuerpo y Sangre de Cristo" },
+            { "id": "sac7", "pregunta": "El sacramento del Matrimonio une a:", "opciones": ["Un hombre y una mujer", "Dos amigos", "Dos sacerdotes", "Dos niños"], "correcta": "Un hombre y una mujer" },
+            { "id": "sac8", "pregunta": "El Orden sacerdotal es para:", "opciones": ["Los sacerdotes", "Todos los cristianos", "Los papás", "Los niños"], "correcta": "Los sacerdotes" },
+            { "id": "sac9", "pregunta": "¿Qué sacramento ayuda a los enfermos?", "opciones": ["Unción de los enfermos", "Bautismo", "Confirmación", "Matrimonio"], "correcta": "Unción de los enfermos" },
+            { "id": "sac10", "pregunta": "¿Cuál es el sacramento que nos da alimento espiritual?", "opciones": ["Eucaristía", "Bautismo", "Confirmación", "Penitencia"], "correcta": "Eucaristía" }
           ]
         }
       ]
@@ -632,9 +753,16 @@
           "icono": "📿",
           "tipo": "concepto",
           "preguntas": [
-            { "id": "mg1", "pregunta": "¿Cuál es el primer misterio gozoso?", "opciones": ["La Anunciación del Ángel a María", "La Visitación de María a Isabel", "El Nacimiento de Jesús", "La Presentación del Niño en el Templo"], "correcta": "La Anunciación del Ángel a María" },
-            { "id": "mg2", "pregunta": "¿Qué misterio gozoso recuerda la visita de María a su prima Isabel?", "opciones": ["La Visitación", "La Anunciación", "La Natividad", "El hallazgo de Jesús en el Templo"], "correcta": "La Visitación" },
-            { "id": "mg3", "pregunta": "Los misterios gozosos se meditan los días:", "opciones": ["Lunes y sábado", "Martes y viernes", "Miércoles y domingo", "Jueves"], "correcta": "Lunes y sábado" }
+            { "id": "mg1", "pregunta": "¿Qué pasó en el primer misterio gozoso?", "opciones": ["El Ángel anunció a María", "María visitó a Isabel", "Nació Jesús", "Jesús fue al Templo"], "correcta": "El Ángel anunció a María" },
+            { "id": "mg2", "pregunta": "El segundo misterio gozoso es:", "opciones": ["La Visitación", "La Anunciación", "La Natividad", "El hallazgo de Jesús"], "correcta": "La Visitación" },
+            { "id": "mg3", "pregunta": "¿Cuándo meditamos los misterios gozosos?", "opciones": ["Lunes y sábado", "Martes y viernes", "Miércoles y domingo", "Jueves"], "correcta": "Lunes y sábado" },
+            { "id": "mg4", "pregunta": "El tercer misterio gozoso es:", "opciones": ["El Nacimiento de Jesús", "La Anunciación", "La Visitación", "La Presentación"], "correcta": "El Nacimiento de Jesús" },
+            { "id": "mg5", "pregunta": "La Presentación de Jesús en el Templo es el misterio gozoso número:", "opciones": ["Cuarto", "Segundo", "Tercero", "Quinto"], "correcta": "Cuarto" },
+            { "id": "mg6", "pregunta": "¿Qué misterio gozoso habla de cuando Jesús se perdió y lo encontraron?", "opciones": ["El hallazgo en el Templo", "La Anunciación", "La Visitación", "La Natividad"], "correcta": "El hallazgo en el Templo" },
+            { "id": "mg7", "pregunta": "María visitó a su prima Isabel en el misterio gozoso número:", "opciones": ["Segundo", "Primero", "Tercero", "Cuarto"], "correcta": "Segundo" },
+            { "id": "mg8", "pregunta": "¿Quién anunció a María que sería la madre de Jesús?", "opciones": ["El Ángel Gabriel", "San José", "El Espíritu Santo", "Un profeta"], "correcta": "El Ángel Gabriel" },
+            { "id": "mg9", "pregunta": "Jesús nació en:", "opciones": ["Belén", "Jerusalén", "Nazaret", "Egipto"], "correcta": "Belén" },
+            { "id": "mg10", "pregunta": "Los misterios gozosos nos hablan de:", "opciones": ["La infancia de Jesús", "La pasión de Jesús", "La resurrección", "La vida pública"], "correcta": "La infancia de Jesús" }
           ]
         },
         {
@@ -643,8 +771,16 @@
           "icono": "✝️",
           "tipo": "concepto",
           "preguntas": [
-            { "id": "md1", "pregunta": "¿Cuál es el primer misterio doloroso?", "opciones": ["La Oración de Jesús en el Huerto", "La Flagelación", "La Coronación de espinas", "Jesús con la cruz a cuestas"], "correcta": "La Oración de Jesús en el Huerto" },
-            { "id": "md2", "pregunta": "¿Qué misterio doloroso recuerda la subida de Jesús al Calvario?", "opciones": ["Jesús con la cruz a cuestas", "La Crucifixión", "La Flagelación", "La Coronación de espinas"], "correcta": "Jesús con la cruz a cuestas" }
+            { "id": "md1", "pregunta": "¿Cuál es el primer misterio doloroso?", "opciones": ["Jesús en el Huerto", "La Flagelación", "La Coronación de espinas", "Jesús con la cruz"], "correcta": "Jesús en el Huerto" },
+            { "id": "md2", "pregunta": "El segundo misterio doloroso es:", "opciones": ["La Flagelación", "Jesús en el Huerto", "La Coronación", "La Crucifixión"], "correcta": "La Flagelación" },
+            { "id": "md3", "pregunta": "¿Qué día meditamos los misterios dolorosos?", "opciones": ["Martes y viernes", "Lunes y sábado", "Miércoles y domingo", "Jueves"], "correcta": "Martes y viernes" },
+            { "id": "md4", "pregunta": "En el tercer misterio doloroso, Jesús es:", "opciones": ["Coronado de espinas", "Flagelado", "Crucificado", "Cargando la cruz"], "correcta": "Coronado de espinas" },
+            { "id": "md5", "pregunta": "El cuarto misterio doloroso es:", "opciones": ["Jesús con la cruz a cuestas", "La Flagelación", "La Coronación", "La Crucifixión"], "correcta": "Jesús con la cruz a cuestas" },
+            { "id": "md6", "pregunta": "El quinto misterio doloroso es:", "opciones": ["La Crucifixión", "Jesús en el Huerto", "La Flagelación", "La Coronación"], "correcta": "La Crucifixión" },
+            { "id": "md7", "pregunta": "¿Qué hizo Jesús en el Huerto de Getsemaní?", "opciones": ["Rezó con angustia", "Durmió", "Caminó", "Cantó"], "correcta": "Rezó con angustia" },
+            { "id": "md8", "pregunta": "¿Quién ayudó a Jesús a cargar la cruz?", "opciones": ["Simón de Cirene", "Pedro", "Juan", "María"], "correcta": "Simón de Cirene" },
+            { "id": "md9", "pregunta": "Jesús fue crucificado en:", "opciones": ["El Calvario", "Belén", "Nazaret", "Egipto"], "correcta": "El Calvario" },
+            { "id": "md10", "pregunta": "Los misterios dolorosos nos ayudan a:", "opciones": ["Acompañar a Jesús en su pasión", "Alegrarnos con Jesús", "Recordar su infancia", "Pensar en el cielo"], "correcta": "Acompañar a Jesús en su pasión" }
           ]
         },
         {
@@ -653,18 +789,34 @@
           "icono": "👑",
           "tipo": "concepto",
           "preguntas": [
-            { "id": "mgl1", "pregunta": "¿Cuál es el primer misterio glorioso?", "opciones": ["La Resurrección de Jesús", "La Ascensión", "La Venida del Espíritu Santo", "La Asunción de María"], "correcta": "La Resurrección de Jesús" },
-            { "id": "mgl2", "pregunta": "¿Qué misterio glorioso recuerda la subida de Jesús al cielo?", "opciones": ["La Ascensión", "La Resurrección", "La Venida del Espíritu Santo", "La Coronación de María"], "correcta": "La Ascensión" }
+            { "id": "mgl1", "pregunta": "¿Cuál es el primer misterio glorioso?", "opciones": ["La Resurrección", "La Ascensión", "La Venida del Espíritu Santo", "La Asunción"], "correcta": "La Resurrección" },
+            { "id": "mgl2", "pregunta": "El segundo misterio glorioso es:", "opciones": ["La Ascensión", "La Resurrección", "La Venida del Espíritu Santo", "La Coronación"], "correcta": "La Ascensión" },
+            { "id": "mgl3", "pregunta": "¿Cuándo meditamos los misterios gloriosos?", "opciones": ["Miércoles y domingo", "Lunes y sábado", "Martes y viernes", "Jueves"], "correcta": "Miércoles y domingo" },
+            { "id": "mgl4", "pregunta": "El tercer misterio glorioso es:", "opciones": ["La Venida del Espíritu Santo", "La Resurrección", "La Ascensión", "La Asunción"], "correcta": "La Venida del Espíritu Santo" },
+            { "id": "mgl5", "pregunta": "El cuarto misterio glorioso es:", "opciones": ["La Asunción de María", "La Resurrección", "La Ascensión", "La Coronación"], "correcta": "La Asunción de María" },
+            { "id": "mgl6", "pregunta": "El quinto misterio glorioso es:", "opciones": ["La Coronación de María", "La Asunción", "La Resurrección", "La Venida del Espíritu Santo"], "correcta": "La Coronación de María" },
+            { "id": "mgl7", "pregunta": "Jesús resucitó al:", "opciones": ["Tercer día", "Segundo día", "Quinto día", "Séptimo día"], "correcta": "Tercer día" },
+            { "id": "mgl8", "pregunta": "¿A dónde subió Jesús después de resucitar?", "opciones": ["Al cielo", "A Belén", "A Nazaret", "Al mar"], "correcta": "Al cielo" },
+            { "id": "mgl9", "pregunta": "El Espíritu Santo descendió sobre los apóstoles en:", "opciones": ["Pentecostés", "Navidad", "Pascua", "Epifanía"], "correcta": "Pentecostés" },
+            { "id": "mgl10", "pregunta": "María fue llevada al cielo en cuerpo y alma en el misterio de:", "opciones": ["La Asunción", "La Coronación", "La Resurrección", "La Ascensión"], "correcta": "La Asunción" }
           ]
         },
-        {
+       {
           "id": "misterios_luminosos",
           "nombre": "Misterios Luminosos",
           "icono": "💫",
           "tipo": "concepto",
           "preguntas": [
             { "id": "ml1", "pregunta": "¿Qué Papa introdujo los misterios luminosos?", "opciones": ["San Juan Pablo II", "Benedicto XVI", "Francisco", "Pablo VI"], "correcta": "San Juan Pablo II" },
-            { "id": "ml2", "pregunta": "¿Cuál es el primer misterio luminoso?", "opciones": ["El Bautismo de Jesús", "La Transfiguración", "Las bodas de Caná", "La institución de la Eucaristía"], "correcta": "El Bautismo de Jesús" }
+            { "id": "ml2", "pregunta": "¿Cuál es el primer misterio luminoso?", "opciones": ["El Bautismo de Jesús", "La Transfiguración", "Las bodas de Caná", "La institución de la Eucaristía"], "correcta": "El Bautismo de Jesús" },
+            { "id": "ml3", "pregunta": "¿Cuándo meditamos los misterios luminosos?", "opciones": ["Jueves", "Lunes", "Martes", "Sábado"], "correcta": "Jueves" },
+            { "id": "ml4", "pregunta": "El segundo misterio luminoso es:", "opciones": ["Las bodas de Caná", "El Bautismo", "La Transfiguración", "La Eucaristía"], "correcta": "Las bodas de Caná" },
+            { "id": "ml5", "pregunta": "El tercer misterio luminoso es:", "opciones": ["La predicación del Reino", "El Bautismo", "Las bodas de Caná", "La Transfiguración"], "correcta": "La predicación del Reino" },
+            { "id": "ml6", "pregunta": "El cuarto misterio luminoso es:", "opciones": ["La Transfiguración", "El Bautismo", "Las bodas de Caná", "La Eucaristía"], "correcta": "La Transfiguración" },
+            { "id": "ml7", "pregunta": "El quinto misterio luminoso es:", "opciones": ["La institución de la Eucaristía", "El Bautismo", "Las bodas de Caná", "La Transfiguración"], "correcta": "La institución de la Eucaristía" },
+            { "id": "ml8", "pregunta": "En el Bautismo, Dios Padre dijo:", "opciones": ["Este es mi Hijo amado", "Tú eres mi amigo", "Ven conmigo", "Sígueme"], "correcta": "Este es mi Hijo amado" },
+            { "id": "ml9", "pregunta": "Jesús realizó su primer milagro en:", "opciones": ["Las bodas de Caná", "El Templo", "El mar", "La montaña"], "correcta": "Las bodas de Caná" },
+            { "id": "ml10", "pregunta": "En la Transfiguración, Jesús se mostró:", "opciones": ["Lleno de gloria", "Triste", "Enojado", "Oculto"], "correcta": "Lleno de gloria" }
           ]
         }
       ]
