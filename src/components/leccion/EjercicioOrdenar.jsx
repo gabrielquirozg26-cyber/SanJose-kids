@@ -1,74 +1,30 @@
 // src/components/leccion/EjercicioOrdenar.jsx
+// ═════════════════════════════════════════════════════════════════════════
+// VERSIÓN ORIGINAL (que funcionaba en Chrome) + 1 FIX PARA SAFARI
+// ═════════════════════════════════════════════════════════════════════════
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mezclar } from '../../utils/leccionHelpers';
 
-// ── ESTADO INICIAL ──
-const estadoInicial = (palabras) => ({
-  disponibles: mezclar(palabras),
-  armada: [],
-});
-
-// ── REDUCER PURO ──
-const ordenarReducer = (state, action) => {
-  switch (action.type) {
-    case 'INICIAR':
-      return estadoInicial(action.palabras);
-
-    case 'AGREGAR': {
-      const { palabra, idx } = action.payload;
-      // ✅ Validación: la palabra debe existir en la posición indicada
-      if (idx >= state.disponibles.length || state.disponibles[idx] !== palabra) {
-        return state;
-      }
-      return {
-        disponibles: state.disponibles.filter((_, i) => i !== idx),
-        armada: [...state.armada, palabra],
-      };
-    }
-
-    case 'QUITAR': {
-      const { palabra, idx } = action.payload;
-      // ✅ Validación: la palabra debe existir en la posición indicada de armada
-      if (idx >= state.armada.length || state.armada[idx] !== palabra) {
-        return state;
-      }
-      return {
-        disponibles: [...state.disponibles, palabra],
-        armada: state.armada.filter((_, i) => i !== idx),
-      };
-    }
-
-    case 'QUITAR_ULTIMA': {
-      if (state.armada.length === 0) return state;
-      const ultima = state.armada[state.armada.length - 1];
-      return {
-        disponibles: [...state.disponibles, ultima],
-        armada: state.armada.slice(0, -1),
-      };
-    }
-
-    default:
-      return state;
-  }
-};
-
 const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
-  // ── ESTADO ──
-  const [state, setState] = useState(() => estadoInicial(verso.palabrasOrdenar));
+  // ── ESTADO ORIGINAL (sin IDs, sin reducer) ──
+  const [disponibles, setDisponibles] = useState([]);
+  const [armada, setArmada] = useState([]);
+  
+  // ✅ UNICO CAMBIO: procesando como estado de React (para Safari)
   const [procesando, setProcesando] = useState(false);
-
-  // ✅ COLA DE OPERACIONES: garantiza ejecución secuencial
-  const colaRef = useRef([]);
-  const ejecutandoRef = useRef(false);
+  
+  // Ref para bloqueo síncrono (sigue siendo necesaria)
+  const procesandoRef = useRef(false);
   const timeoutRef = useRef(null);
 
-  // ── INICIALIZAR AL CAMBIAR VERSO ──
+  // ── INICIALIZAR ──
   useEffect(() => {
-    setState(estadoInicial(verso.palabrasOrdenar));
+    setDisponibles(mezclar(verso.palabrasOrdenar));
+    setArmada([]);
+    procesandoRef.current = false;
     setProcesando(false);
-    ejecutandoRef.current = false;
-    colaRef.current = [];
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -77,113 +33,76 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
 
   // ── NOTIFICAR AL PADRE ──
   useEffect(() => {
-    onRespuesta(state.armada.join(' '));
-  }, [state.armada, onRespuesta]);
+    onRespuesta(armada.join(' '));
+  }, [armada, onRespuesta]);
 
-  // ── PROCESADOR DE COLA ──
-  const procesarSiguiente = useCallback(() => {
-    // Si ya hay una operación en curso o la cola está vacía, salir
-    if (ejecutandoRef.current || colaRef.current.length === 0) return;
-
-    // ✅ Tomar la siguiente operación de la cola
-    ejecutandoRef.current = true;
-    setProcesando(true);
-
-    const { tipo, payload } = colaRef.current.shift();
-
-    // ✅ Ejecutar la operación
-    setState((prev) => {
-      let nuevoEstado = prev;
-      switch (tipo) {
-        case 'AGREGAR': {
-          const { palabra, idx } = payload;
-          if (idx >= prev.disponibles.length || prev.disponibles[idx] !== palabra) {
-            return prev;
-          }
-          nuevoEstado = {
-            disponibles: prev.disponibles.filter((_, i) => i !== idx),
-            armada: [...prev.armada, palabra],
-          };
-          break;
-        }
-        case 'QUITAR': {
-          const { palabra, idx } = payload;
-          if (idx >= prev.armada.length || prev.armada[idx] !== palabra) {
-            return prev;
-          }
-          nuevoEstado = {
-            disponibles: [...prev.disponibles, palabra],
-            armada: prev.armada.filter((_, i) => i !== idx),
-          };
-          break;
-        }
-        case 'QUITAR_ULTIMA': {
-          if (prev.armada.length === 0) return prev;
-          const ultima = prev.armada[prev.armada.length - 1];
-          nuevoEstado = {
-            disponibles: [...prev.disponibles, ultima],
-            armada: prev.armada.slice(0, -1),
-          };
-          break;
-        }
-        default:
-          return prev;
-      }
-      return nuevoEstado;
-    });
-
-    // ✅ Desbloquear después de un tiempo (permitir render)
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      ejecutandoRef.current = false;
-      setProcesando(false);
-
-      // ✅ Procesar siguiente operación en la cola (si existe)
-      if (colaRef.current.length > 0) {
-        procesarSiguiente();
-      }
-    }, 80); // 80ms es suficiente para el render
-  }, []);
-
-  // ── ENCOLAR OPERACIÓN ──
-  const encolar = useCallback((tipo, payload) => {
-    // ✅ Si está bloqueado por resultado, ignorar
+  // ── FUNCIONES ORIGINALES (las que funcionaban) ──
+  const agregarPalabra = (palabra, idx) => {
+    if (procesandoRef.current) return;
     if (resultado && resultado !== 'escudo') return;
 
-    // ✅ Encender la operación
-    colaRef.current.push({ tipo, payload });
+    procesandoRef.current = true;
+    setProcesando(true); // ✅ Para Safari
 
-    // ✅ Si no hay nada en ejecución, empezar a procesar
-    if (!ejecutandoRef.current) {
-      procesarSiguiente();
-    }
-  }, [resultado, procesarSiguiente]);
+    setDisponibles(prev => prev.filter((_, i) => i !== idx));
+    setArmada(prev => [...prev, palabra]);
 
-  // ── HANDLERS ──
-  const agregarPalabra = useCallback((palabra, idx) => {
-    encolar('AGREGAR', { palabra, idx });
-  }, [encolar]);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      procesandoRef.current = false;
+      setProcesando(false); // ✅ Para Safari
+      timeoutRef.current = null;
+    }, 150);
+  };
 
-  const quitarPalabra = useCallback((palabra, idx) => {
-    encolar('QUITAR', { palabra, idx });
-  }, [encolar]);
+  const quitarPalabra = (palabra, idx) => {
+    if (procesandoRef.current) return;
+    if (resultado && resultado !== 'escudo') return;
 
-  const quitarUltima = useCallback(() => {
-    encolar('QUITAR_ULTIMA', {});
-  }, [encolar]);
+    procesandoRef.current = true;
+    setProcesando(true); // ✅ Para Safari
 
-  // ── ESTADO DE DESHABILITADO ──
-  const isDisabled = (resultado && resultado !== 'escudo') || procesando || colaRef.current.length > 0;
+    setArmada(prev => prev.filter((_, i) => i !== idx));
+    setDisponibles(prev => [...prev, palabra]);
 
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      procesandoRef.current = false;
+      setProcesando(false); // ✅ Para Safari
+      timeoutRef.current = null;
+    }, 150);
+  };
+
+  const quitarUltima = () => {
+    if (procesandoRef.current) return;
+    if (resultado && resultado !== 'escudo') return;
+    if (armada.length === 0) return;
+
+    procesandoRef.current = true;
+    setProcesando(true); // ✅ Para Safari
+
+    const ultima = armada[armada.length - 1];
+    setArmada(prev => prev.slice(0, -1));
+    setDisponibles(prev => [...prev, ultima]);
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      procesandoRef.current = false;
+      setProcesando(false); // ✅ Para Safari
+      timeoutRef.current = null;
+    }, 150);
+  };
+
+  // ✅ UNICO CAMBIO: isDisabled usa el estado de React, no la ref
+  const isDisabled = (resultado && resultado !== 'escudo') || procesando;
+
+  // ── RENDER ──
   return (
     <div className="w-full">
       <p className="text-[9px] font-black text-yellow-400 uppercase tracking-[0.3em] mb-3">
         Ordena las palabras
       </p>
 
-      {/* ── ÁREA DE ARMADO ── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -192,18 +111,18 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
             ? 'border-green-400/60 bg-green-500/10'
             : resultado === 'error'
             ? 'border-red-400/60 bg-red-500/10'
-            : state.armada.length > 0
+            : armada.length > 0
             ? 'border-blue-400/40'
             : 'border-white/10'
         }`}
       >
-        {state.armada.length === 0 ? (
+        {armada.length === 0 ? (
           <span className="text-white/20 text-sm font-bold self-center">
             Toca las palabras para ordenarlas…
           </span>
         ) : (
           <AnimatePresence>
-            {state.armada.map((p, i) => (
+            {armada.map((p, i) => (
               <motion.span
                 key={`${p}-${i}`}
                 initial={{ scale: 0.8, opacity: 0, rotateX: 30 }}
@@ -227,7 +146,6 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
         )}
       </motion.div>
 
-      {/* ── RESPUESTA CORRECTA (SI ERROR) ── */}
       {resultado === 'error' && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -243,9 +161,8 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
         </motion.div>
       )}
 
-      {/* ── PALABRAS DISPONIBLES ── */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {state.disponibles.map((p, i) => (
+        {disponibles.map((p, i) => (
           <motion.button
             key={`${p}-${i}`}
             initial={{ opacity: 0, scale: 0.8 }}
@@ -262,8 +179,7 @@ const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
         ))}
       </div>
 
-      {/* ── BOTÓN BORRAR ÚLTIMA ── */}
-      {!isDisabled && state.armada.length > 0 && (
+      {!isDisabled && armada.length > 0 && (
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
