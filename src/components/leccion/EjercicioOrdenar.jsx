@@ -1,22 +1,25 @@
 // src/components/leccion/EjercicioOrdenar.jsx
-import React, { useState, useEffect, useRef, useCallback, useReducer } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mezclar } from '../../utils/leccionHelpers';
 
-// ── REDUCER PARA MANEJAR EL ESTADO DE ORDENAMIENTO ──
+// ── ESTADO INICIAL ──
+const estadoInicial = (palabras) => ({
+  disponibles: mezclar(palabras),
+  armada: [],
+});
+
+// ── REDUCER PURO ──
 const ordenarReducer = (state, action) => {
   switch (action.type) {
     case 'INICIAR':
-      return {
-        disponibles: mezclar(action.palabras),
-        armada: [],
-      };
+      return estadoInicial(action.palabras);
 
     case 'AGREGAR': {
       const { palabra, idx } = action.payload;
-      // Verificar que la palabra existe en la posición indicada
+      // ✅ Validación: la palabra debe existir en la posición indicada
       if (idx >= state.disponibles.length || state.disponibles[idx] !== palabra) {
-        return state; // Estado inválido, no hacer nada
+        return state;
       }
       return {
         disponibles: state.disponibles.filter((_, i) => i !== idx),
@@ -26,7 +29,7 @@ const ordenarReducer = (state, action) => {
 
     case 'QUITAR': {
       const { palabra, idx } = action.payload;
-      // Verificar que la palabra existe en la posición indicada de armada
+      // ✅ Validación: la palabra debe existir en la posición indicada de armada
       if (idx >= state.armada.length || state.armada[idx] !== palabra) {
         return state;
       }
@@ -51,69 +54,128 @@ const ordenarReducer = (state, action) => {
 };
 
 const EjercicioOrdenar = ({ verso, resultado, onRespuesta }) => {
-  // ✅ Usar useReducer para estado atómico
-  const [state, dispatch] = useReducer(ordenarReducer, {
-    disponibles: [],
-    armada: [],
-  });
+  // ── ESTADO ──
+  const [state, setState] = useState(() => estadoInicial(verso.palabrasOrdenar));
+  const [procesando, setProcesando] = useState(false);
 
-  // ✅ Referencia para bloquear interacciones durante transiciones
-  const bloqueadoRef = useRef(false);
+  // ✅ COLA DE OPERACIONES: garantiza ejecución secuencial
+  const colaRef = useRef([]);
+  const ejecutandoRef = useRef(false);
+  const timeoutRef = useRef(null);
 
-  // Inicializar al cambiar el verso
+  // ── INICIALIZAR AL CAMBIAR VERSO ──
   useEffect(() => {
-    dispatch({ type: 'INICIAR', palabras: verso.palabrasOrdenar });
-    bloqueadoRef.current = false;
+    setState(estadoInicial(verso.palabrasOrdenar));
+    setProcesando(false);
+    ejecutandoRef.current = false;
+    colaRef.current = [];
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   }, [verso.id]);
 
-  // Notificar al padre la frase armada
+  // ── NOTIFICAR AL PADRE ──
   useEffect(() => {
-    const frase = state.armada.join(' ');
-    onRespuesta(frase);
+    onRespuesta(state.armada.join(' '));
   }, [state.armada, onRespuesta]);
 
-  // ✅ Agregar palabra con bloqueo
+  // ── PROCESADOR DE COLA ──
+  const procesarSiguiente = useCallback(() => {
+    // Si ya hay una operación en curso o la cola está vacía, salir
+    if (ejecutandoRef.current || colaRef.current.length === 0) return;
+
+    // ✅ Tomar la siguiente operación de la cola
+    ejecutandoRef.current = true;
+    setProcesando(true);
+
+    const { tipo, payload } = colaRef.current.shift();
+
+    // ✅ Ejecutar la operación
+    setState((prev) => {
+      let nuevoEstado = prev;
+      switch (tipo) {
+        case 'AGREGAR': {
+          const { palabra, idx } = payload;
+          if (idx >= prev.disponibles.length || prev.disponibles[idx] !== palabra) {
+            return prev;
+          }
+          nuevoEstado = {
+            disponibles: prev.disponibles.filter((_, i) => i !== idx),
+            armada: [...prev.armada, palabra],
+          };
+          break;
+        }
+        case 'QUITAR': {
+          const { palabra, idx } = payload;
+          if (idx >= prev.armada.length || prev.armada[idx] !== palabra) {
+            return prev;
+          }
+          nuevoEstado = {
+            disponibles: [...prev.disponibles, palabra],
+            armada: prev.armada.filter((_, i) => i !== idx),
+          };
+          break;
+        }
+        case 'QUITAR_ULTIMA': {
+          if (prev.armada.length === 0) return prev;
+          const ultima = prev.armada[prev.armada.length - 1];
+          nuevoEstado = {
+            disponibles: [...prev.disponibles, ultima],
+            armada: prev.armada.slice(0, -1),
+          };
+          break;
+        }
+        default:
+          return prev;
+      }
+      return nuevoEstado;
+    });
+
+    // ✅ Desbloquear después de un tiempo (permitir render)
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      ejecutandoRef.current = false;
+      setProcesando(false);
+
+      // ✅ Procesar siguiente operación en la cola (si existe)
+      if (colaRef.current.length > 0) {
+        procesarSiguiente();
+      }
+    }, 80); // 80ms es suficiente para el render
+  }, []);
+
+  // ── ENCOLAR OPERACIÓN ──
+  const encolar = useCallback((tipo, payload) => {
+    // ✅ Si está bloqueado por resultado, ignorar
+    if (resultado && resultado !== 'escudo') return;
+
+    // ✅ Encender la operación
+    colaRef.current.push({ tipo, payload });
+
+    // ✅ Si no hay nada en ejecución, empezar a procesar
+    if (!ejecutandoRef.current) {
+      procesarSiguiente();
+    }
+  }, [resultado, procesarSiguiente]);
+
+  // ── HANDLERS ──
   const agregarPalabra = useCallback((palabra, idx) => {
-    if (bloqueadoRef.current) return;
-    if (resultado && resultado !== 'escudo') return;
+    encolar('AGREGAR', { palabra, idx });
+  }, [encolar]);
 
-    bloqueadoRef.current = true;
-    dispatch({ type: 'AGREGAR', payload: { palabra, idx } });
-
-    // Desbloquear después de que el reducer procese
-    requestAnimationFrame(() => {
-      bloqueadoRef.current = false;
-    });
-  }, [resultado]);
-
-  // ✅ Quitar palabra con bloqueo
   const quitarPalabra = useCallback((palabra, idx) => {
-    if (bloqueadoRef.current) return;
-    if (resultado && resultado !== 'escudo') return;
+    encolar('QUITAR', { palabra, idx });
+  }, [encolar]);
 
-    bloqueadoRef.current = true;
-    dispatch({ type: 'QUITAR', payload: { palabra, idx } });
-
-    requestAnimationFrame(() => {
-      bloqueadoRef.current = false;
-    });
-  }, [resultado]);
-
-  // ✅ Quitar última palabra con bloqueo
   const quitarUltima = useCallback(() => {
-    if (bloqueadoRef.current) return;
-    if (resultado && resultado !== 'escudo') return;
-    if (state.armada.length === 0) return;
+    encolar('QUITAR_ULTIMA', {});
+  }, [encolar]);
 
-    bloqueadoRef.current = true;
-    dispatch({ type: 'QUITAR_ULTIMA' });
-
-    requestAnimationFrame(() => {
-      bloqueadoRef.current = false;
-    });
-  }, [state.armada, resultado]);
-
-  const isDisabled = (resultado && resultado !== 'escudo') || bloqueadoRef.current;
+  // ── ESTADO DE DESHABILITADO ──
+  const isDisabled = (resultado && resultado !== 'escudo') || procesando || colaRef.current.length > 0;
 
   return (
     <div className="w-full">

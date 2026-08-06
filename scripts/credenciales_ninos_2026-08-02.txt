@@ -1,0 +1,115 @@
+======================================================================
+        CREDENCIALES DE NIÑOS - SAN JOSEKIDS
+======================================================================
+Fecha: 2/8/2026, 5:21:43 p. m.
+Contraseña genérica: SanJose2026!
+Total de niños: 74
+======================================================================
+
+📚 GRUPO: San Antonio de Padua
+----------------------------------------------------------------------
+  #  | NOMBRE                               | EMAIL
+----------------------------------------------------------------------
+    1 | ALEXA NAVARRETE                        | alexa.navarrete@sanjosekids.com
+    2 | ANA BELÈN RUIZ                         | ana.belen.ruiz@sanjosekids.com
+    3 | ANGIE ANIESKA FLORES GARCÍA            | angie.anieska.flores@sanjosekids.com
+    4 | BELÈN MONSERRAT SÁNCHEZ                | belen.monserrat.sanchez@sanjosekids.com
+    5 | CAMILA ABIGAIL BLANCO GARCÍA           | camila.abigail.blanco@sanjosekids.com
+    6 | CESÀR FRANCISCO BALTODANO              | cesar.francisco.baltodano@sanjosekids.com
+    7 | DOMINICK LÓPEZ                         | dominick.lopez@sanjosekids.com
+    8 | ENRIQUE GAITÀN                         | enrique.gaitan@sanjosekids.com
+    9 | JAVIERA ROMERO                         | javiera.romero@sanjosekids.com
+   10 | JOSEPH NARVAEZ LÓPEZ                   | joseph.narvaez.lopez@sanjosekids.com
+   11 | JOSHUA VELÀZQUEZ                       | joshua.velazquez@sanjosekids.com
+   12 | JOSÈ ERNESTO HERNÁNDEZ                 | jose.ernesto.hernandez@sanjosekids.com
+   13 | MATEO GONZÁLEZ                         | mateo.gonzalez@sanjosekids.com
+   14 | NAOMI  NICOLE ABÙD                     | naomi.nicole.abud@sanjosekids.com
+   15 | NOE GUTIÉRREZ                          | noe.gutierrez@sanjosekids.com
+   16 | OSCAR ALEXANDER LÓPEZ                  | oscar.alexander.lopez@sanjosekids.com
+   17 | ROMMEL BERRNANDO GONZÁLEZ JEREZ        | rommel.berrnando.gonzalez@sanjosekids.com
+   18 | ÀNGEL MATUS                            | angel.matus@sanjosekids.com
+   19 | ÀNGELO GONZÁLEZ                        | angelo.gonzalez@sanjosekids.com
+
+📚 GRUPO: San Diego de Alcalá
+----------------------------------------------------------------------
+  #  | NOMBRE                               | EMAIL
+----------------------------------------------------------------------
+    1 | ALLISON KARINA PAMALUS GONZÁLEZ        | allison.karina.pamalus@sanjosekids.com
+    2 | AMAIA GISELLE JIMENEZ GARCÍA           | amaia.giselle.jimenez@sanjosekids.com
+    3 | CAMILA GISELLE TORRES GARCÍA           | camila.giselle.torres@sanjosekids.com
+    4 | DARWING ANDRE NAVARRO MENDIETA         | darwing.andre.navarro@sanjosekids.com
+    5 | IAN ARMANDO DÀVILA GUADAMUZ            | ian.armando.davila@sanjosekids.com
+    6 | KENDALL CAMILO MORAGA LÓPEZ            | kendall.camilo.moraga@sanjosekids.com
+    7 | KENDRA SAMARA CRUZ PALACIOS            | kendra.samara.cruz@sanjosekids.com
+    8 | MATEO SEBASTIÁN AGUIRRE PACHECO        | mateo.sebastian.aguirre@sanjosekids.com
+    9 | RONALDO ALESSANDRO HERNÁNDEZ PARRALES  | ronaldo.alessandro.hernandez@sanjosekids.com
+   10 | SAMUEL ALI  FLORES MUÑOZ               | samuel.ali.flores@sanjosekids.com
+   11 | TEÒDULO JOSÈ CALERO TARDENCILLA        | teodulo.jose.calero@sanjosekids.com
+   12 | USUARIO DE PRUEBA 1                    | test.catequesis1@sanjosekids.com
+
+📚 GRUPO: San Francisco de Asís
+----------------------------------------------------------------------
+  #  | NOMBRE                               | EMAIL
+----------------------------------------------------------------------
+    1 | ALESSANDRO JOSÈ MIRANDA GARCÍA         | alessandro.jose.miranda@sanjosekids.com
+    2 | ALLISON AZUCENA NARVAEZ LÓPEZ          | allison.azucena.narvaez@sanjosekids.com
+    3 | CAROLINA AITANA ESPINOZA               | carolina.aitana.espinoza@sanjosekids.com
+    4 | GABRIEL ALEXANDER BERMÚDEZ CENTENO     | gabriel.alexander.bermudez@sanjosekids.com
+    5 | GABRIEL QUIROZ                         | gabriel.quiroz@sanjosekids.com
+    6 | JULIO MATEO TORRES BLANDÒN             | julio.mateo.torres@sanjosekids.com
+    7 | LUCIA CAMILA GUTIÉRREZ ORTIZ           | lucia.camila.gutierrez@sanjosekids.com
+    8 | MARIARENNE DE LOS MILAGROS TAPIA CRUZ  | mariarenne.de.los@sanjosekids.com
+    9 | MARIO SEBASTIÁN GARCÍA LÓPEZ           | mario.sebastian.garcia@sanjosekids.com
+   10 | NELSON FRANCISCO REYES LÓPEZ           | nelson.francisco.reyes@sanjosekids.com
+   11 | OSIRIS BELÈN GONZÁLEZ MORALES          | osiris.belen.gonzalez@sanjosekids.com
+   12 | RODRIGO LEANDRO VILLAVICENCIO GÒMEZ    | rodrigo.leandro.villavicencio@sanjosekids.com
+   13 | SAMANTHA SUSANA ALVAREZ CASTRO         | samantha.susana.alvarez@sanjosekids.com
+
+📚 GRUPO: Santa Clara de Asís
+----------------------------------------------------------------------
+  #  | NOMBRE                               | EMAIL
+----------------------------------------------------------------------
+    1 | ADRIANA NICOL RODRÍGUEZ CRUZ           | adriana.nicol.rodriguez@sanjosekids.com
+    2 | AILEEN NICOLE MALDONADO GARCÌA         | aileen.nicole.maldonado@sanjosekids.com
+    3 | ALICIE SHOPIA DÀVILA ÙBEDA             | alicie.shopia.davila@sanjosekids.com
+    4 | EMILY KATALINA CUADRA PÉREZ            | emily.katalina.cuadra@sanjosekids.com
+    5 | EO ALESANDRO EMMANUEL LOAISIGA MU      | eo.alesandro.emmanuel@sanjosekids.com
+    6 | ESTELA DE LOS ÀNGELES VELÀZQUEZ ESPINOZA | estela.de.los@sanjosekids.com
+    7 | MARÌA DEL SOCORRO CALERO TARDENCILLA   | maria.del.socorro@sanjosekids.com
+    8 | MATHEW ANDRÉS NAVARRO RODRÍGUEZ        | mathew.andres.navarro@sanjosekids.com
+    9 | MATHIAS EDUARDO ANDINO VÈLEZ           | mathias.eduardo.andino@sanjosekids.com
+   10 | ORLANDO SANTIAGO LÓPEZ MENDIETA        | orlando.santiago.lopez@sanjosekids.com
+   11 | ROSE CHANTAL FLORES RIVERA             | rose.chantal.flores@sanjosekids.com
+
+📚 GRUPO: Santa Rosa de Viterbo
+----------------------------------------------------------------------
+  #  | NOMBRE                               | EMAIL
+----------------------------------------------------------------------
+    1 | ABBIE ISABELLA PINEDA GUTIÉRREZ        | abbie.isabella.pineda@sanjosekids.com
+    2 | ANA SOFIA BERRIOS LÓPEZ                | ana.sofia.berrios@sanjosekids.com
+    3 | CRISTOFER ALEXANDER MORALES GUTIÉRREZ  | cristofer.alexander.morales@sanjosekids.com
+    4 | ESTEPHANIE LIDIA MORALES GONZÁLEZ      | estephanie.lidia.morales@sanjosekids.com
+    5 | HILARY JASKAIRA CAMPOS GARCÌA          | hilary.jaskaira.campos@sanjosekids.com
+    6 | IRENE GUADALUPE PARRALES MARADIAGA     | irene.guadalupe.parrales@sanjosekids.com
+    7 | JOSSELINA GUADALUPE AGUIRRE PORTILLO   | josselina.guadalupe.aguirre@sanjosekids.com
+    8 | JOSUE ROBERTO BLANDÒN LARA             | josue.roberto.blandon@sanjosekids.com
+    9 | JOSÈ ÀNGEL MENDIETA SÁNCHEZ            | jose.angel.mendieta@sanjosekids.com
+   10 | KEYLOR EDUARDO HURTADO DÀVILA          | keylor.eduardo.hurtado@sanjosekids.com
+   11 | LUCIA SOFIA LARIOS MORAGA              | lucia.sofia.larios@sanjosekids.com
+   12 | MARÌA EAMILA AVELLAN GARCÍA            | maria.eamila.avellan@sanjosekids.com
+   13 | MARÌA MONTSERRAT SÁNCHEZ GUTIÉRREZ     | maria.montserrat.sanchez@sanjosekids.com
+   14 | MATEWH RICARDO MENDIETA FLORES         | matewh.ricardo.mendieta@sanjosekids.com
+   15 | MAVIS AYANA  BALTODANO MEDRANO         | mavis.ayana.baltodano@sanjosekids.com
+   16 | RENATA CAMILA DELGADO NARVAEZ          | renata.camila.delgado@sanjosekids.com
+   17 | SHARON ALONDRA NARVÀEZ ROJAS           | sharon.alondra.narvaez@sanjosekids.com
+   18 | STEPHANIE SOFIA CARDENAS LÓPEZ         | stephanie.sofia.cardenas@sanjosekids.com
+   19 | VICTORIA MILAGROS TORRES HURTADO       | victoria.milagros.torres@sanjosekids.com
+
+======================================================================
+       INSTRUCCIONES PARA ENTREGAR
+======================================================================
+1. Cada niño recibe su correo electrónico.
+2. La contraseña genérica es: SanJose2026!
+3. Recomendar cambiar la contraseña al primer inicio de sesión.
+4. Link de acceso: https://sanjosekids.com
+======================================================================
