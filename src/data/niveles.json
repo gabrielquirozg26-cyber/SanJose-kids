@@ -108,14 +108,75 @@
           "nombre": "Comunión Espiritual",
           "icono": "🍞",
           "tipo": "oracion",
-          "texto": "Creo, Jesús mío, que estás realmente en el Santísimo Sacramento del altar. Te amo sobre todas las cosas y deseo recibirte en mi alma. Ya que ahora no puedo recibirte sacramentalmente, ven al menos espiritualmente a mi corazón. Te abrazo como si ya te hubiera recibido y me uno a Ti por completo. No permitas que jamás me separe de Ti. Amén.",
+          "texto": "Yo quisiera, Señor, recibirte con aquella pureza, humildad y devoción con que te recibió tu santísima Madre; con el espíritu y fervor de los santos.",
           "versos": [
-            { "id": "ce_1", "texto": "Creo, Jesús mío, que estás realmente en el Santísimo Sacramento del altar.", "palabraFaltante": "Sacramento", "opcionesSeleccion": ["Sacramento", "Misterio", "Altar", "Cielo"], "palabrasOrdenar": ["Creo", "Jesús", "mío", "que", "estás", "realmente", "en", "el", "Santísimo", "Sacramento", "del", "altar"] },
-            { "id": "ce_2", "texto": "Te amo sobre todas las cosas y deseo recibirte en mi alma.", "palabraFaltante": "alma", "opcionesSeleccion": ["alma", "corazón", "mente", "espíritu"], "palabrasOrdenar": ["Te", "amo", "sobre", "todas", "las", "cosas", "y", "deseo", "recibirte", "en", "mi", "alma"] },
-            { "id": "ce_3", "texto": "Ya que ahora no puedo recibirte sacramentalmente, ven al menos espiritualmente a mi corazón.", "palabraFaltante": "corazón", "opcionesSeleccion": ["corazón", "alma", "vida", "ser"], "palabrasOrdenar": ["Ya", "que", "ahora", "no", "puedo", "recibirte", "sacramentalmente", "ven", "al", "menos", "espiritualmente", "a", "mi", "corazón"] },
-            { "id": "ce_4", "texto": "Te abrazo como si ya te hubiera recibido y me uno a Ti por completo. No permitas que jamás me separe de Ti. Amén.", "palabraFaltante": "separe", "opcionesSeleccion": ["separe", "aleje", "apartes", "distanci"], "palabrasOrdenar": ["Te", "abrazo", "como", "si", "ya", "te", "hubiera", "recibido", "y", "me", "uno", "a", "Ti", "por", "completo", "No", "permitas", "que", "jamás", "me", "separe", "de", "Ti", "Amén"] }
+            {
+              "id": "ce_1",
+              "texto": "Yo quisiera, Señor, recibirte con aquella pureza, humildad y devoción.",
+              "palabraFaltante": "devoción",
+              "opcionesSeleccion": [
+                "devoción",
+                "alegría",
+                "esperanza",
+                "fortaleza"
+              ],
+              "palabrasOrdenar": [
+                "Yo",
+                "quisiera",
+                "Señor",
+                "recibirte",
+                "con",
+                "aquella",
+                "pureza",
+                "humildad",
+                "y",
+                "devoción"
+              ]
+            },
+            {
+              "id": "ce_2",
+              "texto": "Con que te recibió tu santísima Madre.",
+              "palabraFaltante": "Madre",
+              "opcionesSeleccion": [
+                "Madre",
+                "Iglesia",
+                "familia",
+                "hermana"
+              ],
+              "palabrasOrdenar": [
+                "con",
+                "que",
+                "te",
+                "recibió",
+                "tu",
+                "santísima",
+                "Madre"
+              ]
+            },
+            {
+              "id": "ce_3",
+              "texto": "Con el espíritu y fervor de los santos.",
+              "palabraFaltante": "fervor",
+              "opcionesSeleccion": [
+                "fervor",
+                "amor",
+                "temor",
+                "dolor"
+              ],
+              "palabrasOrdenar": [
+                "con",
+                "el",
+                "espíritu",
+                "y",
+                "fervor",
+                "de",
+                "los",
+                "santos"
+              ]
+            }
           ]
         },
+
         {
           "id": "alma_de_cristo",
           "nombre": "Alma de Cristo",
@@ -191,56 +252,56 @@
           "nombre": "Acto de Contrición",
           "icono": "🕊️",
           "tipo": "oracion",
-          "texto": "Señor mío, Jesucristo, Dios y hombre verdadero, Creador, Redentor y Juez mío, por ser quien sois y porque os amo sobre todas las cosas, me pesa de todo corazón haberte ofendido; propongo firmemente, ayudado de tu divina gracia, no pecar más, confesarme y cumplir la penitencia que me fuera impuesta. Amén.",
+          "texto": "Jesús, mi Señor y Redentor, yo me arrepiento de todos los pecados que he cometido hasta hoy, y me pesa de todo corazón, porque con ellos ofendí a un Dios tan bueno. Propongo firmemente no volver a pecar y confío que por tu infinita misericordia me has de conceder el perdón de mis culpas y me has de llevar a la vida eterna. Amén.",
           "versos": [
             {
               "id": "ac_1",
-              "texto": "Señor mío, Jesucristo, Dios y hombre verdadero,",
-              "palabraFaltante": "verdadero",
-              "opcionesSeleccion": ["verdadero", "eterno", "santo", "divino"],
-              "palabrasOrdenar": ["Señor", "mío", "Jesucristo", "Dios", "y", "hombre", "verdadero"]
+              "texto": "Jesús, mi Señor y Redentor,",
+              "palabraFaltante": "Redentor",
+              "opcionesSeleccion": ["Redentor", "Salvador", "Pastor", "Maestro"],
+              "palabrasOrdenar": ["Jesús", "mi", "Señor", "y", "Redentor"]
             },
             {
               "id": "ac_2",
-              "texto": "Creador, Redentor y Juez mío,",
-              "palabraFaltante": "Redentor",
-              "opcionesSeleccion": ["Redentor", "Salvador", "Pastor", "Maestro"],
-              "palabrasOrdenar": ["Creador", "Redentor", "y", "Juez", "mío"]
+              "texto": "yo me arrepiento de todos los pecados que he cometido hasta hoy,",
+              "palabraFaltante": "arrepiento",
+              "opcionesSeleccion": ["arrepiento", "olvido", "rechazo", "confieso"],
+              "palabrasOrdenar": ["yo", "me", "arrepiento", "de", "todos", "los", "pecados", "que", "he", "cometido", "hasta", "hoy"]
             },
             {
               "id": "ac_3",
-              "texto": "por ser quien sois y porque os amo sobre todas las cosas,",
-              "palabraFaltante": "amo",
-              "opcionesSeleccion": ["amo", "adoro", "alabo", "bendigo"],
-              "palabrasOrdenar": ["por", "ser", "quien", "sois", "y", "porque", "os", "amo", "sobre", "todas", "las", "cosas"]
+              "texto": "y me pesa de todo corazón, porque con ellos ofendí a un Dios tan bueno.",
+              "palabraFaltante": "ofendí",
+              "opcionesSeleccion": ["ofendí", "alabé", "seguí", "busqué"],
+              "palabrasOrdenar": ["y", "me", "pesa", "de", "todo", "corazón", "porque", "con", "ellos", "ofendí", "a", "un", "Dios", "tan", "bueno"]
             },
             {
               "id": "ac_4",
-              "texto": "me pesa de todo corazón haberte ofendido;",
-              "palabraFaltante": "ofendido",
-              "opcionesSeleccion": ["ofendido", "fallado", "negado", "desobedecido"],
-              "palabrasOrdenar": ["me", "pesa", "de", "todo", "corazón", "haberte", "ofendido"]
+              "texto": "Propongo firmemente no volver a pecar",
+              "palabraFaltante": "pecar",
+              "opcionesSeleccion": ["pecar", "fallar", "negar", "mentir"],
+              "palabrasOrdenar": ["Propongo", "firmemente", "no", "volver", "a", "pecar"]
             },
             {
               "id": "ac_5",
-              "texto": "propongo firmemente, ayudado de tu divina gracia,",
-              "palabraFaltante": "gracia",
-              "opcionesSeleccion": ["gracia", "bondad", "misericordia", "luz"],
-              "palabrasOrdenar": ["propongo", "firmemente", "ayudado", "de", "tu", "divina", "gracia"]
+              "texto": "y confío que por tu infinita misericordia",
+              "palabraFaltante": "misericordia",
+              "opcionesSeleccion": ["misericordia", "bondad", "justicia", "sabiduría"],
+              "palabrasOrdenar": ["y", "confío", "que", "por", "tu", "infinita", "misericordia"]
             },
             {
               "id": "ac_6",
-              "texto": "no pecar más, confesarme y cumplir la penitencia",
-              "palabraFaltante": "penitencia",
-              "opcionesSeleccion": ["penitencia", "promesa", "misión", "oración"],
-              "palabrasOrdenar": ["no", "pecar", "más", "confesarme", "y", "cumplir", "la", "penitencia"]
+              "texto": "me has de conceder el perdón de mis culpas",
+              "palabraFaltante": "perdón",
+              "opcionesSeleccion": ["perdón", "castigo", "olvido", "premio"],
+              "palabrasOrdenar": ["me", "has", "de", "conceder", "el", "perdón", "de", "mis", "culpas"]
             },
             {
               "id": "ac_7",
-              "texto": "que me fuera impuesta. Amén.",
-              "palabraFaltante": "impuesta",
-              "opcionesSeleccion": ["impuesta", "enseñada", "dada", "indicada"],
-              "palabrasOrdenar": ["que", "me", "fuera", "impuesta", "Amén"]
+              "texto": "y me has de llevar a la vida eterna. Amén.",
+              "palabraFaltante": "eterna",
+              "opcionesSeleccion": ["eterna", "terrenal", "temporal", "presente"],
+              "palabrasOrdenar": ["y", "me", "has", "de", "llevar", "a", "la", "vida", "eterna", "Amén"]
             }
           ]
         },
