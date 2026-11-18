@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { useToast } from '../components/ui/Toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-motion';
+import './Mapa.css';
 import confetti from 'canvas-confetti';
 import nivelesData from '../data/niveles.json';
 
@@ -131,6 +132,7 @@ const Mapa = ({ onIniciarExamen }) => {
     iniciarLeccion,
   } = useGame();
 
+  const reducedMotion = useReducedMotion();
   const { showToast } = useToast();
   const [unidades, setUnidades] = useState([]);
   const [efectoUnidad, setEfectoUnidad] = useState(null);
@@ -160,7 +162,7 @@ const Mapa = ({ onIniciarExamen }) => {
 
   // ── PARTÍCULAS FLOTANTES ──
   useEffect(() => {
-    if (unidades.length === 0) return;
+    if (unidades.length === 0 || reducedMotion) return;
     const interval = setInterval(() => {
       const reino = unidades[Math.floor(Math.random() * unidades.length)];
       const estilo = obtenerEstiloReino(reino.tema);
@@ -193,14 +195,14 @@ const Mapa = ({ onIniciarExamen }) => {
       playSound('reino_completado');
       vibrate([100, 50, 100]);
 
-      confetti({
+      if (!reducedMotion) confetti({
         particleCount: 200,
         spread: 120,
         origin: { y: 0.5 },
         colors: ['#facc15', '#ffffff', '#a855f7', '#3b82f6', '#22c55e'],
       });
       setTimeout(() => {
-        confetti({
+        if (!reducedMotion) confetti({
           particleCount: 150,
           spread: 80,
           origin: { y: 0.5 },
@@ -231,18 +233,24 @@ const Mapa = ({ onIniciarExamen }) => {
       return;
     }
     if (!isUnidadDesbloqueada(uIdx)) {
-      showToast('🔒 Completa el reino anterior primero', 'warning', 2500);
+      showToast(`Completa el reino ${unidades[uIdx-1].nombre} para continuar.`, 'warning', 4000);
       return;
     }
     if (lIdx > 0 && !isLeccionCompletada(unidades[uIdx].lecciones[lIdx - 1]?.id)) {
-      showToast('🔒 Completa la lección anterior primero', 'warning', 2500);
+      showToast(`Completa ${unidades[uIdx].lecciones[lIdx-1].nombre} para continuar.`, 'warning', 4000);
       return;
     }
     iniciarLeccion(leccion);
   };
 
   const totalLecciones = unidades.reduce((acc, u) => acc + u.lecciones.length, 0);
-  const progresoGlobal = (nivelesCompletados.length / totalLecciones) * 100;
+  const progresoGlobal = totalLecciones ? Math.min(100, nivelesCompletados.length / totalLecciones * 100) : 0;
+  const siguiente = unidades.flatMap((u, uIdx) => u.lecciones.map((leccion, lIdx) => ({leccion, uIdx, lIdx}))).find(({leccion,uIdx,lIdx}) => !isLeccionCompletada(leccion.id) && isUnidadDesbloqueada(uIdx) && (lIdx === 0 || isLeccionCompletada(unidades[uIdx].lecciones[lIdx-1].id)));
+  const etiqueta = nombre => nombre.replace(/\b(Del|De|La|Las|Los|El|Y)\b/g, palabra => palabra.toLowerCase());
+  const abrir = (leccion,uIdx,lIdx) => {
+    if (leccion.tipo === 'examen' && vidas > 0 && isUnidadDesbloqueada(uIdx) && (lIdx === 0 || isLeccionCompletada(unidades[uIdx].lecciones[lIdx-1].id))) { onIniciarExamen?.(unidades[uIdx].id, unidades[uIdx].nombre); return; }
+    handleIniciarLeccion(leccion,uIdx,lIdx);
+  };
 
   // ── ANIMACIONES ──
   const containerVariants = {
@@ -263,311 +271,190 @@ const Mapa = ({ onIniciarExamen }) => {
   };
 
   return (
-    <div className="relative py-4 sm:py-8 space-y-8 sm:space-y-16 overflow-x-hidden">
-      {/* ── PARTÍCULAS DE FONDO ── */}
-      <BackgroundParticles />
+    <MotionConfig reducedMotion="user">
+      <div className="mapa-sendero">
+        {/* ── PARTÍCULAS DE FONDO ── */}
+        {!reducedMotion && <BackgroundParticles />}
 
-      {/* ── PARTÍCULAS FLOTANTES ── */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {particulas.map(p => (
-          <motion.div
-            key={p.id}
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{ y: '-100%', opacity: [0, 0.8, 0] }}
-            transition={{ duration: p.duracion, ease: 'linear' }}
-            className="absolute text-lg sm:text-xl"
-            style={{ left: `${p.left}%` }}
-          >
-            {p.icono}
-          </motion.div>
-        ))}
-      </div>
-
-      {/* ── ENCABEZADO ── */}
-      <motion.div
-        variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 text-center px-3 sm:px-4"
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          className="inline-block mb-2 px-4 py-1 rounded-full bg-yellow-400/20 backdrop-blur border border-yellow-400/40"
-        >
-          <p className="text-[8px] sm:text-[9px] font-black text-yellow-300 uppercase tracking-[0.4em]">
-            Aventura espiritual
-          </p>
-        </motion.div>
-        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter mt-2 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 bg-clip-text text-transparent">
-          Sendero de Luz
-        </h1>
-        <p className="text-white/40 text-xs sm:text-sm mt-2 max-w-md mx-auto px-2">
-          Explora cada reino, completa lecciones y desbloquea la gloria celestial
-        </p>
-
-        {/* ── PROGRESO GENERAL ── */}
-        <div className="mt-3 sm:mt-4 max-w-xs mx-auto px-2">
-          <div className="flex justify-between text-white/30 text-[8px] sm:text-[9px] font-black mb-1">
-            <span>Progreso total</span>
-            <span>{Math.round(progresoGlobal)}%</span>
-          </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden shadow-inner">
+        {/* ── PARTÍCULAS FLOTANTES ── */}
+        <div className="fixed inset-0 pointer-events-none z-0">
+          {particulas.map(p => (
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progresoGlobal}%` }}
-              transition={{ duration: 1.5, ease: 'easeOut' }}
-              className="h-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-300 rounded-full shadow-[0_0_15px_rgba(250,204,21,0.3)]"
-            />
-          </div>
-        </div>
-      </motion.div>
-
-      {/* ── SIN VIDAS ── */}
-      <AnimatePresence>
-        {vidas <= 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="relative z-10 glass-card rounded-2xl p-4 text-center border border-red-500/30 max-w-sm mx-auto"
-          >
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-2xl sm:text-3xl animate-pulse">❤️</span>
-              <div>
-                <p className="text-red-400 font-black text-xs sm:text-sm">Sin vidas</p>
-                <p className="text-white/40 text-[10px] sm:text-xs">Regresa en unas horas</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── REINOS ── */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-6 sm:space-y-10"
-      >
-        {unidades.map((unidad, uIdx) => {
-          const desbloqueada = isUnidadDesbloqueada(uIdx);
-          const estilo = obtenerEstiloReino(unidad.tema);
-          const completadas = unidad.lecciones.filter(l => nivelesCompletados.includes(l.id)).length;
-          const progreso = (completadas / unidad.lecciones.length) * 100;
-          const reinoCompleto = completadas === unidad.lecciones.length;
-
-          return (
-            <motion.div
-              key={unidad.id}
-              variants={itemVariants}
-              className={`relative z-10 mx-3 sm:mx-4 rounded-2xl sm:rounded-3xl p-4 sm:p-6 transition-all duration-700 bg-gradient-to-br ${estilo.bg} border ${estilo.border} shadow-xl backdrop-blur-sm ${desbloqueada ? 'opacity-100' : 'opacity-80'}`}
-              style={{ boxShadow: `0 0 20px ${estilo.glow}` }}
+              key={p.id}
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: '-100%', opacity: [0, 0.8, 0] }}
+              transition={{ duration: p.duracion, ease: 'linear' }}
+              className="absolute text-lg sm:text-xl"
+              style={{ left: `${p.left}%` }}
             >
-              {/* ── EFECTO DE REINO COMPLETADO ── */}
-              {efectoUnidad === uIdx && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-yellow-400/20 via-transparent to-transparent animate-pulse pointer-events-none"
-                />
-              )}
-
-              {/* ── DECORACIONES FLOTANTES ── */}
-              <motion.div
-                className="absolute -top-6 -right-6 sm:-top-8 sm:-right-8 text-5xl sm:text-7xl opacity-30 pointer-events-none"
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                {estilo.decoracion}
-              </motion.div>
-              <motion.div
-                className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 text-5xl sm:text-7xl opacity-20 pointer-events-none"
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-              >
-                {estilo.decoracion}
-              </motion.div>
-
-              {/* ── HEADER DEL REINO ── */}
-              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 flex-wrap relative z-10">
-                <motion.div
-                  className="text-4xl sm:text-6xl drop-shadow-lg"
-                  animate={{ rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                >
-                  {unidad.icono}
-                </motion.div>
-                <div className="flex-1 min-w-0">
-                  <h2 className={`text-lg sm:text-2xl font-black ${estilo.textColor} tracking-tighter truncate`}>
-                    {unidad.nombre}
-                  </h2>
-                  <p className="text-white/40 text-xs sm:text-sm truncate">{unidad.subtitulo}</p>
-                </div>
-                {!desbloqueada && (
-                  <div className="bg-black/60 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1.5">
-                    <span className="text-base sm:text-xl">🔒</span>
-                    <span className="text-white/70 text-[9px] sm:text-xs font-black">Bloqueado</span>
-                  </div>
-                )}
-                {desbloqueada && reinoCompleto && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="bg-green-500/30 backdrop-blur-sm rounded-full px-3 py-1 border border-green-400/60"
-                  >
-                    <span className="text-green-300 text-[10px] sm:text-sm font-black">✨ Completado</span>
-                  </motion.div>
-                )}
-              </div>
-
-              {/* ── LECCIONES ── */}
-              {desbloqueada ? (
-                <>
-                  <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-4">
-                    {unidad.lecciones.map((leccion, lIdx) => {
-                      const completada = isLeccionCompletada(leccion.id);
-                      const bloqueada = lIdx > 0 && !isLeccionCompletada(unidad.lecciones[lIdx - 1]?.id);
-                      const disponible = !bloqueada;
-                      const esExamen = leccion.tipo === 'examen';
-
-                      return (
-                        <motion.button
-                          key={leccion.id}
-                          whileHover={disponible && !esExamen ? { scale: 1.08, y: -4 } : {}}
-                          whileTap={disponible ? { scale: 0.92 } : {}}
-                          onClick={() => {
-                            if (esExamen) {
-                              if (onIniciarExamen) onIniciarExamen(unidad.id, unidad.nombre);
-                              return;
-                            }
-                            disponible && handleIniciarLeccion(leccion, uIdx, lIdx);
-                          }}
-                          disabled={!disponible || vidas <= 0}
-                          className={`group relative flex flex-col items-center justify-center p-2 sm:p-5 rounded-xl sm:rounded-2xl transition-all duration-300 ${
-                            completada
-                              ? 'glass-card border-green-400/60 bg-green-500/15 shadow-[0_0_20px_rgba(34,197,94,0.1)]'
-                              : esExamen
-                              ? 'glass-card border-purple-400/40 bg-purple-500/15 hover:border-purple-400/70'
-                              : disponible
-                              ? 'glass-card border-white/20 hover:border-yellow-400/60 hover:shadow-yellow-400/30 hover:bg-white/10'
-                              : 'glass-card border-white/5 opacity-40 cursor-not-allowed'
-                          }`}
-                        >
-                          <span className="text-3xl sm:text-5xl drop-shadow-md transition-transform duration-200 group-hover:scale-110">
-                            {esExamen ? '🎓' : leccion.icono}
-                          </span>
-                          <p className="font-black text-[9px] sm:text-sm mt-1 text-center break-words max-w-[60px] sm:max-w-[100px] leading-tight">
-                            {esExamen ? `Examen` : leccion.nombre}
-                          </p>
-                          {completada && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full w-4 h-4 sm:w-6 sm:h-6 flex items-center justify-center text-[8px] sm:text-xs font-black shadow-lg"
-                            >
-                              ✓
-                            </motion.div>
-                          )}
-                          {esExamen && !completada && (
-                            <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full w-4 h-4 sm:w-6 sm:h-6 flex items-center justify-center text-[8px] sm:text-xs font-black shadow-lg">
-                              📝
-                            </div>
-                          )}
-                          {!disponible && !completada && !esExamen && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-xl sm:rounded-2xl backdrop-blur-sm">
-                              <span className="text-2xl sm:text-4xl drop-shadow-lg">🔒</span>
-                            </div>
-                          )}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-
-                  {/* ── BARRA DE PROGRESO ── */}
-                  <div className="mt-4 sm:mt-6">
-                    <div className="flex justify-between items-center text-white/40 text-[8px] sm:text-[9px] mb-1.5 font-mono">
-                      <span className="flex items-center gap-1">
-                        <span className="text-yellow-400">✨</span> Progreso
-                      </span>
-                      <span className="font-black">{completadas} / {unidad.lecciones.length}</span>
-                    </div>
-                    <div className="h-1.5 sm:h-2 bg-white/15 rounded-full overflow-hidden shadow-inner">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progreso}%` }}
-                        transition={{ duration: 1, delay: uIdx * 0.05 }}
-                        className="h-full rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-300"
-                        style={{ boxShadow: '0 0 10px rgba(250,204,21,0.2)' }}
-                      />
-                    </div>
-                    {progreso === 100 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center mt-1.5 text-yellow-400/80 text-[9px] sm:text-[10px] font-black animate-pulse"
-                      >
-                        🌟 ¡Reino completado! Sigue adelante 🌟
-                      </motion.div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8 sm:py-12">
-                  <div className="inline-block p-3 sm:p-4 bg-black/40 rounded-full backdrop-blur">
-                    <motion.span
-                      className="text-3xl sm:text-5xl"
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      🔒
-                    </motion.span>
-                  </div>
-                  <p className="text-white/40 text-xs sm:text-sm mt-3 max-w-xs mx-auto px-2">
-                    Completa el reino anterior para desbloquear esta tierra sagrada
-                  </p>
-                </div>
-              )}
+              {p.icono}
             </motion.div>
-          );
-        })}
-      </motion.div>
+          ))}
+        </div>
 
-      {/* ── FOOTER ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="relative z-10 text-center py-4 sm:py-8 px-4"
-      >
-        <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto" />
-        <motion.p
-          className="text-white/20 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] mt-3 sm:mt-4"
-          animate={{ opacity: [0.2, 0.5, 0.2] }}
-          transition={{ duration: 3, repeat: Infinity }}
+        <motion.header
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+          className="mapa-portada"
         >
-          ✨ Que la luz te guíe ✨
-        </motion.p>
-      </motion.div>
+          <div className="mapa-portada-contenido">
+            <p className="mapa-portada-etiqueta">Mapa de catequesis</p>
+            <h1>Sendero de Luz</h1>
+            <p>Recorre los reinos y completa tu camino de catequesis, una lección a la vez.</p>
+          </div>
 
-      {/* ── ESTILOS ── */}
-      <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.8; }
-        }
-        .animate-twinkle {
-          animation: twinkle ease-in-out infinite;
-        }
-        @media (max-width: 380px) {
-          .xs\\:grid-cols-3 {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-          }
-        }
-      `}</style>
-    </div>
+          <div className="mapa-resumen">
+            <div className="mapa-progreso-texto">
+              <span>Progreso total</span>
+              <strong>{Math.round(progresoGlobal)}%</strong>
+            </div>
+            <div className="mapa-barra" role="progressbar" aria-label="Progreso total" aria-valuenow={Math.round(progresoGlobal)}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progresoGlobal}%` }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
+              />
+            </div>
+            {siguiente && (
+              <div className="mapa-resumen-siguiente">
+                <p>Próxima actividad <strong>{etiqueta(siguiente.leccion.nombre)}</strong></p>
+                <button type="button" className="mapa-continuar" onClick={() => {
+                  const {leccion,uIdx,lIdx}=siguiente;
+                  const boton=document.getElementById('mapa-'+leccion.id);
+                  boton?.scrollIntoView({behavior:reducedMotion ? 'instant' : 'smooth',block:'center'});
+                  boton?.focus({preventScroll:true});
+                  window.setTimeout(() => abrir(leccion,uIdx,lIdx),reducedMotion ? 0 : 500);
+                }}>Continuar <span aria-hidden="true">→</span></button>
+              </div>
+            )}
+          </div>
+        </motion.header>
+
+        <AnimatePresence>
+          {vidas <= 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="mapa-aviso"
+              role="status"
+            >
+              <span aria-hidden="true">♥</span>
+              <p><strong>Sin vidas</strong> Regresa en unas horas para continuar.</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <section className="mapa-recorrido" aria-labelledby="mapa-reinos">
+          <div className="mapa-recorrido-titulo">
+            <h2 id="mapa-reinos">Los reinos</h2>
+            <span>{unidades.length} reinos · {totalLecciones} actividades</span>
+          </div>
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mapa-ruta"
+          >
+            {unidades.map((unidad, uIdx) => {
+              const desbloqueada = isUnidadDesbloqueada(uIdx);
+              const completadas = unidad.lecciones.filter(l => nivelesCompletados.includes(l.id)).length;
+              const progreso = (completadas / unidad.lecciones.length) * 100;
+              const reinoCompleto = completadas === unidad.lecciones.length;
+
+              return (
+                <motion.section
+                  key={unidad.id}
+                  variants={itemVariants}
+                  className={`mapa-reino ${!desbloqueada ? 'mapa-reino-locked' : ''}`}
+                  data-tema={unidad.tema}
+                  aria-labelledby={`mapa-reino-${unidad.id}`}
+                >
+                  <span className="mapa-hito" aria-hidden="true">{uIdx + 1}</span>
+
+                  {efectoUnidad === uIdx && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="mapa-celebracion animate-pulse"
+                    />
+                  )}
+
+                  <header className="mapa-reino-header">
+                    <span className="mapa-reino-icono" aria-hidden="true">{unidad.icono}</span>
+                    <div>
+                      <h3 id={`mapa-reino-${unidad.id}`}>{unidad.nombre}</h3>
+                      <p>{unidad.subtitulo}</p>
+                    </div>
+                    {!desbloqueada && <span className="mapa-estado">Bloqueado</span>}
+                    {desbloqueada && reinoCompleto && <span className="mapa-estado mapa-estado-completo">✓ Completado</span>}
+                  </header>
+
+                  {desbloqueada ? (
+                    <div className="mapa-reino-contenido">
+                      <div className="mapa-reino-progreso">
+                        <div className="mapa-progreso-texto">
+                          <span>Progreso del reino</span>
+                          <strong>{completadas} / {unidad.lecciones.length}</strong>
+                        </div>
+                        <div className="mapa-barra" role="progressbar" aria-label={`Progreso de ${unidad.nombre}`} aria-valuenow={Math.round(progreso)}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progreso}%` }}
+                            transition={{ duration: 1, delay: uIdx * 0.05 }}
+                          />
+                        </div>
+                      </div>
+                      <div className="mapa-actividades">
+                        {unidad.lecciones.map((leccion, lIdx) => {
+                          const completada = isLeccionCompletada(leccion.id);
+                          const bloqueada = lIdx > 0 && !isLeccionCompletada(unidad.lecciones[lIdx - 1]?.id);
+                          const disponible = !bloqueada;
+                          const actual = siguiente?.leccion.id === leccion.id;
+                          const esExamen = leccion.tipo === 'examen';
+
+                          return (
+                            <motion.button
+                              key={leccion.id}
+                              type="button"
+                              whileHover={disponible && !esExamen ? { y: -3 } : {}}
+                              whileTap={disponible ? { scale: 0.98 } : {}}
+                              id={'mapa-'+leccion.id}
+                              aria-current={actual ? 'step' : undefined}
+                              aria-label={etiqueta(leccion.nombre) + (bloqueada ? ', bloqueada' : '') + (completada ? ', completada' : '')}
+                              onClick={() => abrir(leccion,uIdx,lIdx)}
+                              className={`mapa-leccion ${actual ? 'is-current' : ''} ${completada ? 'is-complete' : ''} ${!disponible && !completada ? 'is-locked' : ''} ${esExamen ? 'is-exam' : ''}`}
+                            >
+                              <span className="mapa-leccion-icono" aria-hidden="true">{esExamen ? '🎓' : leccion.icono}</span>
+                              <span className="mapa-leccion-texto">
+                                <span className="mapa-leccion-estado">
+                                  {actual ? 'Siguiente' : completada ? 'Completada' : bloqueada ? 'Bloqueada' : 'Disponible'}
+                                </span>
+                                <span className="mapa-lesson-label">{etiqueta(leccion.nombre)}</span>
+                              </span>
+                              <span className="mapa-leccion-indicador" aria-hidden="true">
+                                {completada ? '✓' : bloqueada ? <span className="mapa-candado" /> : '→'}
+                              </span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" className="mapa-locked-message" onClick={() => showToast(`Completa ${unidades[uIdx-1].nombre} para continuar.`, "warning", 4000)}>
+                      <span className="mapa-candado" aria-hidden="true" />
+                      <span>Completa <strong>{unidades[uIdx-1]?.nombre}</strong> para desbloquear este reino.</span>
+                    </button>
+                  )}
+                </motion.section>
+              );
+            })}
+          </motion.div>
+        </section>
+      </div>
+    </MotionConfig>
   );
 };
 
