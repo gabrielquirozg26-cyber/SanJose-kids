@@ -8,7 +8,7 @@ import './index.css';
 import { registerServiceWorker } from './utils/serviceWorker';
 
 // ── REGISTRAR SERVICE WORKER ──
-registerServiceWorker();
+registerServiceWorker({ development: import.meta.env.DEV });
 
 // ── SOLICITAR PERMISO DE NOTIFICACIONES ──
 // ✅ CORREGIDO: Pedir permiso inmediatamente después de cargar la app

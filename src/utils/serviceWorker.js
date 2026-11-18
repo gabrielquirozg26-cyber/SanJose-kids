@@ -2,8 +2,41 @@
 // ✅ Asegúrate de que la exportación sea correcta
 
 // ── REGISTRAR SERVICE WORKER ──
-export const registerServiceWorker = () => {
+// Limpiar solo el worker raíz de esta app y sus cachés conocidos.
+// No tocar localStorage, IndexedDB, Firebase ni datos de sesión.
+export const clearDevelopmentServiceWorker = async (serviceWorker, cacheStorage, origin) => {
+  const registrations = await serviceWorker.getRegistrations();
+  const ownRegistrations = registrations.filter(registration => {
+    const worker = registration.active || registration.waiting || registration.installing;
+    if (!worker || registration.scope !== `${origin}/`) return false;
+    const url = new URL(worker.scriptURL);
+    return url.origin === origin && url.pathname === '/sw.js';
+  });
+  if (!ownRegistrations.length) return false;
+
+  const removed = await Promise.all(ownRegistrations.map(registration => registration.unregister()));
+  if (!removed.some(Boolean)) return false;
+
+  if (cacheStorage) {
+    await Promise.all(['static-v1', 'dynamic-v1', 'san-josekids-v1'].map(name => cacheStorage.delete(name)));
+  }
+  return true;
+};
+
+export const registerServiceWorker = async ({ development = false } = {}) => {
   if ('serviceWorker' in navigator) {
+    if (development) {
+      try {
+        const removed = await clearDevelopmentServiceWorker(
+          navigator.serviceWorker, window.caches, window.location.origin
+        );
+        // El controller antiguo sigue vivo hasta navegar de nuevo.
+        if (removed && navigator.serviceWorker.controller) window.location.reload();
+      } catch (error) {
+        console.error('No se pudo limpiar el service worker de desarrollo:', error);
+      }
+      return;
+    }
     window.addEventListener('load', () => {
       navigator.serviceWorker
         .register('/sw.js')

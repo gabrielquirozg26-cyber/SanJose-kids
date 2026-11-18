@@ -73,6 +73,16 @@ test('completar un reino posterior no permite saltarse un reino incompleto', () 
   assert.equal(esReinoDesbloqueado(unidades, 2, segundo), false);
 });
 
+test('caso de la captura: Guardianes de la Fe en 1/4 mantiene Las Leyes del Reino bloqueado', () => {
+  const guardianes = unidades.findIndex(u => u.id === 'u4');
+  const leyes = unidades.findIndex(u => u.id === 'u5');
+  assert.ok(guardianes >= 0 && leyes > guardianes);
+  const completados = unidades.slice(0, guardianes).flatMap(u => u.lecciones.map(l => l.id));
+  completados.push(unidades[guardianes].lecciones[0].id);
+  assert.equal(esReinoDesbloqueado(unidades, guardianes, completados), true);
+  assert.equal(esReinoDesbloqueado(unidades, leyes, completados), false);
+});
+
 test('cada reino se abre al completar todo el recorrido anterior', () => {
   const completados = [];
   unidades.forEach((unidad, i) => {
