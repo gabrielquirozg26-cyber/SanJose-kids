@@ -6,6 +6,8 @@ import { useTitles } from '../context/TitlesContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import santosData from '../data/santos.json';
+import nivelesData from '../data/niveles.json';
+import { obtenerProgreso } from '../utils/progreso';
 import AvatarSelector from '../components/AvatarSelector';
 import CompartirProgreso from '../components/CompartirProgreso';
 import MisEvaluaciones from '../components/MisEvaluaciones';
@@ -26,14 +28,9 @@ const MARCOS_ESTILOS = {
   marco_vitral_dorado: { nombre: 'Marco Vitral Dorado', border: 'border-yellow-400', shadow: 'shadow-[0_0_20px_rgba(250,204,21,0.6)]', gradiente: 'from-yellow-500 to-amber-300' },
 };
 
-const NIVEL_NOMBRE = {
-  1:'Padre Nuestro',2:'Ave María',3:'Gloria',4:'Ángel de la Guarda',
-  5:'Yo Confieso',6:'Acto de Contrición',7:'Dulce Madre',
-  8:'Credo Apostólico',9:'La Salve',10:'10 Mandamientos',
-  11:'Bienaventuranzas',12:'7 Sacramentos',13:'Obras de Misericordia',
-  14:'Misterios Gozosos',15:'Misterios Dolorosos',
-  16:'Misterios Gloriosos',17:'Misterios Luminosos',
-};
+const lecciones = nivelesData.unidades.flatMap(unidad => unidad.lecciones);
+const NIVEL_NOMBRE = Object.fromEntries(lecciones.map((leccion, indice) => [indice + 1, leccion.nombre]));
+NIVEL_NOMBRE[lecciones.length + 1] = 'Recorrido completado';
 
 // ── COMPONENTE DE CABECERA ──────────────────────────────────────────────
 const ProfileHeader = ({ avatar, esImagen, tieneAura, marcoActivo, nombre, tituloObj, grupo, onEditAvatar }) => {
@@ -322,7 +319,7 @@ const Perfil = () => {
   const tituloObj = titulosDesbloqueados?.find(t => t.id === tituloEquipado);
   const santoFavObj = santosData.santos.find(s => s.id === santoFavorito);
   const santosColeccion = santosData.santos.filter(s => coleccion.includes(s.id));
-  const progresoGlobal = (nivelActual / 17) * 100;
+  const progresoGlobal = obtenerProgreso(nivelesCompletados, nivelesData.unidades).porcentaje;
   const examenesCount = examenesAprobados?.length || 0;
   const nivelesCount = nivelesCompletados?.length || 0;
 

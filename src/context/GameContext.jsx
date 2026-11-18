@@ -1,10 +1,11 @@
 // src/context/GameContext.jsx
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { useShop } from './ShopContext';
 import { useTitles } from './TitlesContext';
 import { advanceMissions } from '../utils/missionHelper';
-import { registrarProgresoLeccion } from '../utils/progreso';
+import { registrarProgresoLeccion, obtenerProgreso } from '../utils/progreso';
+import nivelesData from '../data/niveles.json';
 import { sendLocalNotification } from '../utils/serviceWorker';
 import { db } from '../firebase';
 import { doc, increment, arrayUnion, collection, query, where, getDocs, addDoc, orderBy, getDoc, runTransaction } from 'firebase/firestore';
@@ -240,7 +241,7 @@ export const GameProvider = ({ children }) => {
 
     // Confirmar en Firestore, sin depender de una copia local del progreso.
     const primeraFinalizacion = await runTransaction(db, transaction =>
-      registrarProgresoLeccion(transaction, doc(db, 'usuarios', usuarioId), nivelId)
+      registrarProgresoLeccion(transaction, doc(db, 'usuarios', usuarioId), nivelId, nivelesData.unidades)
     );
 
     await advanceMissions('lecciones', 1);
@@ -386,6 +387,10 @@ export const GameProvider = ({ children }) => {
   };
 
   // ── VALORES EXPUESTOS ──────────────────────────────────────────────────
+  const progreso = useMemo(
+    () => obtenerProgreso(userDoc?.nivelesCompletados ?? [], nivelesData.unidades),
+    [userDoc?.nivelesCompletados]
+  );
   const value = {
     // Navegación
     activeTab,
@@ -405,13 +410,13 @@ export const GameProvider = ({ children }) => {
     rol: userDoc?.rol ?? 'estudiante',
     vidas: vidas ?? 5,
     monedas: userDoc?.monedas ?? 0,
-    nivelActual: userDoc?.nivelActual ?? 1,
+    nivelActual: progreso.nivelActual,
     rango: userDoc?.rango ?? 'Iniciado',
     racha: userDoc?.racha ?? 0,
     inventario: userDoc?.inventario ?? [],
     examenesAprobados: userDoc?.examenesAprobados ?? [],
     cofresAbiertos: userDoc?.cofresAbiertos ?? 0,
-    nivelesCompletados: userDoc?.nivelesCompletados ?? [],
+    nivelesCompletados: progreso.leccionesCompletadas,
     titulosDesbloqueados: userDoc?.titulosDesbloqueados ?? [],
     tituloEquipado: userDoc?.tituloEquipado,
     titulosLegendarios: titulosData.legendarios || [],

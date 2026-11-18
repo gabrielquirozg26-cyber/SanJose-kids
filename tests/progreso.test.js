@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { registrarProgresoLeccion, esReinoDesbloqueado } from '../src/utils/progreso.js';
+import { registrarProgresoLeccion as registrar, esReinoDesbloqueado, obtenerProgreso } from '../src/utils/progreso.js';
 
 const { unidades } = JSON.parse(readFileSync(new URL('../src/data/niveles.json', import.meta.url), 'utf8'));
+const registrarProgresoLeccion = (transaction, ref, id) => registrar(transaction, ref, id, unidades);
 
 function perfilInicial(data = {}) {
   let perfil = { nivelActual: 1, nivelesCompletados: [], monedas: 100, vidas: 5, ...data };
@@ -29,11 +30,44 @@ test('la primera finalización avanza una vez y conserva monedas y vidas', async
   assert.deepEqual(p.perfil(), { nivelActual: 2, nivelesCompletados: ['padre_nuestro'], monedas: 100, vidas: 5 });
 });
 
-test('repetir una lección no avanza ni vuelve a escribir el progreso', async () => {
-  const p = perfilInicial({ nivelActual: 6, nivelesCompletados: ['padre_nuestro'] });
+test('repetir una lección con nivel correcto no avanza ni vuelve a escribir', async () => {
+  const p = perfilInicial({ nivelActual: 2, nivelesCompletados: ['padre_nuestro'] });
   assert.equal(await registrarProgresoLeccion(p.transaction, p.ref, 'padre_nuestro'), false);
-  assert.equal(p.perfil().nivelActual, 6);
+  assert.equal(p.perfil().nivelActual, 2);
   assert.equal(p.escrituras.length, 0);
+});
+
+test('caso del perfil: una lección única no muestra nivel 3 por un contador antiguo', () => {
+  const data = { nivelActual: 3, nivelesCompletados: ['senal_de_la_cruz'] };
+  const progreso = obtenerProgreso(data.nivelesCompletados, unidades);
+  assert.equal(progreso.nivelActual, 2);
+  assert.equal(progreso.leccionesCompletadas.length, 1);
+});
+
+test('repetir corrige el contador histórico sin conceder otra primera finalización', async () => {
+  const p = perfilInicial({ nivelActual: 30, nivelesCompletados: ['senal_de_la_cruz'] });
+  assert.equal(await registrarProgresoLeccion(p.transaction, p.ref, 'senal_de_la_cruz'), false);
+  assert.equal(p.perfil().nivelActual, 2);
+  for (let i = 0; i < 10; i++) {
+    assert.equal(await registrarProgresoLeccion(p.transaction, p.ref, 'senal_de_la_cruz'), false);
+  }
+  assert.equal(p.perfil().nivelActual, 2);
+  assert.equal(p.escrituras.length, 1);
+  assert.equal(p.perfil().monedas, 100);
+  assert.equal(p.perfil().vidas, 5);
+});
+
+test('una lección nueva calcula el nivel desde el historial único, no desde un contador inflado', async () => {
+  const p = perfilInicial({ nivelActual: 99, nivelesCompletados: ['senal_de_la_cruz'] });
+  assert.equal(await registrarProgresoLeccion(p.transaction, p.ref, 'padre_nuestro'), true);
+  assert.equal(p.perfil().nivelActual, 3);
+});
+
+test('duplicados e IDs ajenos no inflan el nivel ni el porcentaje', () => {
+  const progreso = obtenerProgreso(['senal_de_la_cruz', 'senal_de_la_cruz', 'antigua-inexistente'], unidades);
+  assert.equal(progreso.nivelActual, 2);
+  assert.deepEqual(progreso.leccionesCompletadas, ['senal_de_la_cruz']);
+  assert.equal(obtenerProgreso(unidades.flatMap(u => u.lecciones.map(l => l.id)), unidades).porcentaje, 100);
 });
 
 test('un segundo envío de la finalización no duplica el avance', async () => {
