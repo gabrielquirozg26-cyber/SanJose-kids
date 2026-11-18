@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import GuiaLuz from '../GuiaLuz';
 
 const nombres = { lucy: 'Lucy', angel: 'Ángel Nico', francisco: 'San Francisco' };
@@ -33,8 +33,11 @@ export function PersonajeLeccion({ personaje = 'lucy', emocion = 'calma' }) {
 }
 
 export default function CompaneroLeccion({ personaje = 'lucy', emocion = 'calma', mensaje, etiqueta }) {
+  const id = useId();
+  const [mensajeAbierto, setMensajeAbierto] = useState(null);
+  const abierto = mensajeAbierto === mensaje;
   return <aside className="aula-companero" aria-label={'Te acompaña ' + nombres[personaje]}>
     <PersonajeLeccion key={personaje + emocion} personaje={personaje} emocion={emocion}/>
-    <div className="aula-bocadillo"><span>{nombres[personaje]} {etiqueta && '· ' + etiqueta}</span><p>{mensaje}</p></div>
+    <div className="aula-bocadillo" data-abierto={abierto}><span>{nombres[personaje]} {etiqueta && '· ' + etiqueta}</span><button className="aula-guia-toggle" aria-expanded={abierto} aria-controls={id} onClick={() => setMensajeAbierto(abierto ? null : mensaje)}>Ver ayuda <span aria-hidden="true">{abierto ? '⌃' : '⌄'}</span></button><p id={id}>{mensaje}</p></div>
   </aside>;
 }
