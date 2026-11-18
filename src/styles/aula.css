@@ -60,7 +60,7 @@
 .aula-ficha:disabled[aria-pressed=true] { background: #243760; color: #b7cae6; border-color: #526b96; }
 .aula-banco-palabras { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
 .aula-fichas-info { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; font-size: 14px; color: #d6e3fc; }
-.aula-boton-texto { min-height: 48px; padding: 8px 12px; border: 1px solid #9db6ee77; border-radius: 12px; color: #e1ebff; background: #344875; font-size: 14px !important; font-weight: 700; }
+.aula-boton-texto { min-height: 48px; padding: 8px 12px; border: 1px solid #9db6ee77; border-radius: 12px; color: #e1ebff; background: #344875; font-size: 16px !important; font-weight: 700; }
 .aula-boton-texto:disabled { color: #afc0df; border-color: #7188b366; background: #293c64; }
 .aula-pie { position: sticky; bottom: 0; z-index: 5; width: 100%; margin-top: auto; padding: 20px max(24px, calc((100% - 1024px) / 2)) calc(20px + env(safe-area-inset-bottom)); border-top: 1px solid #8ba7dd77; background: #1d2b57; }
 .aula-acciones { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 16px; }

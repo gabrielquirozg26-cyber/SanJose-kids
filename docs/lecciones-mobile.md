@@ -28,4 +28,6 @@ Una oración larga o el texto ampliado pueden requerir desplazamiento dentro del
 
 83 pruebas automatizadas: incluyen conservación de todos los versos reales, IDs repetidos, edición de partes y entrega íntegra al validador. Compilación de producción y lint de los componentes de lecciones modificados.
 
+Revisión visual en Edge con los componentes reales y datos de ejemplo, dentro de ventanas de 390 × 780 y 320 × 640 px. Se comprobaron banco de palabras, avance entre partes, estabilidad de fichas, escritura y botón de comprobación habilitado. No se hicieron compras ni cambios en Firebase. La apertura de un teclado físico de Android/iOS queda por comprobar en un teléfono real.
+
 No se modifican Firebase, proveedores de progreso, inventario ni transacciones de recompensas. La rama conserva también los últimos ajustes locales del recorrido de Lily y el acceso a compartir desde Perfil.

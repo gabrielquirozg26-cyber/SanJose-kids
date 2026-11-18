@@ -24,7 +24,7 @@ export default function EjercicioOrdenar({ verso, resultado, onRespuesta, bloque
   return <section ref={ref} className="aula-ordenar" aria-labelledby="reto-ordenar">
     <h1 id="reto-ordenar">Ordena la oración</h1><p className="aula-instruccion">Toca en orden; toca de nuevo para quitar.</p>
     <div className="aula-tramo-cabecera"><strong>{plan.tramos.length > 1 ? 'Parte ' + (parte + 1) + ' de ' + plan.tramos.length : 'Tus palabras'}</strong><span role="status" aria-live="polite">{seleccion.length} de {fichas.length} palabras</span></div>
-    <div className="aula-frase-armada" aria-label="Tu oración en esta parte"><p>{seleccion.length ? textoOrdenado(fichas, seleccion) : 'Tu oración empieza aquí…'}<span className="aula-cursor-frase" aria-hidden="true">{seleccion.length < fichas.length ? ' ▏' : ' ✓'}</span></p></div>
+    <div className="aula-frase-armada" aria-label="Tu oración en esta parte"><p>{seleccion.length ? textoOrdenado(fichas, seleccion) : 'Tu oración empieza aquí…'}<span className="aula-cursor-frase" aria-hidden="true">{seleccion.length < fichas.length ? ' ▏' : ''}</span></p></div>
     <div className="aula-banco-palabras" role="group" aria-label="Palabras de esta parte">{fichas.map(f => {
       const posicion = seleccion.indexOf(f.id);
       return <button className={'aula-ficha' + (posicion >= 0 ? ' aula-ficha-elegida' : '')} key={f.id} disabled={desactivado} aria-label={(posicion >= 0 ? 'Quitar ' : 'Añadir ') + f.texto + ', ficha ' + (f.id + 1) + (posicion >= 0 ? ', posición ' + (posicion + 1) : '')} aria-pressed={posicion >= 0} onClick={() => cambiarSeleccion(ids => alternarFicha(ids, f.id, fichas))}>{posicion >= 0 && <span className="aula-ficha-numero" aria-hidden="true">{posicion + 1}</span>}{f.texto}</button>;
