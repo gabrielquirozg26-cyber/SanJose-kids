@@ -1,0 +1,196 @@
+main:has(> .zona-aventura) { max-width: 75rem; padding-inline: clamp(12px, 3vw, 32px); }
+.zona-aventura { position: relative; isolation: isolate; color: #f5f7ff; padding: 20px 0 calc(40px + env(safe-area-inset-bottom)); font-size: 16px; line-height: 1.6; }
+.zona-aventura::before { content: ''; position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse at 90% 5%, #38478380, transparent 65%), linear-gradient(150deg, #14183d, #1e255e); pointer-events: none; }
+.zona-aventura h1, .zona-aventura h2, .zona-aventura h3 { font-family: ui-rounded, 'Trebuchet MS', system-ui, sans-serif; font-weight: 850; line-height: 1.3; }
+.zona-aventura h1 { font-size: clamp(30px, 4vw, 44px); letter-spacing: -.03em; }
+.zona-aventura h2 { font-size: 24px; }
+.zona-aventura h3 { font-size: 21px; }
+.zona-aventura button, .zona-aventura input, .zona-aventura select, .zona-aventura textarea { font-family: inherit; font-size: 16px; }
+.zona-aventura button { cursor: pointer; min-height: 48px; }
+.zona-aventura button:disabled { cursor: default; }
+.zona-aventura :is(button, input, select, textarea, summary):focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.juego-portada { display: grid; grid-template-columns: minmax(0, 1fr) 190px; align-items: center; gap: 24px; padding: clamp(22px, 3vw, 32px); border: 2px solid #a2b5fa55; border-radius: 30px; background: radial-gradient(ellipse at right, #6a87df44, transparent 70%), linear-gradient(120deg, #303e83, #2b346e); }
+.juego-etiqueta { display: block; margin-bottom: 10px; color: #ffe28b; font-size: 14px; font-weight: 850; letter-spacing: .035em; }
+.juego-portada p { color: #e2e9ff; max-width: 52ch; margin: 10px 0 18px; font-size: 16px; }
+.juego-portada-guia { text-align: center; }
+.juego-portada-guia .guia-luz { margin: auto; }
+.juego-portada-guia > span { font-size: 14px; font-weight: 750; color: #fff0af; }
+.juego-identidad { display: flex; gap: 12px; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid #aabbf140; }
+.juego-identidad img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ffe28b; object-fit: cover; }
+.juego-identidad strong { display: block; color: #ffe28b; font-size: 16px; }
+.juego-identidad small { display: block; color: #e0e8ff; font-size: 14px; }
+.juego-btn { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; padding: 12px 20px; border: 2px solid transparent; border-radius: 16px; background: #ffda68; color: #30264b; font-size: 16px; font-weight: 800; box-shadow: 0 4px 0 #b2853b; text-align: center; }
+.juego-btn:not(:disabled):hover { background: #ffe695; }
+.juego-btn-secundario { background: #35477c; color: #f4f7ff; border-color: #a1b6f080; box-shadow: none; }
+.juego-btn:disabled { background: #354572; color: #d7e0f7; border-color: #869ac555; box-shadow: none; }
+.juego-panel { padding: 24px; border: 1px solid #a4b9f055; border-radius: 24px; background: #2a3769; }
+.juego-panel p { margin: 12px 0; color: #dce6ff; }
+.juego-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid #ffde8560; border-radius: 12px; background: #ffde8512; color: #ffe28b; font-size: 16px; font-weight: 750; }
+.juego-nota { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin: 24px 0; padding: 20px; border: 1px solid #9cdbda66; border-radius: 22px; background: #24475e; }
+.juego-nota > span:first-child { font-size: 36px; }
+.juego-nota > p { flex: 1 1 260px; color: #deeff6; }
+.juego-nota strong { color: #f6fcff; }
+.juego-pestanas { display: flex; flex-wrap: wrap; gap: 16px; margin: 24px 0; }
+.juego-pestanas button { min-height: 48px; padding: 12px 18px; border: 1px solid #9ab0ee88; border-radius: 14px; background: #273264; color: #e7eeff; font-size: 16px; font-weight: 750; }
+.juego-pestanas button[aria-pressed=true] { background: #dce5ff; color: #26315b; border-color: #e6edff; box-shadow: 0 3px 0 #8ea1d0; }
+.juego-herramientas { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; padding: 20px; background: #253261; border: 1px solid #9ab0ee55; border-radius: 20px; }
+.juego-herramientas label { display: flex; flex-direction: column; gap: 8px; color: #dce6ff; font-size: 14px; font-weight: 700; }
+.juego-herramientas input, .juego-herramientas select { width: 100%; min-width: 0; min-height: 50px; border: 1px solid #9ab0ee99; border-radius: 12px; background: #17234d; padding: 10px 12px; color: #f3f7ff; font-size: 16px; }
+.juego-herramientas input::placeholder { color: #b8c7e8; }
+.juego-seccion-titulo { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; margin: 28px 0 20px; }
+.juego-seccion-titulo p { color: #cdd9f7; font-size: 14px; }
+.juego-subtitulo { margin: 24px 0 16px; }
+.juego-secundario { color: #d1ddf7; font-size: 14px; }
+.juego-vacio { padding: 36px 24px; border: 2px dashed #9ab0ee80; border-radius: 24px; background: #283565; text-align: center; }
+.juego-vacio > span { display: block; font-size: 48px; margin-bottom: 16px; }
+.juego-vacio p { margin: 16px auto 24px; color: #dce6ff; max-width: 45ch; }
+.juego-imagen { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; overflow: hidden; }
+.juego-imagen > img { width: 100%; height: 100%; object-fit: cover; }
+.juego-imagen > span { font-size: inherit; }
+.juego-progreso { max-width: 420px; padding: 14px 18px; border: 1px solid #9ab0ee55; border-radius: 16px; background: #17254e; }
+.juego-progreso > div { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; }
+.juego-progreso progress { appearance: none; display: block; width: 100%; height: 12px; margin-top: 10px; border: 0; overflow: hidden; border-radius: 20px; background: #455786; accent-color: #ffdc76; }
+.juego-progreso progress::-webkit-progress-bar { background: #455786; }
+.juego-progreso progress::-webkit-progress-value { background: #ffdc76; }
+.juego-progreso progress::-moz-progress-bar { background: #ffdc76; }
+.juego-pie { text-align: center; color: #d5dff7; font-size: 14px; margin-top: 28px; }
+.album-cartas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.album-carta { --carta: #a7c6ee; overflow: hidden; border: 2px solid var(--carta); border-radius: 22px; background: #293766; text-align: left; color: #f4f7ff; transition: transform .18s; }
+.album-carta[data-rareza=raro] { --carta: #89bbff; }
+.album-carta[data-rareza=legendario] { --carta: #ffdc76; }
+.album-carta-mia:hover { transform: translateY(-4px); }
+.album-carta-arte { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: radial-gradient(circle, #6075af77, #2a3666); font-size: 68px; }
+.album-carta-pendiente { border-style: dashed; border-color: #8a9dcd; }
+.album-carta-pendiente .juego-imagen { opacity: .75; filter: saturate(.65); }
+.album-rareza { position: absolute; top: 10px; right: 10px; max-width: calc(100% - 20px); padding: 5px 10px; border: 1px solid #c7d6ff80; border-radius: 10px; background: #15234ef2; color: #f0f5ff; font-size: 14px; }
+.album-carta-texto { padding: 16px; }
+.album-carta-texto h3 { font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+.album-carta-texto p { font-size: 14px; margin-top: 8px; color: #d2e0fc; }
+.santo-historia > .juego-btn { margin-bottom: 24px; }
+.santo-historia-contenido { display: grid; grid-template-columns: minmax(200px, .65fr) 1.4fr; gap: 24px; margin-top: 24px; }
+.santo-historia-contenido > div > article + article { margin-top: 24px; }
+.santo-retrato { text-align: center; align-self: start; }
+.santo-retrato .juego-imagen { aspect-ratio: 1; border-radius: 20px; font-size: 90px; }
+.ranking-podio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 24px; }
+.ranking-podio-carta { position: relative; padding: 24px 16px; border: 2px solid #a6baf070; border-radius: 24px; background: #293869; text-align: center; }
+.ranking-podio-carta[data-puesto='0'] { border-color: #ffdb70; background: linear-gradient(145deg, #50426f, #303b70); }
+.ranking-medalla { display: block; font-size: 32px; margin-bottom: 12px; }
+.ranking-podio-carta .juego-imagen { width: 72px; height: 72px; margin: 0 auto 16px; border: 3px solid #b9cbff; border-radius: 24px; background: #445786; font-size: 38px; }
+.ranking-podio-carta h3 { overflow-wrap: anywhere; margin-bottom: 12px; font-size: 20px; }
+.ranking-podio-carta p { color: #d7e2fc; font-size: 14px; margin-top: 12px; }
+.ranking-lista { display: grid; gap: 16px; list-style: none; padding: 0; }
+.ranking-fila { display: flex; width: 100%; gap: 16px; align-items: center; padding: 16px 20px; border: 1px solid #a6baf070; border-radius: 20px; background: #2a3769; text-align: left; }
+.ranking-fila-mia { border: 2px solid #ffdb70; background: #3d3e6b; }
+.ranking-numero { min-width: 32px; text-align: center; font-size: 22px; font-weight: 850; color: #ffe28b; }
+.ranking-fila .juego-imagen { flex-shrink: 0; width: 52px; height: 52px; border-radius: 16px; background: #435785; font-size: 28px; }
+.ranking-nombre { flex: 1; min-width: 0; }
+.ranking-nombre strong { display: block; overflow-wrap: anywhere; font-size: 18px; }
+.ranking-nombre small { color: #d5e0fa; font-size: 14px; }
+.ranking-saldo { color: #ffe28b; font-weight: 750; white-space: nowrap; }
+.ranking-equipo { margin: 16px 0; }
+.ranking-equipo summary { display: flex; align-items: center; gap: 16px; min-height: 56px; cursor: pointer; }
+.ranking-equipo summary > span:first-child { font-size: 32px; }
+.ranking-equipo summary > span:nth-child(2) { flex: 1; }
+.ranking-equipo small { display: block; color: #d5e0fa; font-size: 14px; }
+.ranking-equipo ul { margin-top: 16px; list-style: none; }
+.ranking-equipo li { display: flex; gap: 16px; justify-content: space-between; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid #9ab0ee44; }
+.tienda-balance { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.tienda-balance > span:first-child { font-size: 42px; }
+.tienda-balance strong { display: block; color: #ffe28b; font-size: 36px; line-height: 1.3; }
+.tienda-balance small { color: #dce6ff; font-size: 14px; }
+.tienda-mochila { margin-top: 24px; }
+.tienda-mochila summary { min-height: 48px; cursor: pointer; font-size: 20px; font-weight: 800; }
+.tienda-mochila summary > span { color: #d6e3fc; font-size: 14px; margin-left: 12px; font-weight: 500; }
+.tienda-mochila ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; list-style: none; margin-top: 20px; }
+.tienda-mochila li { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 16px; border: 1px solid #a6baf050; border-radius: 16px; background: #354574; }
+.tienda-mochila li small { grid-column: span 2; color: #d5e0fa; font-size: 14px; }
+.tienda-oferta { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin: 24px 0; padding: 24px; border: 2px solid #f1d37c99; border-radius: 24px; background: #48416b; }
+.tienda-oferta-icono { font-size: 52px; }
+.tienda-oferta > div { flex: 1 1 230px; }
+.tienda-oferta p { color: #e0e4fb; margin: 8px 0; }
+.tienda-oferta s { color: #d8d9ee; margin-right: 8px; }
+.tienda-oferta strong { color: #ffe28b; }
+.tienda-productos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.tienda-producto { display: flex; flex-direction: column; gap: 4px; border-top: 4px solid #a1c8ff; }
+.tienda-producto[data-categoria=poderes] { border-top-color: #ffb78d; }
+.tienda-producto[data-categoria=cofres] { border-top-color: #ffdf86; }
+.tienda-producto[data-categoria=estilo] { border-top-color: #d5b1ff; }
+.tienda-producto-arriba { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+.tienda-producto-icono { display: grid; place-items: center; width: 64px; height: 64px; background: #a6baf01f; border-radius: 18px; font-size: 38px; }
+.tienda-producto .juego-secundario { margin-top: 0; font-size: 14px; }
+.tienda-producto-stock { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: auto 0 16px; padding-top: 12px; color: #dae5fc; font-size: 14px; }
+.tienda-producto .juego-btn { width: 100%; }
+.tienda-confirmar-icono { display: block; text-align: center; font-size: 64px; margin: 16px 0; }
+.perfil-credencial { display: flex; align-items: center; gap: 20px; }
+.perfil-avatar { position: relative; width: 106px; flex-shrink: 0; border: 3px solid #bdd1ff; border-radius: 24px; background: #344679; overflow: hidden; }
+.perfil-avatar .juego-imagen { height: 84px; font-size: 50px; }
+.perfil-avatar > span:last-child { display: block; padding: 4px; background: #15234e; font-size: 14px; color: #f4f7ff; }
+.perfil-avatar-aura { box-shadow: 0 0 0 7px #ffdb7033; }
+.perfil-avatar[data-marco=marco_vitral_azul] { border-color: #83c9ff; box-shadow: 0 0 0 5px #83c9ff26; }
+.perfil-avatar[data-marco=marco_vitral_dorado] { border-color: #ffdb70; box-shadow: 0 0 0 5px #ffdb7026; }
+.perfil-credencial p { margin-bottom: 0; font-size: 16px; }
+.perfil-estadisticas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+.perfil-estadisticas article { text-align: center; padding: 20px 14px; }
+.perfil-estadisticas article > span { font-size: 30px; }
+.perfil-estadisticas p { margin: 6px 0; font-size: 16px; }
+.perfil-estadisticas strong { display: block; font-size: 30px; color: #ffe28b; }
+.perfil-estadisticas small { display: block; color: #d7e3ff; font-size: 14px; overflow-wrap: anywhere; }
+.zona-perfil .glass-card { background: #2a3769; border-color: #9ab0ee66; backdrop-filter: none; }
+.zona-perfil .glass-card.flex { flex-wrap: wrap; gap: 16px; }
+.zona-perfil button { font-size: 16px; }
+.zona-perfil :is(input, textarea) { min-height: 48px; font-size: 16px; }
+.zona-perfil .truncate { white-space: normal; overflow-wrap: anywhere; }
+.zona-perfil .max-h-64 { max-height: none; }
+.zona-perfil .px-4 { padding-left: 0; padding-right: 0; }
+.zona-perfil .text-white\/70, .zona-perfil .text-white\/50 { color: #dae4fc; }
+.zona-perfil .text-red-400 { color: #ffc2c5; }
+.zona-perfil .text-green-400 { color: #acf0cb; }
+.zona-perfil .text-orange-400 { color: #ffc495; }
+@media (max-width: 950px) { .album-cartas { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tienda-productos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .zona-aventura { padding-top: 8px; }
+  .juego-portada { grid-template-columns: minmax(0, 1fr); padding: 24px; gap: 20px; }
+  .juego-portada h1 { font-size: 34px; }
+  .juego-portada p { font-size: 16px; }
+  .juego-portada-guia { display: none; }
+  .juego-identidad { margin-top: 20px; }
+  .juego-herramientas { grid-template-columns: 1fr; padding: 16px; }
+  .juego-pestanas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .juego-pestanas button { padding-inline: 10px; }
+  .juego-nota .juego-btn { width: 100%; }
+  .album-cartas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .album-carta-texto { padding: 12px; }
+  .album-carta-texto h3 { font-size: 16px; }
+  .album-rareza { top: 6px; right: 6px; font-size: 14px; padding: 4px 6px; }
+  .santo-historia-contenido { grid-template-columns: 1fr; }
+  .santo-retrato .juego-imagen { max-width: 240px; margin: auto; }
+  .ranking-podio { gap: 10px; }
+  .ranking-podio-carta { padding: 16px 8px; border-radius: 18px; }
+  .ranking-podio-carta h3 { font-size: 16px; }
+  .ranking-podio-carta .juego-imagen { width: 54px; height: 54px; font-size: 28px; border-radius: 18px; }
+  .ranking-podio-carta .juego-chip { font-size: 14px; padding: 4px; flex-wrap: wrap; justify-content: center; }
+  .ranking-fila { gap: 10px; padding: 16px 12px; flex-wrap: wrap; }
+  .ranking-nombre { flex-basis: calc(100% - 110px); }
+  .ranking-saldo { margin-left: auto; }
+  .ranking-equipo summary { flex-wrap: wrap; }
+  .tienda-productos, .tienda-mochila ul { grid-template-columns: 1fr; }
+  .tienda-oferta { padding: 20px; }
+  .tienda-oferta .juego-btn { width: 100%; }
+  .tienda-mochila summary > span { display: block; margin-left: 0; }
+  .perfil-credencial { align-items: flex-start; gap: 14px; }
+  .perfil-avatar { width: 88px; }
+  .perfil-credencial .juego-chip { font-size: 14px; }
+  .perfil-estadisticas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .juego-panel { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .zona-aventura *, .zona-aventura *::before, .zona-aventura *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+.zona-perfil-publico > .juego-btn { margin-bottom: 24px; }
+.perfil-publico-info { display: grid; gap: 24px; }
+.juego-insignias { display: flex; flex-wrap: wrap; gap: 16px; }
+.zona-perfil [class*="text-["] { font-size: 14px; }
+
+.zona-perfil .text-sm { font-size: 14px; }
+.zona-perfil .glass-card > p:not(:first-child) { font-size: 16px; }
+.zona-tienda .aprendizaje h1 { font-size: clamp(26px, 4vw, 34px); }
+@media (max-width: 640px) { .ranking-podio { display: none; } }

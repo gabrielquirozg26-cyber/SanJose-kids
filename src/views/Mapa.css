@@ -460,33 +460,6 @@ main:has(> .mapa-sendero) {
   .mapa-sendero > .fixed { display: none; }
 }
 
-body:has(.mapa-sendero) nav {
-  padding-bottom: env(safe-area-inset-bottom);
-  background: #111b1cf5;
-}
-
-body:has(.mapa-sendero) nav button { min-height: 48px; }
-body:has(.mapa-sendero) nav button span { opacity: 1 !important; }
-body:has(.mapa-sendero) nav button span:nth-of-type(2) {
-  color: #e1e9e4;
-  font-size: clamp(0.625rem, 2.65vw, 0.75rem);
-  letter-spacing: 0;
-}
-
-
-body:has(.mapa-sendero) nav button span.text-yellow-300 { color: #f5d18e; }
-body:has(.mapa-sendero) nav button:focus-visible {
-  outline: 2px solid #ffe5a8;
-  outline-offset: -2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body:has(.mapa-sendero) nav * {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
-  }
-}
 .mapa-examen { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 56px; margin-top: 20px; padding: 16px; border: 1px solid #e8c65c; border-radius: 16px; background: #202d50; color: #fff3c1; font-size: 16px; font-weight: 700; text-align: left; cursor: pointer; }
 .mapa-examen:focus-visible { outline: 3px solid white; outline-offset: 4px; }
 

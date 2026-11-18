@@ -1,676 +1,85 @@
-// src/views/Tienda.jsx
-import React, { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { useShop } from '../context/ShopContext';
 import { PRODUCTOS } from '../utils/economia';
 import { useToast } from '../components/ui/Toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
 import TitulosModal from '../components/TitulosModal';
+import DialogoAprendizaje from '../components/DialogoAprendizaje';
+import CabeceraAventura from '../components/CabeceraAventura';
 
-// ── ESTILOS ──────────────────────────────────────────────────────────────
-const RAREZA_STYLES = {
-  comun: 'border-slate-500/30 bg-slate-500/10 text-slate-300',
-  raro: 'border-blue-500/30 bg-blue-500/10 text-blue-300',
-  epico: 'border-purple-500/30 bg-purple-500/10 text-purple-300',
-  legendario: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300',
-  divino: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300',
-};
-
-const COFRE_STYLES = {
-  madera: 'from-amber-800/40 to-amber-600/20 border-amber-600/50 shadow-amber-600/20',
-  plata: 'from-slate-400/40 to-slate-300/20 border-slate-400/50 shadow-slate-400/20',
-  oro: 'from-yellow-400/40 to-amber-300/20 border-yellow-400/50 shadow-yellow-400/30',
-};
-
-const CATEGORIES = [
-  { 
-    id: 'consumibles', 
-    icono: '🛡️', 
-    label: 'Consumibles', 
-    color: 'from-blue-500/20 to-cyan-500/10 border-blue-400/30',
-    desc: 'Items para usar en lecciones'
-  },
-  { 
-    id: 'potenciadores', 
-    icono: '🚀', 
-    label: 'Potenciadores', 
-    color: 'from-orange-500/20 to-red-500/10 border-orange-400/30',
-    desc: 'Mejora tu experiencia de juego'
-  },
-  { 
-    id: 'cofres', 
-    icono: '🎁', 
-    label: 'Cofres', 
-    color: 'from-purple-500/20 to-pink-500/10 border-purple-400/30',
-    desc: 'Consigue santos misteriosos'
-  },
-  { 
-    id: 'personalizacion', 
-    icono: '✨', 
-    label: 'Personalización', 
-    color: 'from-amber-500/20 to-orange-500/10 border-amber-400/30',
-    desc: 'Haz tu perfil único'
-  },
+const objetos = [
+  { id: 'corazon_extra', nombre: 'Corazón extra', icono: '❤️', categoria: 'ayudas', desc: 'Recupera una vida para seguir aprendiendo.', uso: 'Se usa al comprarlo.' },
+  { id: 'escudo_miguel', nombre: 'Escudo de San Miguel', icono: '🛡️', categoria: 'ayudas', desc: 'Te protege de un error durante una lección.', uso: 'Se usa automáticamente al equivocarte.' },
+  { id: 'pocion_sabiduria', nombre: 'Poción de sabiduría', icono: '🧪', categoria: 'ayudas', desc: 'Elimina dos opciones incorrectas de una pregunta.', uso: 'Úsala con el botón de poción en la lección.' },
+  { id: 'doble_xp', nombre: 'Doble XP', icono: '⚡', categoria: 'poderes', desc: 'Duplica las monedas de tu próxima lección.', uso: 'Se activa al entrar a tu próxima lección.' },
+  { id: 'protector_racha', nombre: 'Protector de racha', icono: '🔥', categoria: 'poderes', desc: 'Cuida tu racha si te pierdes un día.', uso: 'Protege un solo día de ausencia.' },
+  { id: 'cofre_madera', nombre: 'Cofre de madera', icono: '📦', categoria: 'cofres', desc: 'Descubre un santo común o raro.', uso: 'Contiene una carta sorpresa. Si se repite, recibes monedas.' },
+  { id: 'cofre_plata', nombre: 'Cofre de plata', icono: '🎁', categoria: 'cofres', desc: 'Puede traer un santo común, raro o legendario.', uso: 'Contiene una carta sorpresa. Si se repite, recibes monedas.' },
+  { id: 'cofre_oro', nombre: 'Cofre de oro', icono: '🏆', categoria: 'cofres', desc: 'Más posibilidades de un santo legendario.', uso: 'La carta es sorpresa: no garantiza un legendario.' },
+  { id: 'titulo_guardian', nombre: 'Guardián del Credo', icono: '⚜️', categoria: 'estilo', desc: 'Un nuevo rango para tu aventurero.', uso: 'Tu rango cambia al comprarlo.' },
+  { id: 'titulo_maestro', nombre: 'Maestro de la Fe', icono: '👑', categoria: 'estilo', desc: 'Lleva este rango en tu aventura.', uso: 'Tu rango cambia al comprarlo.' },
+  { id: 'aura_santidad', nombre: 'Aura de santidad', icono: '✨', categoria: 'estilo', desc: 'Una luz especial alrededor de tu avatar.', uso: 'Se muestra en tu perfil.' },
+  { id: 'marco_vitral_azul', nombre: 'Marco vitral azul', icono: '🔵', categoria: 'estilo', desc: 'Un marco azul inspirado en los vitrales.', uso: 'Se equipa al comprarlo. Puedes cambiarlo en tu perfil.' },
+  { id: 'marco_vitral_dorado', nombre: 'Marco vitral dorado', icono: '🟡', categoria: 'estilo', desc: 'Un marco dorado para tu avatar.', uso: 'Se equipa al comprarlo. Puedes cambiarlo en tu perfil.' },
 ];
-
-// ── COMPONENTES DE ANIMACIÓN ──
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1,
-    transition: { type: 'spring', stiffness: 300, damping: 25 }
-  }
-};
-
-const floatVariants = {
-  initial: { y: 0 },
-  animate: { 
-    y: [-5, 0, -5],
-    transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-  }
-};
-
-// ── TIENDA PRINCIPAL ─────────────────────────────────────────────────────
-const Tienda = () => {
+const categorias = [['ayudas', '🛡️ Ayudas'], ['poderes', '⚡ Poderes'], ['cofres', '🎁 Cofres'], ['estilo', '✨ Mi estilo']];
+export default function Tienda() {
+  const game = useGame();
+  const shop = useShop();
+  const { monedas, vidas, inventario, setActiveTab } = game;
   const { showToast } = useToast();
-  
-  const {
-    monedas,
-    vidas,
-    inventario,
-    comprarCorazon,
-    comprarPocion,
-    comprarDobleXp,
-    comprarProtectorRacha,
-    comprarTituloLegendario,
-    titulosLegendarios,
-  } = useGame();
-
-  const {
-    obtenerOfertaDiaria,
-    comprarOferta,
-    corazonesCompradosHoy,
-    cofresMaderaCompradosHoy,
-    cofresPlataCompradosHoy,
-    cofresOroCompradosHoy,
-    pocionesCompradasHoy,
-    dobleXpCompradosHoy,
-    protectorRachaCompradosHoy,
-    comprarCofreMadera,
-    comprarCofrePlata,
-    comprarCofreOro,
-    comprarItem,
-  } = useShop();
-
-  const compraEnCurso = useRef(false);
-  const [toast, setToast] = useState(null);
+  const [categoria, setCategoria] = useState('ayudas');
+  const [elegido, setElegido] = useState(null);
   const [comprando, setComprando] = useState(false);
-  const [modalTitulosOpen, setModalTitulosOpen] = useState(false);
-  const [categoriaActiva, setCategoriaActiva] = useState('consumibles');
-
-  const mostrarToast = (mensaje, tipo = 'success') => {
-    setToast({ mensaje, tipo });
-    setTimeout(() => setToast(null), 2500);
-  };
-
-  const handleCompra = async (func, nombre, precio) => {
-    if (compraEnCurso.current) {
-      showToast('⏳ Espera a que termine la compra', 'warning');
-      return;
-    }
-    
-    if (monedas < precio) {
-      mostrarToast(`🪙 Necesitas ${precio - monedas} monedas más`, 'error');
-      return;
-    }
-    
-    compraEnCurso.current = true;
-    setComprando(true);
-    
+  const [modalTitulos, setModalTitulos] = useState(false);
+  const [error, setError] = useState('');
+  const operando = useRef(false);
+  const acciones = { corazon_extra: game.comprarCorazon, pocion_sabiduria: game.comprarPocion, doble_xp: game.comprarDobleXp, protector_racha: game.comprarProtectorRacha, cofre_madera: shop.comprarCofreMadera, cofre_plata: shop.comprarCofrePlata, cofre_oro: shop.comprarCofreOro };
+  const comprados = { corazon_extra: shop.corazonesCompradosHoy, pocion_sabiduria: shop.pocionesCompradasHoy, doble_xp: shop.dobleXpCompradosHoy, protector_racha: shop.protectorRachaCompradosHoy, cofre_madera: shop.cofresMaderaCompradosHoy, cofre_plata: shop.cofresPlataCompradosHoy, cofre_oro: shop.cofresOroCompradosHoy };
+  const oferta = shop.obtenerOfertaDiaria();
+  const cantidad = id => inventario.filter(i => i === id).length;
+  const mochila = objetos.filter(o => cantidad(o.id) > 0);
+  function bloqueo(id, precio) {
+    const p = PRODUCTOS[id];
+    if (id === 'corazon_extra' && vidas >= 5) return 'Tus vidas están completas';
+    if (p.limite && comprados[id] >= p.limite) return 'Ya alcanzaste el límite de hoy';
+    if (p.maximo && cantidad(id) >= p.maximo) return p.maximo === 1 ? 'Ya lo tienes' : 'Tu mochila está llena';
+    if (monedas < precio) return 'Te faltan ' + (precio - monedas) + ' monedas';
+    return null;
+  }
+  function elegir(objeto, esOferta = false) {
+    setError('');
+    const precio = esOferta ? oferta.precioOferta : PRODUCTOS[objeto.id].precio;
+    setElegido({ ...objeto, precio, accion: esOferta ? () => shop.comprarOferta(objeto.id) : acciones[objeto.id] ?? (() => shop.comprarItem({ id: objeto.id })) });
+  }
+  async function comprar() {
+    if (!elegido || operando.current) return;
+    operando.current = true; setComprando(true); setError('');
     try {
-      if (typeof func !== 'function') {
-        console.error('❌ handleCompra: func no es una función', func);
-        mostrarToast('❌ Error interno en la compra', 'error');
-        setComprando(false);
-        return;
-      }
-      
-      const ok = await func();
-      
-      if (ok) {
-        confetti({ 
-          particleCount: 120, 
-          spread: 70, 
-          origin: { y: 0.5 }, 
-          colors: ['#facc15', '#ffffff', '#3b82f6', '#10b981'] 
-        });
-        mostrarToast(`✅ ${nombre} adquirido`, 'success');
-        showToast(`🎉 ¡${nombre}!`, 'success', 2000);
-      } else {
-        mostrarToast(`❌ No se pudo comprar ${nombre}`, 'error');
-      }
-    } catch (error) {
-      console.error('❌ Error en compra:', error);
-      mostrarToast(error.message || 'No se pudo guardar la compra.', 'error');
-    } finally {
-      compraEnCurso.current = false;
-      setComprando(false);
-    }
-  };
-
-  const ofertaDiaria = obtenerOfertaDiaria();
-
-  return (
-    <div className="py-4 sm:py-6 space-y-4 sm:space-y-6 animate-slide-up">
-      {/* ── TOAST ── */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -50, scale: 0.9 }}
-            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl font-black text-sm shadow-2xl bg-black/80 backdrop-blur border border-yellow-400/30"
-          >
-            {toast.mensaje}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── HEADER CON MONEDAS ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card rounded-3xl p-6 text-center relative overflow-hidden border border-white/10"
-      >
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-yellow-400/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl" />
-        
-        <div className="relative z-10">
-          <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">💰 Tu balance</p>
-          <motion.div 
-            className="flex items-center justify-center gap-3 mt-1"
-            variants={floatVariants}
-            initial="initial"
-            animate="animate"
-          >
-            <span className="text-4xl sm:text-5xl drop-shadow-lg">🪙</span>
-            <span className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-yellow-300 to-amber-500 bg-clip-text text-transparent">
-              {monedas.toLocaleString()}
-            </span>
-          </motion.div>
-          <p className="text-white/30 text-[10px] sm:text-xs mt-2">¡Invierte en tu fe y consigue recompensas!</p>
-        </div>
-      </motion.div>
-
-      {/* ── OFERTA DEL DÍA ── */}
-      {ofertaDiaria && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.01 }}
-          className="glass-card rounded-3xl p-4 sm:p-5 border-2 border-yellow-400/60 bg-gradient-to-r from-yellow-400/20 to-amber-400/20 relative overflow-hidden cursor-pointer"
-        >
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl animate-pulse" />
-          <div className="relative z-10 flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <motion.div 
-                className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-yellow-400/20 border-2 border-yellow-400/40 flex items-center justify-center text-2xl sm:text-3xl"
-                animate={{ rotate: [0, 10, 0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                {ofertaDiaria.icono}
-              </motion.div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-yellow-400 font-black text-[8px] sm:text-[10px] uppercase tracking-wider">🔥 OFERTA DEL DÍA</span>
-                  <motion.span 
-                    className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[8px] font-black"
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                  >
-                    -{ofertaDiaria.descuento}%
-                  </motion.span>
-                </div>
-                <p className="font-black text-white text-sm sm:text-lg">{ofertaDiaria.nombre}</p>
-                <p className="text-white/40 text-[10px] sm:text-xs">{ofertaDiaria.descripcion || 'Oferta especial por tiempo limitado'}</p>
-              </div>
-            </div>
-            <div className="text-right w-full sm:w-auto">
-              <p className="text-white/40 text-[10px] sm:text-xs line-through">{ofertaDiaria.precioOriginal} 🪙</p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleCompra(
-                  () => comprarOferta(ofertaDiaria.id),
-                  ofertaDiaria.nombre, ofertaDiaria.precioOferta
-                )}
-                disabled={comprando}
-                className="bg-yellow-400 text-blue-900 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-sm hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-2"
-              >
-                {comprando ? (
-                  <div className="w-4 h-4 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <span>{ofertaDiaria.precioOferta} 🪙</span>
-                    <span>→</span>
-                  </>
-                )}
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── CATEGORÍAS ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex gap-1 sm:gap-2 bg-white/10 backdrop-blur-md rounded-full p-1 border border-white/10 overflow-x-auto scrollbar-hide"
-      >
-        {CATEGORIES.map(cat => (
-          <motion.button
-            key={cat.id}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setCategoriaActiva(cat.id)}
-            className={`flex-1 py-2 px-2 sm:px-3 rounded-full font-black text-[8px] sm:text-xs uppercase tracking-widest transition-all whitespace-nowrap flex items-center justify-center gap-1 sm:gap-1.5 ${
-              categoriaActiva === cat.id 
-                ? `bg-gradient-to-r ${cat.color} text-white shadow-lg` 
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <span>{cat.icono}</span>
-            <span className="hidden xs:inline">{cat.label}</span>
-          </motion.button>
-        ))}
-      </motion.div>
-
-      {/* ── CONTENIDO POR CATEGORÍA ── */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={categoriaActiva}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-6 sm:space-y-8"
-        >
-          {/* === CONSUMIBLES === */}
-          {categoriaActiva === 'consumibles' && (
-            <motion.div 
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="space-y-4"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🛡️</span>
-                <h3 className="text-white font-black text-sm uppercase tracking-wider">Consumibles</h3>
-                <span className="text-white/20 text-[10px] ml-auto hidden sm:inline">Usa sabiamente tus recursos</span>
-              </div>
-              
-              <ItemCard
-                icon="❤️"
-                title="Corazón Extra"
-                desc="Recupera 1 vida · 3/día"
-                price={PRODUCTOS.corazon_extra.precio}
-                disabledReason={corazonesCompradosHoy >= 3 ? 'Límite diario' : vidas >= 5 ? 'Vidas completas' : null}
-                onBuy={() => handleCompra(comprarCorazon, 'Corazón Extra', PRODUCTOS.corazon_extra.precio)}
-                glow={corazonesCompradosHoy < 3 && vidas < 5}
-              />
-              
-              <ItemCard
-                icon="🛡️"
-                title="Escudo de San Miguel"
-                cantidad={inventario.filter(id => id === 'escudo_miguel').length}
-                desc="Te protege de 1 error en lección"
-                price={PRODUCTOS.escudo_miguel.precio}
-                disabledReason={inventario.includes('escudo_miguel') ? 'Ya tienes un escudo' : null}
-                onBuy={() => handleCompra(
-                  () => comprarItem({ id: 'escudo_miguel', nombre: 'Escudo de San Miguel', precio: PRODUCTOS.escudo_miguel.precio }),
-                  'Escudo de San Miguel', 
-                  150
-                )}
-              />
-              
-              <ItemCard
-                icon="🧪"
-                title="Poción de Sabiduría"
-                cantidad={inventario.filter(id => id === 'pocion_sabiduria').length}
-                desc="Elimina 2 opciones incorrectas · 2/día, 3 max"
-                price={PRODUCTOS.pocion_sabiduria.precio}
-                disabledReason={pocionesCompradasHoy >= 2 ? 'Límite diario' : (inventario.filter(i => i === 'pocion_sabiduria').length >= 3 ? 'Inventario lleno' : null)}
-                onBuy={() => handleCompra(comprarPocion, 'Poción de Sabiduría', PRODUCTOS.pocion_sabiduria.precio)}
-                glow={pocionesCompradasHoy < 2 && inventario.filter(i => i === 'pocion_sabiduria').length < 3}
-              />
-            </motion.div>
-          )}
-
-          {/* === POTENCIADORES === */}
-          {categoriaActiva === 'potenciadores' && (
-            <motion.div 
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="space-y-4"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🚀</span>
-                <h3 className="text-white font-black text-sm uppercase tracking-wider">Potenciadores</h3>
-                <span className="text-white/20 text-[10px] ml-auto hidden sm:inline">Mejora tu experiencia</span>
-              </div>
-              
-              <ItemCard
-                icon="⚡"
-                title="Doble XP"
-                cantidad={inventario.filter(id => id === 'doble_xp').length}
-                desc="Duplica monedas al entrar a tu próxima lección · 3/día"
-                price={PRODUCTOS.doble_xp.precio}
-                disabledReason={dobleXpCompradosHoy >= 3 ? 'Límite diario' : null}
-                onBuy={() => handleCompra(comprarDobleXp, 'Doble XP', PRODUCTOS.doble_xp.precio)}
-                glow={dobleXpCompradosHoy < 3}
-              />
-              
-              <ItemCard
-                icon="🔥"
-                title="Protector de Racha"
-                cantidad={inventario.filter(id => id === 'protector_racha').length}
-                desc="Protege tu racha si no juegas 1 día · 1/día"
-                price={PRODUCTOS.protector_racha.precio}
-                disabledReason={protectorRachaCompradosHoy >= 1 ? 'Límite diario' : null}
-                onBuy={() => handleCompra(comprarProtectorRacha, 'Protector de Racha', PRODUCTOS.protector_racha.precio)}
-                glow={protectorRachaCompradosHoy < 1}
-              />
-            </motion.div>
-          )}
-
-          {/* === COFRES === */}
-          {categoriaActiva === 'cofres' && (
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">🎁</span>
-                <h3 className="text-white font-black text-sm uppercase tracking-wider">Cofres Misteriosos</h3>
-                <span className="text-white/20 text-[10px] ml-auto hidden sm:inline">Cada cofre contiene un santo</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <CofreCard
-                  tipo="madera"
-                  nombre="Cofre de Madera"
-                  icono="📦"
-                  desc="Santo común o raro"
-                  precio={200}
-                  limite={cofresMaderaCompradosHoy}
-                  max={3}
-                  onComprar={() => handleCompra(comprarCofreMadera, 'Cofre de Madera', 200)}
-                />
-                <CofreCard
-                  tipo="plata"
-                  nombre="Cofre de Plata"
-                  icono="🎁"
-                  desc="Común, raro o legendario"
-                  precio={300}
-                  limite={cofresPlataCompradosHoy}
-                  max={2}
-                  onComprar={() => handleCompra(comprarCofrePlata, 'Cofre de Plata', 300)}
-                />
-                <CofreCard
-                  tipo="oro"
-                  nombre="Cofre de Oro"
-                  icono="🏆"
-                  desc="Mayor probabilidad de legendario"
-                  precio={450}
-                  limite={cofresOroCompradosHoy}
-                  max={1}
-                  onComprar={() => handleCompra(comprarCofreOro, 'Cofre de Oro', 450)}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {/* === PERSONALIZACIÓN === */}
-          {categoriaActiva === 'personalizacion' && (
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="space-y-4"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">✨</span>
-                <h3 className="text-white font-black text-sm uppercase tracking-wider">Personalización</h3>
-                <span className="text-white/20 text-[10px] ml-auto hidden sm:inline">Haz tu perfil único</span>
-              </div>
-
-              {/* Títulos Legendarios */}
-              <motion.div 
-                variants={itemVariants}
-                whileHover={{ scale: 1.01 }}
-                className="glass-card rounded-2xl p-4 sm:p-5 border border-purple-500/30 bg-purple-500/5 hover:border-purple-500/50 transition-all"
-              >
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <motion.div 
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-purple-500/20 border-2 border-purple-400/40 flex items-center justify-center text-2xl sm:text-3xl"
-                      animate={{ rotate: [0, 5, 0, -5, 0] }}
-                      transition={{ duration: 4, repeat: Infinity }}
-                    >
-                      👑
-                    </motion.div>
-                    <div>
-                      <p className="font-black text-white text-sm sm:text-lg">Títulos Legendarios</p>
-                      <p className="text-white/40 text-[10px] sm:text-sm">Adquiere títulos exclusivos para lucir en tu perfil</p>
-                      <p className="text-purple-300 text-[10px] font-black mt-0.5">
-                        {titulosLegendarios?.length || 0} títulos disponibles
-                      </p>
-                    </div>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setModalTitulosOpen(true)}
-                    className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-xl transition-all"
-                  >
-                    Ver títulos →
-                  </motion.button>
-                </div>
-              </motion.div>
-
-              {/* Cosméticos con nuevos precios */}
-              {[
-                { id: 'titulo_guardian', nombre: 'Guardián del Credo', icono: '⚜️', precio: PRODUCTOS.titulo_guardian.precio, rareza: 'epico', desc: 'Cambia tu rango visible' },
-                { id: 'titulo_maestro', nombre: 'Maestro de la Fe', icono: '👑', precio: PRODUCTOS.titulo_maestro.precio, rareza: 'legendario', desc: 'El rango más alto' },
-                { id: 'aura_santidad', nombre: 'Aura de Santidad', icono: '✨', precio: PRODUCTOS.aura_santidad.precio, rareza: 'raro', desc: 'Efecto brillante en tu perfil' },
-                { id: 'marco_vitral_azul', nombre: 'Marco Vitral Azul', icono: '🔵', precio: PRODUCTOS.marco_vitral_azul.precio, rareza: 'raro', desc: 'Borde azul para tu avatar' },
-                { id: 'marco_vitral_dorado', nombre: 'Marco Vitral Dorado', icono: '🟡', precio: PRODUCTOS.marco_vitral_dorado.precio, rareza: 'epico', desc: 'Borde dorado para tu avatar' },
-              ].map(item => (
-                <ItemCard
-                  key={item.id}
-                  icon={item.icono}
-                  title={item.nombre}
-                  desc={item.desc}
-                  price={item.precio}
-                  rareza={item.rareza}
-                  owned={inventario.includes(item.id)}
-                  onBuy={() => handleCompra(
-                    () => comprarItem(item), 
-                    item.nombre, 
-                    item.precio
-                  )}
-                />
-              ))}
-            </motion.div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* ── FOOTER ── */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="text-center pt-4"
-      >
-        <p className="text-white/20 text-[8px] font-black uppercase tracking-[0.5em]">
-          💰 Los objetos cosméticos se aplican automáticamente al comprarlos
-        </p>
-      </motion.div>
-
-      {/* ── MODAL TÍTULOS LEGENDARIOS ── */}
-      <TitulosModal
-        isOpen={modalTitulosOpen}
-        onClose={() => setModalTitulosOpen(false)}
-        onComprar={(titulo) => handleCompra(
-          () => comprarTituloLegendario(titulo.id, titulo.nombre, titulo.rareza, titulo.precio),
-          titulo.nombre,
-          titulo.precio
-        )}
-      />
-    </div>
-  );
-};
-
-// ── ITEM CARD ────────────────────────────────────────────────────────────
-const ItemCard = ({ icon, title, desc, price, rareza, owned, disabledReason, onBuy, cantidad, glow = false }) => {
-  const rarezaClass = rareza ? RAREZA_STYLES[rareza] : 'border-white/10 bg-white/5';
-  const estaDeshabilitado = disabledReason || owned;
-  const motivo = disabledReason || (owned ? '✓ Adquirido' : null);
-
-  return (
-    <motion.div 
-      variants={{
-        hidden: { opacity: 0, y: 10, scale: 0.95 },
-        visible: { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1,
-          transition: { type: 'spring', stiffness: 300, damping: 25 }
-        }
-      }}
-      whileHover={{ scale: 1.02, y: -2 }}
-      className={`glass-card rounded-2xl p-3 sm:p-4 border transition-all ${
-        glow ? 'border-yellow-400/40 shadow-[0_0_20px_rgba(250,204,21,0.1)]' : ''
-      } ${rarezaClass}`}
-    >
-      <div className="flex items-center gap-3 sm:gap-4">
-        <motion.div 
-          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-2xl sm:text-3xl shrink-0"
-          whileHover={{ rotate: 10, scale: 1.1 }}
-        >
-          {icon}
-        </motion.div>
-        <div className="flex-1 min-w-0">
-          <p className="font-black text-white text-xs sm:text-sm truncate">{title}</p>
-          <p className="text-white/40 text-[10px] sm:text-xs truncate">{desc}</p>
-          {cantidad !== undefined && <p className="text-white text-sm mt-1">En tu inventario: {cantidad}</p>}
-          {motivo && (
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className={`text-[10px] font-black mt-0.5 ${owned ? 'text-green-400' : 'text-yellow-400'}`}
-            >
-              {motivo}
-            </motion.p>
-          )}
-        </div>
-        <motion.button
-          whileHover={!estaDeshabilitado ? { scale: 1.05 } : {}}
-          whileTap={!estaDeshabilitado ? { scale: 0.95 } : {}}
-          onClick={onBuy}
-          disabled={!!estaDeshabilitado}
-          className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-xl font-black text-[10px] sm:text-sm bg-gradient-to-r from-yellow-400 to-amber-400 text-blue-900 hover:shadow-lg transition-all disabled:bg-white/10 disabled:text-white/30 disabled:hover:scale-100 shrink-0"
-        >
-          {owned ? '✓' : `${price} 🪙`}
-        </motion.button>
-      </div>
-    </motion.div>
-  );
-};
-
-// ── COFRE CARD ──────────────────────────────────────────────────────────
-const CofreCard = ({ tipo, nombre, icono, desc, precio, limite, max, onComprar }) => {
-  const estilo = COFRE_STYLES[tipo];
-  const estaAgotado = limite >= max;
-  const progreso = (limite / max) * 100;
-
-  return (
-    <motion.div 
-      variants={{
-        hidden: { opacity: 0, y: 20, scale: 0.9 },
-        visible: { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1,
-          transition: { type: 'spring', stiffness: 300, damping: 25 }
-        }
-      }}
-      whileHover={{ scale: 1.05, y: -5 }}
-      className={`glass-card rounded-2xl p-4 sm:p-5 border bg-gradient-to-br ${estilo} transition-all hover:shadow-xl text-center relative overflow-hidden`}
-    >
-      {estaAgotado && (
-        <motion.div 
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[8px] font-black uppercase"
-        >
-          Agotado
-        </motion.div>
-      )}
-      <motion.div 
-        className="text-5xl sm:text-6xl mb-3"
-        animate={!estaAgotado ? { 
-          rotate: [0, 5, 0, -5, 0],
-          scale: [1, 1.05, 1]
-        } : {}}
-        transition={{ duration: 3, repeat: Infinity }}
-      >
-        {icono}
-      </motion.div>
-      <h4 className="font-black text-white text-base sm:text-lg">{nombre}</h4>
-      <p className="text-white/40 text-[10px] sm:text-xs">{desc}</p>
-      <div className="flex justify-center items-center gap-2 mt-3">
-        <span className="text-yellow-400 font-black text-lg sm:text-xl">{precio}</span>
-        <span className="text-white/40 text-sm">🪙</span>
-      </div>
-      <div className="mt-3">
-        <div className="flex justify-between text-white/30 text-[9px] font-black">
-          <span>Hoy</span>
-          <span>{limite}/{max}</span>
-        </div>
-        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mt-0.5">
-          <motion.div 
-            className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${progreso}%` }}
-            transition={{ duration: 0.5 }}
-          />
-        </div>
-      </div>
-      <motion.button
-        whileHover={!estaAgotado ? { scale: 1.02 } : {}}
-        whileTap={!estaAgotado ? { scale: 0.95 } : {}}
-        onClick={onComprar}
-        disabled={estaAgotado || false}
-        className="mt-4 w-full py-2.5 rounded-xl font-black text-sm bg-yellow-600/80 text-white hover:bg-yellow-500 transition-all disabled:bg-white/10 disabled:text-white/30 disabled:hover:bg-white/10"
-      >
-        {estaAgotado ? 'Límite alcanzado' : 'Abrir cofre'}
-      </motion.button>
-    </motion.div>
-  );
-};
-
-export default Tienda;
+      const ok = await elegido.accion();
+      if (!ok) throw new Error('No pudimos guardar la compra. Intenta otra vez.');
+      setElegido(null);
+      showToast('¡' + elegido.nombre + ' ya es tuyo!', 'success');
+    } catch (e) { setError(e.message || 'No se pudo comprar. Revisa tu conexión.'); }
+    finally { operando.current = false; setComprando(false); }
+  }
+  return <section className="zona-aventura zona-tienda">
+    <CabeceraAventura etiqueta="🛍️ LA TIENDA DE LA AVENTURA" titulo="¡Prepara tu mochila!" descripcion="Elige ayudas para aprender y detalles para tu aventurero. Usas las monedas que ganas jugando.">
+      <div className="tienda-balance"><span aria-hidden="true">🪙</span><span><strong>{monedas.toLocaleString()}</strong><small>Tus monedas del juego</small></span><button className="juego-btn juego-btn-secundario" onClick={() => setActiveTab('mapa')}>Ganar monedas →</button></div>
+    </CabeceraAventura>
+    <details className="juego-panel tienda-mochila"><summary>🎒 Mi mochila <span>{mochila.length} tipos de objetos · Ver lo que tengo</span></summary>{!mochila.length ? <p>Tu mochila está lista para tu primer objeto.</p> : <ul>{mochila.map(o => <li key={o.id}><span>{o.icono} {o.nombre}</span><strong>×{cantidad(o.id)}</strong><small>{o.uso}</small></li>)}</ul>}</details>
+    {oferta && <aside className="tienda-oferta"><span className="tienda-oferta-icono" aria-hidden="true">{oferta.icono}</span><div><span className="juego-etiqueta">PRECIO ESPECIAL DE HOY · −{oferta.descuento}%</span><h2>{oferta.nombre}</h2><p>{objetos.find(o => o.id === oferta.id)?.desc}</p><span><s>{oferta.precioOriginal}</s> <strong>🪙 {oferta.precioOferta} monedas</strong></span></div><button className="juego-btn" disabled={!!bloqueo(oferta.id, oferta.precioOferta) || comprando} onClick={() => elegir(objetos.find(o => o.id === oferta.id), true)}>{bloqueo(oferta.id, oferta.precioOferta) ?? 'Ver oferta'}</button></aside>}
+    <nav className="juego-pestanas" aria-label="Categorías de la tienda">{categorias.map(([id, label]) => <button key={id} aria-pressed={categoria === id} onClick={() => setCategoria(id)}>{label}</button>)}</nav>
+    <div className="juego-seccion-titulo"><h2>{categorias.find(c => c[0] === categoria)[1]}</h2><p>Elige un objeto para conocerlo antes de comprar.</p></div>
+    <div className="tienda-productos">{objetos.filter(o => o.categoria === categoria).map(o => {
+      const p = PRODUCTOS[o.id]; const razon = bloqueo(o.id, p.precio);
+      return <article className="juego-panel tienda-producto" key={o.id} data-categoria={categoria}><div className="tienda-producto-arriba"><span className="tienda-producto-icono" aria-hidden="true">{o.icono}</span><span className="juego-chip">🪙 {p.precio}</span></div><h3>{o.nombre}</h3><p>{o.desc}</p><p className="juego-secundario">{o.uso}</p><div className="tienda-producto-stock"><span>{p.cofre || o.id === 'corazon_extra' ? '' : '🎒 Tienes: ' + cantidad(o.id)}</span>{p.limite && <span>Hoy: {comprados[o.id]} / {p.limite}</span>}</div><button className="juego-btn" disabled={!!razon || comprando} onClick={() => elegir(o)}>{razon ?? 'Lo quiero · ' + p.precio + ' 🪙'}</button></article>;
+    })}</div>
+    {categoria === 'estilo' && <aside className="juego-nota"><span aria-hidden="true">🏅</span><p><strong>Un título con tu estilo</strong><br/>También puedes elegir un nombre especial para tu perfil.</p><button className="juego-btn juego-btn-secundario" onClick={() => setModalTitulos(true)}>Ver títulos →</button></aside>}
+    <p className="juego-pie">⛪ San JoseKids · Aprendemos, compartimos y crecemos en la fe.</p>
+    <DialogoAprendizaje abierto={!!elegido} onCerrar={() => { if (!operando.current) setElegido(null); }} titulo="¿Lo llevamos en tu aventura?">
+      {elegido && <><span className="tienda-confirmar-icono" aria-hidden="true">{elegido.icono}</span><h1>{elegido.nombre}</h1><p>{elegido.desc}</p><p>{elegido.uso}</p><div className="juego-panel"><p>Precio: <strong>{elegido.precio} monedas</strong></p><p>Después tendrás: <strong>{Math.max(0, monedas - elegido.precio)} monedas</strong></p></div>{error && <p role="alert">{error}</p>}<button className="aprendizaje-cta" disabled={comprando || monedas < elegido.precio} onClick={comprar}>{comprando ? 'Guardando…' : 'Comprar por ' + elegido.precio + ' 🪙'}</button><button className="aprendizaje-cta aprendizaje-secundario" disabled={comprando} onClick={() => setElegido(null)}>Seguir mirando</button></>}
+    </DialogoAprendizaje>
+    <TitulosModal isOpen={modalTitulos} onClose={() => setModalTitulos(false)} onComprar={t => { setModalTitulos(false); setError(''); setElegido({ ...t, desc: t.descripcion, uso: 'Se añade a tu colección de títulos.', accion: () => game.comprarTituloLegendario(t.id) }); }}/>
+  </section>;
+}
