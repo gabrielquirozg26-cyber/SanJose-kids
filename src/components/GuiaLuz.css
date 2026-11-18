@@ -1,0 +1,4 @@
+.guia-luz { display: block; width: 100%; max-width: 280px; height: auto; }
+.guia-luz-personaje { transform-origin: center; animation: guia-saludo 4s ease-in-out 2; }
+@keyframes guia-saludo { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+@media (prefers-reduced-motion: reduce) { .guia-luz-personaje { animation: none; } }

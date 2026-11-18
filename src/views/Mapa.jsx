@@ -4,6 +4,7 @@ import { useGame } from '../context/GameContext';
 import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-motion';
 import './Mapa.css';
+import GuiaLuz from '../components/GuiaLuz';
 import confetti from 'canvas-confetti';
 import nivelesData from '../data/niveles.json';
 import { esReinoDesbloqueado } from '../utils/progreso';
@@ -299,11 +300,11 @@ const Mapa = ({ onIniciarExamen }) => {
           className="mapa-portada"
         >
           <div className="mapa-portada-contenido">
-            <p className="mapa-portada-etiqueta">Mapa de catequesis</p>
+            <p className="mapa-portada-etiqueta">🧭 Tu mapa de aventuras</p>
             <h1>Sendero de Luz</h1>
-            <p>Recorre los reinos y completa tu camino de catequesis, una lección a la vez.</p>
+            <p>¡Hola, aventurero! Aprende, explora y descubre los tesoros de cada reino.</p>
           </div>
-
+          <div className="mapa-guia"><GuiaLuz /><p>¡Un paso más, una luz más!</p></div>
           <div className="mapa-resumen">
             <div className="mapa-progreso-texto">
               <span>Progreso total</span>
@@ -325,7 +326,7 @@ const Mapa = ({ onIniciarExamen }) => {
                   boton?.scrollIntoView({behavior:reducedMotion ? 'instant' : 'smooth',block:'center'});
                   boton?.focus({preventScroll:true});
                   window.setTimeout(() => abrir(leccion,uIdx,lIdx),reducedMotion ? 0 : 500);
-                }}>Continuar <span aria-hidden="true">→</span></button>
+                }}>¡Continuar! <span aria-hidden="true">→</span></button>
               </div>
             )}
           </div>

@@ -4,11 +4,11 @@ main:has(> .mapa-sendero) {
 }
 
 .mapa-sendero {
-  --mapa-fondo: #101719;
-  --mapa-panel: #192325;
-  --mapa-texto: #f8f3e8;
-  --mapa-suave: #bbc8c3;
-  --mapa-oro: #f5d18e;
+  --mapa-fondo: #14183d;
+  --mapa-panel: #273264;
+  --mapa-texto: #f7f8ff;
+  --mapa-suave: #d2dcf7;
+  --mapa-oro: #ffdb70;
   position: relative;
   isolation: isolate;
   padding-block: clamp(0.75rem, 2vw, 1.75rem) 1rem;
@@ -21,38 +21,41 @@ main:has(> .mapa-sendero) {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(ellipse at 70% 0%, #273736 0%, transparent 58%), var(--mapa-fondo);
+  background: radial-gradient(ellipse at 70% 0%, #38478380, transparent 58%), linear-gradient(150deg, #14183d, #1e255e);
 }
 
 .mapa-portada {
   position: relative;
   display: grid;
-  align-items: end;
-  gap: 1.5rem;
-  min-height: 23rem;
-  padding: clamp(1.25rem, 4.5vw, 3.5rem);
-  border: 1px solid #d6b97a55;
-  border-radius: clamp(1.25rem, 3vw, 2rem);
-  background:
-    linear-gradient(95deg, #111d1d 5%, #162320ed 40%, #13201c45 100%),
-    linear-gradient(0deg, #101719bd, transparent 70%),
-    url('/fondo-iglesia.jpeg') center 48% / cover;
-  box-shadow: 0 20px 65px #0005;
+  grid-template-areas: 'texto guia' 'resumen resumen';
+  grid-template-columns: minmax(0, 1fr) 240px;
+  align-items: center;
+  gap: 24px;
+  padding: clamp(24px, 4vw, 44px);
+  border: 2px solid #9fb1ff55;
+  border-radius: 30px;
+  background: radial-gradient(circle at 85% 25%, #7185df50, transparent 60%), linear-gradient(125deg, #303c81, #28316c);
 }
+.mapa-portada-contenido { grid-area: texto; }
+.mapa-resumen { grid-area: resumen; }
+.mapa-guia { grid-area: guia; text-align: center; }
+.mapa-guia .guia-luz { margin: auto; }
+.mapa-guia p { color: #fff0b0; font-size: 16px; font-weight: 750; }
 
 .mapa-portada h1,
 .mapa-recorrido-titulo h2,
 .mapa-reino-header h3 {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: ui-rounded, 'Trebuchet MS', system-ui, sans-serif;
+  font-weight: 850;
 }
 
 .mapa-portada h1 {
-  max-width: 10ch;
+  max-width: 13ch;
   margin-block: 0.55rem 0.85rem;
-  font-size: clamp(2.95rem, 8vw, 6.75rem);
-  font-weight: 500;
-  letter-spacing: -0.065em;
-  line-height: 0.93;
+  font-size: clamp(2.3rem, 5vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
   text-wrap: balance;
 }
 
@@ -61,7 +64,7 @@ main:has(> .mapa-sendero) {
   align-items: center;
   gap: 0.6rem;
   color: var(--mapa-oro);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 750;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -76,7 +79,7 @@ main:has(> .mapa-sendero) {
 
 .mapa-portada-contenido > p:last-child {
   max-width: 34ch;
-  color: #e0e8e1;
+  color: #e2e8ff;
   font-size: clamp(0.95rem, 1.6vw, 1.1rem);
   line-height: 1.55;
 }
@@ -85,7 +88,7 @@ main:has(> .mapa-sendero) {
   padding: clamp(1rem, 2vw, 1.4rem);
   border: 1px solid #f5d18e50;
   border-radius: 1.15rem;
-  background: #101a18f2;
+  background: #1a2658;
 }
 
 .mapa-progreso-texto {
@@ -95,7 +98,7 @@ main:has(> .mapa-sendero) {
   gap: 0.75rem;
   margin-bottom: 0.5rem;
   color: var(--mapa-suave);
-  font-size: 0.82rem;
+  font-size: 0.875rem;
 }
 
 .mapa-progreso-texto strong {
@@ -191,7 +194,7 @@ main:has(> .mapa-sendero) {
 
 .mapa-recorrido-titulo > span {
   color: var(--mapa-suave);
-  font-size: 0.83rem;
+  font-size: 0.875rem;
 }
 
 .mapa-ruta {
@@ -244,7 +247,7 @@ main:has(> .mapa-sendero) {
 .mapa-reino-header p {
   margin-top: 0.2rem;
   color: var(--mapa-suave);
-  font-size: 0.86rem;
+  font-size: 0.875rem;
 }
 
 .mapa-reino-icono,
@@ -269,7 +272,7 @@ main:has(> .mapa-sendero) {
   border-radius: 999px;
   background: #101719;
   color: var(--mapa-suave);
-  font-size: 0.74rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
@@ -285,7 +288,7 @@ main:has(> .mapa-sendero) {
 .mapa-actividades {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-  gap: 0.55rem;
+  gap: 1rem;
 }
 
 .mapa-leccion {
@@ -297,7 +300,7 @@ main:has(> .mapa-sendero) {
   padding: 0.56rem 0.7rem;
   border: 1px solid #ffffff29;
   border-radius: 0.8rem;
-  background: #222f30;
+  background: #334177;
   color: var(--mapa-texto);
   text-align: left;
   scroll-margin-block: 5rem;
@@ -306,20 +309,20 @@ main:has(> .mapa-sendero) {
 
 .mapa-leccion.is-exam { border-color: #c7adfd66; }
 .mapa-leccion.is-complete { border-color: #8bd3a066; }
-.mapa-leccion.is-locked { background: #182122; }
-.mapa-leccion:hover { background: #2c3c3c; border-color: var(--mapa-acento); }
+.mapa-leccion.is-locked { background: #202c58; }
+.mapa-leccion:hover { background: #41528e; border-color: var(--mapa-acento); }
 
 .mapa-leccion.is-current {
   border-color: var(--mapa-oro);
-  background: #3b3324;
+  background: #4b4167;
   box-shadow: inset 3px 0 var(--mapa-oro);
 }
 
-.mapa-leccion.is-current:hover { background: #49402b; }
+.mapa-leccion.is-current:hover { background: #5d507c; }
 
 .mapa-leccion-icono {
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 3rem;
+  height: 3rem;
   border-radius: 0.55rem;
   font-size: 1.25rem;
 }
@@ -336,7 +339,7 @@ main:has(> .mapa-sendero) {
 
 .mapa-leccion-estado {
   color: var(--mapa-suave);
-  font-size: 0.72rem;
+  font-size: 0.875rem;
   font-weight: 750;
 }
 
@@ -344,7 +347,7 @@ main:has(> .mapa-sendero) {
 .is-complete .mapa-leccion-estado { color: #b8edc0; }
 
 .mapa-lesson-label {
-  font-size: 0.94rem;
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1.26;
   overflow-wrap: anywhere;
@@ -443,7 +446,7 @@ main:has(> .mapa-sendero) {
 }
 
 @media (min-width: 48rem) {
-  .mapa-portada { grid-template-columns: minmax(0, 1fr) minmax(14rem, 19rem); }
+  .mapa-portada { grid-template-columns: minmax(0, 1fr) 240px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -486,3 +489,12 @@ body:has(.mapa-sendero) nav button:focus-visible {
 }
 .mapa-examen { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 56px; margin-top: 20px; padding: 16px; border: 1px solid #e8c65c; border-radius: 16px; background: #202d50; color: #fff3c1; font-size: 16px; font-weight: 700; text-align: left; cursor: pointer; }
 .mapa-examen:focus-visible { outline: 3px solid white; outline-offset: 4px; }
+
+@media (max-width: 600px) {
+  .mapa-portada { grid-template-areas: 'texto' 'guia' 'resumen'; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .mapa-guia { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .mapa-guia .guia-luz { width: 100px; margin: 0; }
+  .mapa-guia p { max-width: 16ch; }
+  .mapa-reino-header h3 { line-height: 1.3; }
+  .mapa-actividades { gap: 16px; }
+}

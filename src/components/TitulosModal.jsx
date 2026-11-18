@@ -15,13 +15,13 @@ export default function TitulosModal({ isOpen, onClose, onComprar }) {
     finally { operando.current = false; setOcupado(null); }
   }
   return <DialogoAprendizaje abierto={isOpen} onCerrar={() => { if (!operando.current) onClose(); }} titulo="Tienda de títulos">
-    <p>Elige un título para tu perfil. Saldo: {monedas} monedas.</p>
+    <p>🏅 ¿Qué nombre llevará tu aventurero? Elige tu favorito.</p><div className="aventura-saldo">🪙 Tienes <strong>{monedas}</strong> monedas</div>
     {error && <p role="alert">{error}</p>}
     <div className="aprendizaje-lista">{titulosLegendarios.map(t => {
       const adquirido = titulosDesbloqueados.some(d => d.id === t.id);
-      return <article className="aprendizaje-panel" key={t.id}>
-        <h3>{t.icono} {t.nombre}</h3><p>{t.descripcion}</p>
-        <p>Rareza: {t.rareza} · {t.precio} monedas</p>
+      return <article className="aprendizaje-panel aventura-titulo-card" key={t.id}>
+        <div className="aventura-medalla" aria-hidden="true">{t.icono}</div><h3>{t.nombre}</h3><p>{t.descripcion}</p>
+        <p>🪙 {t.precio} monedas</p>
         <button disabled={adquirido || monedas < t.precio || !!ocupado} onClick={() => comprar(t)}>
           {ocupado === t.id ? 'Guardando…' : adquirido ? '✓ Adquirido' : monedas < t.precio ? 'Te faltan ' + (t.precio - monedas) + ' monedas' : 'Comprar título'}
         </button>
