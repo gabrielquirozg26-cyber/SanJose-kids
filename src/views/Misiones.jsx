@@ -69,7 +69,7 @@ export default function Misiones() {
       <div className="misiones-luci"><span className="misiones-bocadillo">{totalRecompensas ? '¡Tienes premios esperando!' : '¡Yo te acompaño!'}</span><GuiaLuz celebrando={totalRecompensas > 0}/><span className="misiones-luci-nombre">LUCY · TU COMPAÑERA DE AVENTURA</span></div>
     </header>
 
-    <div className="misiones-resumen" aria-label="Resumen de tus misiones">
+    <div className="misiones-resumen" data-tutorial="misiones" aria-label="Resumen de tus misiones">
       <div><span className="misiones-resumen-icono" aria-hidden="true">🎯</span><p><strong>{completadas}<small> / {todas.length}</small></strong><span>Retos conseguidos</span></p></div>
       <div><span className="misiones-resumen-icono" aria-hidden="true">🪙</span><p><strong>{monedasListas}</strong><span>Monedas esperando</span></p></div>
       <div><span className="misiones-resumen-icono" aria-hidden="true">🏅</span><p><strong>{pendientes.length}</strong><span>Títulos para ti</span></p></div>

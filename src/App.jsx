@@ -41,6 +41,7 @@ import TituloDesbloqueadoModal from './components/TituloDesbloqueadoModal';
 import { ToastProvider } from './components/ui/Toast';
 
 import OfflineIndicator from './components/OfflineIndicator';
+import TutorialProvider from './components/tutorial/TutorialProvider';
 
 // ── Cargando ───────────────────────────────────────────────────────────────
 const Cargando = () => <LoadingScreen />;
@@ -61,6 +62,7 @@ const ContextConnector = ({ children }) => {
 const AppShell = () => {
   const { 
     activeTab, 
+    setActiveTab,
     enLeccion, 
     cofrePendiente, 
     cerrarCofre, 
@@ -71,29 +73,15 @@ const AppShell = () => {
     tituloDesbloqueadoReciente, 
     setTituloDesbloqueadoReciente,
     userDoc,
+    usuarioId,
   } = useGame();
   
   const [examenActivo, setExamenActivo] = useState(null);
   const [santoSeleccionado, setSantoSeleccionado] = useState(null);
   const [perfilPublico, setPerfilPublico] = useState(null);
-  const [mostrarBienvenida, setMostrarBienvenida] = useState(false);
-
-  // Verificar si es la primera vez del usuario
-  useEffect(() => {
-    if (!userDoc || enLeccion) return;
-    
-    const contrasenaCambiada = userDoc?.contrasenaCambiada || false;
-    const esPrimeraVez = userDoc?.esPrimeraVez !== false;
-    
-    console.log('🔍 AppShell - esPrimeraVez:', esPrimeraVez);
-    console.log('🔍 AppShell - contrasenaCambiada:', contrasenaCambiada);
-    
-    if (esPrimeraVez && !contrasenaCambiada && !enLeccion) {
-      setMostrarBienvenida(true);
-    } else {
-      setMostrarBienvenida(false);
-    }
-  }, [userDoc, enLeccion]);
+  const [bienvenidaCerrada, setBienvenidaCerrada] = useState(false);
+  const [primerAcceso] = useState(() => userDoc?.esPrimeraVez !== false && !userDoc?.contrasenaCambiada);
+  const mostrarBienvenida = userDoc && userDoc.esPrimeraVez !== false && !userDoc.contrasenaCambiada && !bienvenidaCerrada;
 
   if (enLeccion) return <Leccion />;
 
@@ -106,10 +94,11 @@ const AppShell = () => {
   );
 
   if (mostrarBienvenida) {
-    return <Bienvenida onCompletado={() => setMostrarBienvenida(false)} />;
+    return <Bienvenida onCompletado={() => setBienvenidaCerrada(true)} />;
   }
 
   return (
+    <TutorialProvider key={usuarioId} primerAcceso={primerAcceso} bloqueado={!!cofrePendiente || mostrarModalRacha || !!tituloDesbloqueadoReciente?.mostrar}>
     <div className="min-h-screen text-white font-sans flex flex-col relative">
       <OfflineIndicator />  {/* ← AGREGAR AQUÍ */}
       <div className="fixed inset-0 -z-10">
@@ -154,22 +143,24 @@ const AppShell = () => {
           tipoCofre={cofrePendiente.tipo}
           recompensa={cofrePendiente.recompensa}
           onCerrar={cerrarCofre}
+          onVerAlbum={() => { cerrarCofre(); setActiveTab('album'); setSantoSeleccionado(cofrePendiente.recompensa?.santo ?? null); }}
         />
       )}
       
       <DailyStreakModal
-        isOpen={mostrarModalRacha}
+        isOpen={mostrarModalRacha && !cofrePendiente}
         onClose={() => setMostrarModalRacha(false)}
         racha={racha}
         recompensa={recompensaRacha?.monedas}
       />
       
       <TituloDesbloqueadoModal
-        isOpen={tituloDesbloqueadoReciente?.mostrar || false}
+        isOpen={!cofrePendiente && !mostrarModalRacha && (tituloDesbloqueadoReciente?.mostrar || false)}
         onClose={() => setTituloDesbloqueadoReciente({ mostrar: false, titulo: null })}
         titulo={tituloDesbloqueadoReciente?.titulo || null}
       />
     </div>
+    </TutorialProvider>
   );  
 };
 
@@ -217,7 +208,7 @@ const RutaEstudiante = () => {
   const { usuarioId, loading } = useAuth();
   if (loading) return <Cargando />;
   if (!usuarioId) return <Login />;
-  return <AppShell />;
+  return <AppShell key={usuarioId} />;
 };
 
 const RutaCatequista = () => {

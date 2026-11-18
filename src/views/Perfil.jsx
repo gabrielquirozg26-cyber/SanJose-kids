@@ -11,6 +11,7 @@ import nivelesData from '../data/niveles.json';
 import { obtenerProgreso } from '../utils/progreso';
 import AvatarSelector from '../components/AvatarSelector';
 import CompartirProgreso from '../components/CompartirProgreso';
+import AyudaLily from '../components/tutorial/AyudaLily';
 import MisEvaluaciones from '../components/MisEvaluaciones';
 import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
@@ -137,6 +138,7 @@ const TabInfo = ({
 
       {/* Acciones */}
       <button
+        data-tutorial="compartir"
         onClick={onCompartir}
         className="w-full py-3 sm:py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
       >
@@ -277,6 +279,7 @@ const Perfil = () => {
       />
 
       {/* ── TABS ── */}
+      <AyudaLily/>
       <ProfileTabs tab={tab} setTab={setTab} />
 
       {/* ── CONTENIDO ── */}
@@ -474,6 +477,7 @@ const Perfil = () => {
       {/* Modales */}
       <AvatarSelector isOpen={selectorAbierto} onClose={() => setSelectorAbierto(false)} onSelectAvatar={actualizarAvatar} />
       <CompartirProgreso
+        progreso={{ ...userDoc, nivelesCompletados }}
         isOpen={mostrarCompartir}
         onClose={() => setMostrarCompartir(false)}
         usuario={{

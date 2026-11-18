@@ -10,5 +10,5 @@ export default function Navbar() {
     setActiveTab(id);
     document.getElementById('root')?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }
-  return <nav className="nav-juego" aria-label="Mi aventura San JoseKids"><div className="nav-juego-pestanas">{pestañas.map(([id, icono, label]) => <button className="nav-juego-boton" key={id} aria-current={activeTab === id ? 'page' : undefined} onClick={() => abrir(id)}><span className="nav-juego-icono" aria-hidden="true">{icono}</span><span className="nav-juego-label">{label}</span></button>)}</div></nav>;
+  return <nav className="nav-juego" data-tutorial="navegacion" aria-label="Mi aventura San JoseKids"><div className="nav-juego-pestanas">{pestañas.map(([id, icono, label]) => <button className="nav-juego-boton" key={id} aria-current={activeTab === id ? 'page' : undefined} onClick={() => abrir(id)}><span className="nav-juego-icono" aria-hidden="true">{icono}</span><span className="nav-juego-label">{label}</span></button>)}</div></nav>;
 }

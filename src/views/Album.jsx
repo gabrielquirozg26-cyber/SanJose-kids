@@ -24,7 +24,7 @@ export default function Album({ onSeleccionarSanto }) {
     normalizar(s.nombre + ' ' + s.descripcion).includes(normalizar(busqueda.trim())))
     .sort((a, b) => Number(obtenidos.has(b.id)) - Number(obtenidos.has(a.id)) || orden[b.rareza] - orden[a.rareza]);
   function limpiar() { setBusqueda(''); setEstado('todos'); setRareza('todos'); setSeccion('todos'); }
-  return <section className="zona-aventura zona-album">
+  return <section className="zona-aventura zona-album" data-tutorial="album">
     <CabeceraAventura etiqueta="📖 MI ÁLBUM DE SANTOS" titulo="¡Amigos para tu aventura!" descripcion="Descubre sus historias y aprende de sus grandes pequeños gestos.">
       <div className="juego-progreso"><div><strong>{cantidad} de {catalogo.length} descubiertos</strong><span>{Math.round(cantidad / catalogo.length * 100)}%</span></div><progress value={cantidad} max={catalogo.length} aria-label="Santos descubiertos"/></div>
     </CabeceraAventura>

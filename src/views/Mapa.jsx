@@ -5,6 +5,7 @@ import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-motion';
 import './Mapa.css';
 import GuiaLuz from '../components/GuiaLuz';
+import IndicadorRacha from '../components/IndicadorRacha';
 import { PersonajeLeccion } from '../components/leccion/CompaneroLeccion';
 import confetti from 'canvas-confetti';
 import nivelesData from '../data/niveles.json';
@@ -307,7 +308,8 @@ const Mapa = ({ onIniciarExamen }) => {
           </div>
           <div className="mapa-guia"><GuiaLuz /><p>¡Un paso más, una luz más!</p></div>
           <div className="mapa-resumen">
-            <div className="mapa-progreso-texto">
+            <IndicadorRacha/>
+            <div className="mapa-progreso-texto" data-tutorial="mapa-progreso">
               <span>Progreso total</span>
               <strong>{Math.round(progresoGlobal)}%</strong>
             </div>
@@ -319,7 +321,7 @@ const Mapa = ({ onIniciarExamen }) => {
               />
             </div>
             {siguiente && (
-              <div className="mapa-resumen-siguiente">
+              <div className="mapa-resumen-siguiente" data-tutorial="continuar">
                 <p>Próxima actividad <strong>{etiqueta(siguiente.leccion.nombre)}</strong></p>
                 <button type="button" className="mapa-continuar" onClick={() => {
                   const {leccion,uIdx,lIdx}=siguiente;

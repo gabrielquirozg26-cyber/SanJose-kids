@@ -1,0 +1,85 @@
+.celebracion-dialogo { box-sizing: border-box; position: fixed; inset: 0; margin: auto; width: min(560px, calc(100% - 24px)); max-height: calc(100dvh - 32px); padding: 24px; overflow-y: auto; border: 2px solid #92a9e8; border-radius: 28px; background: linear-gradient(145deg,#263363,#1e255e); color: #f4f7ff; box-shadow: 0 20px 80px #0b123c99; font-family: ui-rounded,'Trebuchet MS',system-ui,sans-serif; font-size: 16px; line-height: 1.6; text-align: center; }
+.celebracion-dialogo::backdrop { background: #0b123cd9; }
+.celebracion-dialogo h2 { font-size: clamp(25px,5vw,32px); line-height: 1.25; font-weight: 850; margin: 10px 0 16px; color: #fff0b5; }
+.celebracion-dialogo h3 { font-size: 24px; line-height: 1.3; margin: 12px 0; }
+.celebracion-dialogo p { margin: 12px 0; }
+.celebracion-dialogo small { font-size: 14px; }
+.celebracion-dialogo button, .celebracion-dialogo input, .celebracion-dialogo select { font: inherit; }
+.celebracion-dialogo :is(button,input,select):focus-visible, .racha-indicador:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.celebracion-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 16px; color: #ffdc76; font-weight: 800; text-align: left; }
+.celebracion-cerrar { display: grid; place-items: center; flex: 0 0 48px; width: 48px; height: 48px; border-radius: 15px; border: 1px solid #a4b9ec; background: #34467b; color: #fff; cursor: pointer; }
+.celebracion-btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 12px 20px; margin-top: 16px; border: 2px solid transparent; border-radius: 16px; background: #ffda68; color: #30264b; box-shadow: 0 4px 0 #b2853b; font-weight: 850 !important; cursor: pointer; }
+.celebracion-btn:hover:not(:disabled) { background: #ffe695; }
+.celebracion-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #b2853b; }
+.celebracion-btn-secundario { background: #34467b; border-color: #92a9e8; color: #f4f7ff; box-shadow: none; }
+.celebracion-btn-secundario:hover:not(:disabled) { background: #43558d; }
+.celebracion-btn:disabled { opacity: .7; cursor: wait; }
+.celebracion-intro { color: #e3ebff; }
+.celebracion-mascota { width: 136px; margin: 0 auto; }
+.celebracion-mascota .guia-luz { width: 100%; }
+.celebracion-mascota .guia-luz-personaje, .compartir-tarjeta .guia-luz-personaje { animation: none; }
+.celebracion-nota { padding: 14px; border-radius: 16px; background: #244d66; color: #e1fff6; }
+.celebracion-firma { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #92a9e855; text-align: left; color: #dce7ff; font-size: 14px; }
+.celebracion-firma img { width: 40px; height: 40px; border-radius: 50%; }
+.celebracion-error { border: 1px solid #ffb6a4; padding: 12px; border-radius: 14px; color: #ffe1d7; background: #68373f; }
+.racha-indicador { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 80px; margin-bottom: 20px; padding: 14px 18px; border: 2px solid #f4c767; border-radius: 20px; background: #344071; text-align: left; color: #fff0b5; cursor: pointer; font-family: inherit; font-size: 16px; }
+.racha-indicador > span:nth-child(2) { flex: 1; }
+.racha-indicador strong, .racha-indicador small { display: block; }
+.racha-indicador small { font-size: 14px; color: #e4ebff; margin-top: 4px; }
+.racha-indicador[data-estado=pendiente] { border-style: dashed; }
+.racha-indicador[data-estado=inicio] { border-color: #a4b9ec; }
+.racha-llama { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; background: #ffdb7622; font-size: 32px; }
+.racha-tramo { padding: 14px; margin: 20px 0; background: #18264e; border-radius: 20px; }
+.racha-tramo > p { font-weight: 800; }
+.racha-tramo ol { list-style: none; display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; padding: 0; margin: 16px 0; }
+.racha-tramo li span { display: grid; place-items: center; aspect-ratio: 1; background: #34467b; border: 1px dashed #9aafe3; border-radius: 50%; font-size: 24px; color: #e4ebff; }
+.racha-tramo li[data-encendida=true] span { color: #30264b; background: #ffda68; border-style: solid; }
+.racha-tramo li small { display: block; margin-top: 6px; }
+.racha-tramo > small { color: #c9d8f7; }
+.racha-premio { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 18px; border: 2px solid #ffda68; border-radius: 20px; background: #ffda6814; animation: premio-aparece .4s ease-out; }
+.racha-premio > span { font-size: 40px; }
+.racha-premio strong { font-size: 24px; color: #ffe49a; }
+.racha-premio p { margin: 0; font-size: 14px; }
+.cofre-escena { position: relative; height: 210px; display: grid; place-items: center; margin: 12px 0; }
+.cofre-dibujo { width: 240px; max-width: 100%; overflow: visible; z-index: 1; }
+.cofre-tapa { transform-box: fill-box; transform-origin: 50% 100%; transition: transform .6s ease; }
+.cofre-abriendo .cofre-dibujo { animation: cofre-meneo .6s ease-in-out; }
+.cofre-abriendo .cofre-tapa, .cofre-revelado .cofre-tapa { transform: translateY(-34px) rotate(-12deg); }
+.cofre-luz { position: absolute; width: 230px; height: 180px; border-radius: 50%; background: radial-gradient(ellipse,#ffdf8cb3,transparent 68%); opacity: 0; transform: scale(.6); transition: opacity .4s,transform .6s; }
+.cofre-abriendo .cofre-luz, .cofre-revelado .cofre-luz { opacity: 1; transform: scale(1.2); }
+.cofre-estrellas { position: absolute; inset: 15px; pointer-events: none; color: #ffdf8c; font-size: 24px; }
+.cofre-estrellas span { position: absolute; left: var(--x); top: var(--y); animation: estrella-cofre .8s ease-out both; }
+.cofre-amiga { width: 85px; position: absolute; bottom: 0; right: 0; z-index: 2; }
+.cofre-amiga .guia-luz-personaje { animation: none; }
+.cofre-carta { border: 2px solid #a4b9ec; border-radius: 22px; padding: 20px; background: #34467b; animation: premio-aparece .4s ease-out; }
+.cofre-carta[data-rareza=legendario] { border-color: #ffdc76; }
+.cofre-carta[data-rareza=epico] { border-color: #d6b4ff; }
+.cofre-carta .juego-imagen { width: 130px; height: 150px; border-radius: 18px; margin: 16px auto; font-size: 70px; }
+.cofre-carta img { object-fit: contain; }
+.cofre-distintivo { display: inline-block; color: #28325d; background: #ffdf8c; padding: 6px 14px; border-radius: 16px; font-weight: 800; }
+.cofre-rareza { color: #e1ebff; font-size: 14px; }
+.cofre-resultado-texto { min-height: 2em; }
+.compartir-opciones { display: grid; gap: 10px; text-align: left; margin: 20px 0; }
+.compartir-opciones label { font-weight: 750; }
+.compartir-opciones input, .compartir-opciones select { width: 100%; min-height: 48px; min-width: 0; padding: 10px 12px; background: #19264e; border: 1px solid #a4b9ec; border-radius: 12px; color: #f4f7ff; }
+.compartir-tarjeta { width: 100%; padding: 24px; border-radius: 24px; border: 2px solid #ffdc76; background: linear-gradient(145deg,#14183d,#1e255e); color: #f5f7ff; box-sizing: border-box; overflow: hidden; text-align: center; }
+.compartir-tarjeta > p { color: #e2eaff; }
+.compartir-identidad { display: flex; gap: 12px; align-items: center; text-align: left; font-size: 14px; }
+.compartir-identidad img { width: 40px; height: 40px; border-radius: 50%; }
+.compartir-identidad strong { color: #ffdc76; font-size: 16px; display: block; }
+.compartir-amigos { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 16px 0; }
+.compartir-amigos .guia-luz { width: 110px; }
+.compartir-avatar { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 24px; background: #34467b; border: 2px solid #ffdc76; font-size: 40px; }
+.compartir-tarjeta h3 { color: #fff0b5; overflow-wrap: anywhere; }
+.compartir-datos { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 20px; }
+.compartir-datos > div { padding: 14px 6px; border-radius: 16px; background: #34467b; }
+.compartir-datos strong { display: block; font-size: 26px; color: #ffdc76; }
+.compartir-datos span { display: block; font-size: 14px; }
+.compartir-pie { margin-top: 20px; font-size: 14px; color: #e2eaff; }
+.compartir-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.compartir-acciones .celebracion-btn { margin-top: 0; }
+@keyframes premio-aparece { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes cofre-meneo { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-5deg); } 65% { transform: rotate(5deg); } }
+@keyframes estrella-cofre { from { opacity: 0; transform: scale(.4) translateY(20px); } 50% { opacity: 1; } to { opacity: 0; transform: scale(1) translateY(-20px); } }
+@media (max-width: 420px) { .celebracion-dialogo { padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); } .compartir-tarjeta { padding: 18px 12px; } .compartir-acciones { grid-template-columns: 1fr; } .racha-tramo { padding: 12px 8px; } .racha-tramo ol { gap: 4px; } }
+@media (prefers-reduced-motion: reduce) { .celebracion-dialogo *, .racha-indicador * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
