@@ -241,19 +241,28 @@ export const useLeccion = ({
     }
   }, [paso, banco, tiposPorVerso, seleccionada, respuestaOrden, escrito, consumirItem, restarVida, sumarMonedas, factorMonedas]);
 
-  const handleSiguiente = useCallback(() => {
+  const handleSiguiente = useCallback(async () => {
+    if (procesandoRef.current) return;
     if (paso < banco.length - 1) {
       // ✅ Sonido de avance (SOLO UI/UX)
       playSound('coin');
       vibrate([10]);
       setPaso(p => p + 1);
     } else {
-      const esPerfecta = errores === 0;
-      const esPrimeraVez = !yaCompletadoAntes;
-      completarNivel(esPerfecta, esPrimeraVez);
-      setPaso(banco.length);
+      procesandoRef.current = true;
+      setProcesando(true);
+      try {
+        await completarNivel(errores === 0);
+        setPaso(banco.length);
+      } catch (error) {
+        console.error('Error guardando la lección:', error);
+        setMensajeFlotante({ message: 'No pudimos guardar. Revisa tu conexión e intenta continuar de nuevo.', icon: '⚠️' });
+      } finally {
+        procesandoRef.current = false;
+        setProcesando(false);
+      }
     }
-  }, [paso, banco.length, errores, yaCompletadoAntes, completarNivel]);
+  }, [paso, banco.length, errores, completarNivel]);
 
   const handleUsarPocion = useCallback(async () => {
     const tipo = tiposPorVerso[paso];

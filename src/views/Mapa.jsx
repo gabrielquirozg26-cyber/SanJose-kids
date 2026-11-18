@@ -6,6 +6,7 @@ import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-
 import './Mapa.css';
 import confetti from 'canvas-confetti';
 import nivelesData from '../data/niveles.json';
+import { esReinoDesbloqueado } from '../utils/progreso';
 
 // ── SONIDOS ──────────────────────────────────────────────────────────────
 const playSound = (type) => {
@@ -126,7 +127,6 @@ const BackgroundParticles = () => {
 // ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────
 const Mapa = ({ onIniciarExamen }) => {
   const {
-    nivelActual,
     nivelesCompletados,
     vidas,
     iniciarLeccion,
@@ -216,14 +216,8 @@ const Mapa = ({ onIniciarExamen }) => {
   }, [nivelesCompletados, unidades]);
 
   // ── FUNCIONES ──
-  const isUnidadDesbloqueada = (idx) => {
-    if (idx === 0) return true;
-    let acum = 0;
-    for (let i = 0; i < idx; i++) {
-      acum += unidades[i]?.lecciones.length || 0;
-    }
-    return nivelActual > acum;
-  };
+  const isUnidadDesbloqueada = (idx) =>
+    esReinoDesbloqueado(unidades, idx, nivelesCompletados);
 
   const isLeccionCompletada = (id) => nivelesCompletados.includes(id);
 

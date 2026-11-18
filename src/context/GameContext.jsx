@@ -4,9 +4,10 @@ import { useAuth } from './AuthContext';
 import { useShop } from './ShopContext';
 import { useTitles } from './TitlesContext';
 import { advanceMissions } from '../utils/missionHelper';
+import { registrarProgresoLeccion } from '../utils/progreso';
 import { sendLocalNotification } from '../utils/serviceWorker';
 import { db } from '../firebase';
-import { doc, increment, arrayUnion, collection, query, where, getDocs, addDoc, orderBy, getDoc } from 'firebase/firestore';
+import { doc, increment, arrayUnion, collection, query, where, getDocs, addDoc, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import santosData from '../data/santos.json';
 import titulosData from '../data/titulos.json'
 
@@ -228,7 +229,7 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  const completarNivel = async (fueConPerfecta = false, esPrimeraVez = true) => {
+  const completarNivel = async (fueConPerfecta = false) => {
     if (!usuarioId) return;
     
     const nivelId = oracionActual?.id;
@@ -236,6 +237,11 @@ export const GameProvider = ({ children }) => {
       console.warn('⚠️ completarNivel: no se pudo obtener el ID de la lección');
       return;
     }
+
+    // Confirmar en Firestore, sin depender de una copia local del progreso.
+    const primeraFinalizacion = await runTransaction(db, transaction =>
+      registrarProgresoLeccion(transaction, doc(db, 'usuarios', usuarioId), nivelId)
+    );
 
     await advanceMissions('lecciones', 1);
     await advanceMissions('niveles', 1);
@@ -258,10 +264,8 @@ export const GameProvider = ({ children }) => {
       }
 
       await actualizarUserDoc({
-        nivelActual: increment(1),
         racha: nuevaRacha,
         jugóHoy: hoy,
-        nivelesCompletados: arrayUnion(nivelId),
       });
 
       await advanceMissions('racha', 1);
@@ -278,14 +282,9 @@ export const GameProvider = ({ children }) => {
           '/'
         );
       }
-    } else {
-      await actualizarUserDoc({
-        nivelActual: increment(1),
-        nivelesCompletados: arrayUnion(nivelId),
-      });
     }
 
-    if (!esPrimeraVez) return;
+    if (!primeraFinalizacion) return;
 
     const tipoCofre = fueConPerfecta ? 'oro' : 'madera';
     const recompensa = await entregarSanto(tipoCofre);

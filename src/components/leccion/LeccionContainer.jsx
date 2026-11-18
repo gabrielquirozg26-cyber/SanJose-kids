@@ -71,7 +71,6 @@ const LeccionContainer = ({
               consumirItem={consumirItem}        // ✅ PASAR consumirItem
               inventario={inventario}
               oracionActual={oracionActual}
-              yaCompletadoAntes={nivelesCompletados?.includes(oracionActual.id) || false}
               completarNivel={completarNivel} 
             />
           ) : (

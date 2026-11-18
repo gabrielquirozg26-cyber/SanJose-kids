@@ -56,7 +56,6 @@ const LeccionConcepto = ({
   consumirItem,
   inventario,
   oracionActual,
-  yaCompletadoAntes,
   completarNivel,
 }) => {
   const [paso, setPaso] = useState(0);
@@ -161,7 +160,8 @@ const LeccionConcepto = ({
     }
   };
 
-  const handleSiguiente = () => {
+  const handleSiguiente = async () => {
+    if (procesandoRef.current) return;
     if (paso + 1 < preguntas.length) {
       setPaso(paso + 1);
       setSeleccion(null);
@@ -169,18 +169,28 @@ const LeccionConcepto = ({
       setUsandoPocion(false);
       setOpcionesFiltradas(null);
     } else {
-      setTerminado(true);
       const total = preguntas.length;
       const precision = total > 0 ? (aciertos / total) * 100 : 0;
       const aprobado = precision >= 70;
       const monedasFinal = monedasGanadas + (aprobado ? 100 : 0);
       const fueConPerfecta = errores === 0;
-      const esPrimeraVez = !yaCompletadoAntes;
 
       if (aprobado && completarNivel) {
-        completarNivel(fueConPerfecta, esPrimeraVez);
+        procesandoRef.current = true;
+        setProcesando(true);
+        try {
+          await completarNivel(fueConPerfecta);
+        } catch (error) {
+          console.error('Error guardando la lección:', error);
+          setMensajeFlotante({ message: 'No pudimos guardar. Revisa tu conexión e intenta continuar de nuevo.', icon: '⚠️' });
+          return;
+        } finally {
+          procesandoRef.current = false;
+          setProcesando(false);
+        }
       }
 
+      setTerminado(true);
       onCompletar({
         monedas: monedasFinal,
         errores: errores,
