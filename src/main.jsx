@@ -7,12 +7,6 @@ import './index.css';
 
 import { registerServiceWorker } from './utils/serviceWorker';
 
-import { AuthProvider } from './context/AuthContext';
-import { ShopProvider } from './context/ShopContext';
-import { TitlesProvider } from './context/TitlesContext';
-import { GameProvider } from './context/GameContext';
-import { MissionsProvider } from './context/MissionsContext';
-
 // ── REGISTRAR SERVICE WORKER ──
 registerServiceWorker();
 
@@ -32,17 +26,8 @@ if ('Notification' in window) {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <ShopProvider>
-          <TitlesProvider>
-            <GameProvider>
-              <MissionsProvider>
-                <App />
-              </MissionsProvider>
-            </GameProvider>
-          </TitlesProvider>
-        </ShopProvider>
-      </AuthProvider>
+      {/* App contiene el único árbol de providers compartido por las rutas. */}
+      <App />
     </BrowserRouter>
   </React.StrictMode>,
 );
