@@ -55,7 +55,7 @@ const ProfileTabs = ({ tab, setTab }) => <nav className="juego-pestanas" aria-la
 const TabInfo = ({ 
   biografia, setBiografia, editandoBio, setEditandoBio, guardarBiografia,
   santoFavorito, setSantoFavorito, editandoSanto, setEditandoSanto, guardarSantoFavorito,
-  santoFavObj, userDoc, onCompartir, onCerrarSesion 
+  santoFavObj, userDoc, onCerrarSesion
 }) => {
   return (
     <motion.div
@@ -137,14 +137,6 @@ const TabInfo = ({
       </div>
 
       {/* Acciones */}
-      <button
-        data-tutorial="compartir"
-        onClick={onCompartir}
-        className="w-full py-3 sm:py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
-      >
-        📤 Compartir mi progreso
-      </button>
-
       <button
         onClick={onCerrarSesion}
         className="w-full py-3 sm:py-4 rounded-2xl border border-red-500/30 text-red-400 font-black text-sm uppercase tracking-widest hover:bg-red-500/10 transition-all flex items-center justify-center gap-2"
@@ -270,6 +262,7 @@ const Perfil = () => {
       />
 
       {/* ── STATS ── */}
+      <button className="juego-btn perfil-compartir" data-tutorial="compartir" onClick={() => setMostrarCompartir(true)}>💛 Compartir lo que aprendí</button>
       <StatsGrid
         nivelActual={nivelActual}
         monedas={monedas}
@@ -298,7 +291,6 @@ const Perfil = () => {
             guardarSantoFavorito={guardarSantoFavorito}
             santoFavObj={santoFavObj}
             userDoc={userDoc}
-            onCompartir={() => setMostrarCompartir(true)}
             onCerrarSesion={handleCerrarSesion}
           />
         )}

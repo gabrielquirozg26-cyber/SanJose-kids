@@ -46,7 +46,8 @@ export default function RecorridoLily({ modo, indice, onAvanzar, onCerrar, activ
       const limiteSuperior = arriba ? globo.bottom + 12 : 84;
       const limiteInferior = arriba ? alto - 8 : globo.top - 16;
       let r = objetivo.getBoundingClientRect();
-      if (!colocado && !arriba) {
+      const fueraDeVista = r.bottom <= limiteSuperior || r.top >= limiteInferior;
+      if ((!colocado || fueraDeVista) && !arriba && r.height > 0) {
         colocado = true;
         const alturaVisible = Math.min(r.height, Math.max(48, limiteInferior - limiteSuperior));
         const deseado = Math.max(84, limiteSuperior + (limiteInferior - limiteSuperior - alturaVisible) / 2);
@@ -70,7 +71,10 @@ export default function RecorridoLily({ modo, indice, onAvanzar, onCerrar, activ
     window.visualViewport?.addEventListener('resize', programar);
     document.addEventListener('scroll', programar, true);
     programar();
+    // Las portadas y tarjetas también ajustan el scroll al montarse y animarse.
+    const ajustes = [100, 350, 700].map(ms => setTimeout(programar, ms));
     return () => {
+      ajustes.forEach(clearTimeout);
       cancelAnimationFrame(frame); resize.disconnect(); cambios.disconnect();
       window.removeEventListener('resize', programar);
       window.visualViewport?.removeEventListener('resize', programar);

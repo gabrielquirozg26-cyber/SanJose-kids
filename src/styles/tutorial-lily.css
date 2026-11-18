@@ -31,6 +31,7 @@
 .lily-ayuda p { color: #e2eaff; margin: 10px 0 16px; }
 .lily-ayuda-acciones { display: flex; flex-wrap: wrap; gap: 16px; }
 .lily-ayuda-acciones button:first-child { background: #ffda68; color: #30264b; border-color: #ffebaa; }
+.perfil-compartir { margin-top: 20px; min-height: 56px; }
 @keyframes lily-aparece { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes lily-saludo { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-3deg); } }
 @media (max-width: 600px) {
