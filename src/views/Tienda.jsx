@@ -1,8 +1,8 @@
 // src/views/Tienda.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import { useShop } from '../context/ShopContext';
-import { useTitles } from '../context/TitlesContext';
+import { PRODUCTOS } from '../utils/economia';
 import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -99,6 +99,7 @@ const Tienda = () => {
 
   const {
     obtenerOfertaDiaria,
+    comprarOferta,
     corazonesCompradosHoy,
     cofresMaderaCompradosHoy,
     cofresPlataCompradosHoy,
@@ -112,6 +113,7 @@ const Tienda = () => {
     comprarItem,
   } = useShop();
 
+  const compraEnCurso = useRef(false);
   const [toast, setToast] = useState(null);
   const [comprando, setComprando] = useState(false);
   const [modalTitulosOpen, setModalTitulosOpen] = useState(false);
@@ -123,7 +125,7 @@ const Tienda = () => {
   };
 
   const handleCompra = async (func, nombre, precio) => {
-    if (comprando) {
+    if (compraEnCurso.current) {
       showToast('⏳ Espera a que termine la compra', 'warning');
       return;
     }
@@ -133,6 +135,7 @@ const Tienda = () => {
       return;
     }
     
+    compraEnCurso.current = true;
     setComprando(true);
     
     try {
@@ -159,8 +162,9 @@ const Tienda = () => {
       }
     } catch (error) {
       console.error('❌ Error en compra:', error);
-      mostrarToast(`❌ Error al comprar ${nombre}`, 'error');
+      mostrarToast(error.message || 'No se pudo guardar la compra.', 'error');
     } finally {
+      compraEnCurso.current = false;
       setComprando(false);
     }
   };
@@ -247,23 +251,10 @@ const Tienda = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  if (ofertaDiaria.id === 'corazon_extra') {
-                    handleCompra(comprarCorazon, ofertaDiaria.nombre, ofertaDiaria.precioOferta);
-                  } else if (ofertaDiaria.id === 'doble_xp') {
-                    handleCompra(comprarDobleXp, ofertaDiaria.nombre, ofertaDiaria.precioOferta);
-                  } else if (ofertaDiaria.id === 'protector_racha') {
-                    handleCompra(comprarProtectorRacha, ofertaDiaria.nombre, ofertaDiaria.precioOferta);
-                  } else if (ofertaDiaria.id === 'pocion_sabiduria') {
-                    handleCompra(comprarPocion, ofertaDiaria.nombre, ofertaDiaria.precioOferta);
-                  } else {
-                    handleCompra(
-                      () => comprarItem({ ...ofertaDiaria, precio: ofertaDiaria.precioOferta }), 
-                      ofertaDiaria.nombre, 
-                      ofertaDiaria.precioOferta
-                    );
-                  }
-                }}
+                onClick={() => handleCompra(
+                  () => comprarOferta(ofertaDiaria.id),
+                  ofertaDiaria.nombre, ofertaDiaria.precioOferta
+                )}
                 disabled={comprando}
                 className="bg-yellow-400 text-blue-900 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-sm hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-2"
               >
@@ -333,20 +324,21 @@ const Tienda = () => {
                 icon="❤️"
                 title="Corazón Extra"
                 desc="Recupera 1 vida · 3/día"
-                price={150}
+                price={PRODUCTOS.corazon_extra.precio}
                 disabledReason={corazonesCompradosHoy >= 3 ? 'Límite diario' : vidas >= 5 ? 'Vidas completas' : null}
-                onBuy={() => handleCompra(comprarCorazon, 'Corazón Extra', 150)}
+                onBuy={() => handleCompra(comprarCorazon, 'Corazón Extra', PRODUCTOS.corazon_extra.precio)}
                 glow={corazonesCompradosHoy < 3 && vidas < 5}
               />
               
               <ItemCard
                 icon="🛡️"
                 title="Escudo de San Miguel"
+                cantidad={inventario.filter(id => id === 'escudo_miguel').length}
                 desc="Te protege de 1 error en lección"
-                price={150}
-                owned={inventario.includes('escudo_miguel')}
+                price={PRODUCTOS.escudo_miguel.precio}
+                disabledReason={inventario.includes('escudo_miguel') ? 'Ya tienes un escudo' : null}
                 onBuy={() => handleCompra(
-                  () => comprarItem({ id: 'escudo_miguel', nombre: 'Escudo de San Miguel', precio: 150 }), 
+                  () => comprarItem({ id: 'escudo_miguel', nombre: 'Escudo de San Miguel', precio: PRODUCTOS.escudo_miguel.precio }),
                   'Escudo de San Miguel', 
                   150
                 )}
@@ -355,10 +347,11 @@ const Tienda = () => {
               <ItemCard
                 icon="🧪"
                 title="Poción de Sabiduría"
+                cantidad={inventario.filter(id => id === 'pocion_sabiduria').length}
                 desc="Elimina 2 opciones incorrectas · 2/día, 3 max"
-                price={120}
+                price={PRODUCTOS.pocion_sabiduria.precio}
                 disabledReason={pocionesCompradasHoy >= 2 ? 'Límite diario' : (inventario.filter(i => i === 'pocion_sabiduria').length >= 3 ? 'Inventario lleno' : null)}
-                onBuy={() => handleCompra(comprarPocion, 'Poción de Sabiduría', 120)}
+                onBuy={() => handleCompra(comprarPocion, 'Poción de Sabiduría', PRODUCTOS.pocion_sabiduria.precio)}
                 glow={pocionesCompradasHoy < 2 && inventario.filter(i => i === 'pocion_sabiduria').length < 3}
               />
             </motion.div>
@@ -381,20 +374,22 @@ const Tienda = () => {
               <ItemCard
                 icon="⚡"
                 title="Doble XP"
-                desc="Duplica monedas en 1 lección · 3/día"
-                price={80}
+                cantidad={inventario.filter(id => id === 'doble_xp').length}
+                desc="Duplica monedas al entrar a tu próxima lección · 3/día"
+                price={PRODUCTOS.doble_xp.precio}
                 disabledReason={dobleXpCompradosHoy >= 3 ? 'Límite diario' : null}
-                onBuy={() => handleCompra(comprarDobleXp, 'Doble XP', 80)}
+                onBuy={() => handleCompra(comprarDobleXp, 'Doble XP', PRODUCTOS.doble_xp.precio)}
                 glow={dobleXpCompradosHoy < 3}
               />
               
               <ItemCard
                 icon="🔥"
                 title="Protector de Racha"
+                cantidad={inventario.filter(id => id === 'protector_racha').length}
                 desc="Protege tu racha si no juegas 1 día · 1/día"
-                price={100}
+                price={PRODUCTOS.protector_racha.precio}
                 disabledReason={protectorRachaCompradosHoy >= 1 ? 'Límite diario' : null}
-                onBuy={() => handleCompra(comprarProtectorRacha, 'Protector de Racha', 100)}
+                onBuy={() => handleCompra(comprarProtectorRacha, 'Protector de Racha', PRODUCTOS.protector_racha.precio)}
                 glow={protectorRachaCompradosHoy < 1}
               />
             </motion.div>
@@ -427,7 +422,7 @@ const Tienda = () => {
                   tipo="plata"
                   nombre="Cofre de Plata"
                   icono="🎁"
-                  desc="Santo raro o legendario"
+                  desc="Común, raro o legendario"
                   precio={300}
                   limite={cofresPlataCompradosHoy}
                   max={2}
@@ -437,7 +432,7 @@ const Tienda = () => {
                   tipo="oro"
                   nombre="Cofre de Oro"
                   icono="🏆"
-                  desc="Santo legendario"
+                  desc="Mayor probabilidad de legendario"
                   precio={450}
                   limite={cofresOroCompradosHoy}
                   max={1}
@@ -497,11 +492,11 @@ const Tienda = () => {
 
               {/* Cosméticos con nuevos precios */}
               {[
-                { id: 'titulo_guardian', nombre: 'Guardián del Credo', icono: '⚜️', precio: 800, rareza: 'epico', desc: 'Cambia tu rango visible' },
-                { id: 'titulo_maestro', nombre: 'Maestro de la Fe', icono: '👑', precio: 1200, rareza: 'legendario', desc: 'El rango más alto' },
-                { id: 'aura_santidad', nombre: 'Aura de Santidad', icono: '✨', precio: 500, rareza: 'raro', desc: 'Efecto brillante en tu perfil' },
-                { id: 'marco_vitral_azul', nombre: 'Marco Vitral Azul', icono: '🔵', precio: 350, rareza: 'raro', desc: 'Borde azul para tu avatar' },
-                { id: 'marco_vitral_dorado', nombre: 'Marco Vitral Dorado', icono: '🟡', precio: 600, rareza: 'epico', desc: 'Borde dorado para tu avatar' },
+                { id: 'titulo_guardian', nombre: 'Guardián del Credo', icono: '⚜️', precio: PRODUCTOS.titulo_guardian.precio, rareza: 'epico', desc: 'Cambia tu rango visible' },
+                { id: 'titulo_maestro', nombre: 'Maestro de la Fe', icono: '👑', precio: PRODUCTOS.titulo_maestro.precio, rareza: 'legendario', desc: 'El rango más alto' },
+                { id: 'aura_santidad', nombre: 'Aura de Santidad', icono: '✨', precio: PRODUCTOS.aura_santidad.precio, rareza: 'raro', desc: 'Efecto brillante en tu perfil' },
+                { id: 'marco_vitral_azul', nombre: 'Marco Vitral Azul', icono: '🔵', precio: PRODUCTOS.marco_vitral_azul.precio, rareza: 'raro', desc: 'Borde azul para tu avatar' },
+                { id: 'marco_vitral_dorado', nombre: 'Marco Vitral Dorado', icono: '🟡', precio: PRODUCTOS.marco_vitral_dorado.precio, rareza: 'epico', desc: 'Borde dorado para tu avatar' },
               ].map(item => (
                 <ItemCard
                   key={item.id}
@@ -550,10 +545,10 @@ const Tienda = () => {
 };
 
 // ── ITEM CARD ────────────────────────────────────────────────────────────
-const ItemCard = ({ icon, title, desc, price, rareza, owned, disabledReason, onBuy, glow = false }) => {
+const ItemCard = ({ icon, title, desc, price, rareza, owned, disabledReason, onBuy, cantidad, glow = false }) => {
   const rarezaClass = rareza ? RAREZA_STYLES[rareza] : 'border-white/10 bg-white/5';
   const estaDeshabilitado = disabledReason || owned;
-  const motivo = disabledReason || (owned ? '✓ Equipado' : null);
+  const motivo = disabledReason || (owned ? '✓ Adquirido' : null);
 
   return (
     <motion.div 
@@ -581,6 +576,7 @@ const ItemCard = ({ icon, title, desc, price, rareza, owned, disabledReason, onB
         <div className="flex-1 min-w-0">
           <p className="font-black text-white text-xs sm:text-sm truncate">{title}</p>
           <p className="text-white/40 text-[10px] sm:text-xs truncate">{desc}</p>
+          {cantidad !== undefined && <p className="text-white text-sm mt-1">En tu inventario: {cantidad}</p>}
           {motivo && (
             <motion.p 
               initial={{ opacity: 0 }}

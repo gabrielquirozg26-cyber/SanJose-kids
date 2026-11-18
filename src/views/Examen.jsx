@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import confetti from 'canvas-confetti';
 import examenData from '../data/examen.json';
@@ -18,7 +18,7 @@ const getPreguntasUnidad = (claveUnidad, cantidad = 8) => {
 // ══════════════════════════════════════════════════════════════════════════
 const ResultadosExamen = ({
   preguntas, respuestas, unidadNombre,
-  monedasGanadas, aprobado, onContinuar, onReintentar,
+  monedasGanadas, bonusGanado, aprobado, onContinuar, onReintentar,
 }) => {
   const correctas = preguntas.filter((p, i) => respuestas[i] === p.correcta).length;
   const total     = preguntas.length;
@@ -56,7 +56,7 @@ const ResultadosExamen = ({
             ${aprobado
               ? 'bg-green-500/15 border-green-400/40 text-green-400'
               : 'bg-red-500/15 border-red-400/40 text-red-400'}`}>
-            {aprobado ? '✅ Aprobado — +200🪙' : '❌ Reprueba — Inténtalo de nuevo'}
+            {aprobado ? '✅ Aprobado — +' + bonusGanado + '🪙' : '❌ Reprueba — Inténtalo de nuevo'}
           </div>
         </div>
 
@@ -74,7 +74,7 @@ const ResultadosExamen = ({
           </div>
           <div className="glass-card rounded-2xl p-4 text-center border border-yellow-400/20">
             <p className="text-2xl mb-1">🪙</p>
-            <p className="text-yellow-400 font-black text-xl">+{monedasGanadas + (aprobado ? 200 : 0)}</p>
+            <p className="text-yellow-400 font-black text-xl">+{monedasGanadas + bonusGanado}</p>
             <p className="text-white/30 text-[9px] font-black uppercase tracking-wider mt-0.5">Ganadas</p>
           </div>
         </div>
@@ -150,6 +150,11 @@ const ExamenPrincipal = ({ claveUnidad, unidadNombre, onTerminar }) => {
   const [monedasAc, setMonedasAc]   = useState(0);
   const [aprobado, setAprobado]     = useState(false);
 
+  const [bonusGanado, setBonusGanado] = useState(0);
+  const [intentoId, setIntentoId] = useState(() => crypto.randomUUID());
+  const [errorGuardado, setErrorGuardado] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const operacionEnCurso = useRef(false);
   const pregunta = preguntas[paso];
   const progreso = ((paso + 1) / preguntas.length) * 100;
 
@@ -161,36 +166,53 @@ const ExamenPrincipal = ({ claveUnidad, unidadNombre, onTerminar }) => {
   if (!pregunta && !mostrarRes) return null;
 
   const confirmar = async () => {
-    if (!seleccionada) return;
-    setConfirmada(true);
-    const esCorrecta = seleccionada === pregunta.correcta;
-    if (esCorrecta) {
-      confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 }, colors: ['#facc15', '#fff'] });
-      await sumarMonedas(50);
-      setMonedasAc(p => p + 50);
-    } else {
-      await restarVida();
+    if (!seleccionada || confirmada || operacionEnCurso.current) return;
+    operacionEnCurso.current = true;
+    setGuardando(true);
+    setErrorGuardado('');
+    try {
+      if (seleccionada === pregunta.correcta) {
+        const monedas = await sumarMonedas(50, 'examen:' + claveUnidad + ':' + intentoId + ':' + paso);
+        setMonedasAc(p => p + monedas);
+        confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 }, colors: ['#facc15', '#fff'] });
+      } else {
+        await restarVida();
+      }
+      setConfirmada(true);
+    } catch (error) {
+      setErrorGuardado(error.message || 'No se pudo guardar la respuesta. Intenta de nuevo.');
+    } finally {
+      operacionEnCurso.current = false;
+      setGuardando(false);
     }
   };
 
   const siguiente = async () => {
+    if (!confirmada || operacionEnCurso.current) return;
     const nuevasResp = [...respuestas, seleccionada];
-    setRespuestas(nuevasResp);
-
     if (paso < preguntas.length - 1) {
+      setRespuestas(nuevasResp);
       setPaso(p => p + 1);
       setSelec(null);
       setConfirmada(false);
-    } else {
-      // Calcular resultado final
-      const correctas  = preguntas.filter((p, i) => nuevasResp[i] === p.correcta).length;
-      const precision  = Math.round((correctas / preguntas.length) * 100);
-      const pasó       = precision >= 70;
-      setAprobado(pasó);
-
-      if (pasó) await aprobarExamen(claveUnidad);
-
+      return;
+    }
+    operacionEnCurso.current = true;
+    setGuardando(true);
+    setErrorGuardado('');
+    try {
+      const correctas = preguntas.filter((p, i) => nuevasResp[i] === p.correcta).length;
+      const pasoExamen = Math.round(correctas / preguntas.length * 100) >= 70;
+      const bonus = pasoExamen ? await aprobarExamen(claveUnidad) : 0;
+      setBonusGanado(bonus);
+      setRespuestas(nuevasResp);
+      setAprobado(pasoExamen);
       setMostrarRes(true);
+    } catch (error) {
+      setErrorGuardado(error.message || 'No se pudo guardar el resultado. Intenta de nuevo.');
+    } finally {
+      operacionEnCurso.current = false;
+      setGuardando(false);
     }
   };
 
@@ -201,11 +223,13 @@ const ExamenPrincipal = ({ claveUnidad, unidadNombre, onTerminar }) => {
         respuestas={respuestas}
         unidadNombre={unidadNombre}
         monedasGanadas={monedasAc}
+        bonusGanado={bonusGanado}
         aprobado={aprobado}
         onContinuar={onTerminar}
         onReintentar={() => {
           setPaso(0); setSelec(null); setConfirmada(false);
           setRespuestas([]); setMostrarRes(false); setMonedasAc(0); setAprobado(false);
+          setBonusGanado(0); setIntentoId(crypto.randomUUID()); setErrorGuardado('');
         }}
       />
     );
@@ -299,10 +323,11 @@ const ExamenPrincipal = ({ claveUnidad, unidadNombre, onTerminar }) => {
         </div>
       </main>
 
+      {errorGuardado && <p role="alert" className="text-center text-red-200 px-5">{errorGuardado}</p>}
       {/* Footer */}
       <footer className="p-6 pb-10 max-w-2xl mx-auto w-full">
         {!confirmada ? (
-          <button onClick={confirmar} disabled={!seleccionada}
+          <button onClick={confirmar} disabled={!seleccionada || guardando}
             className={`w-full py-5 rounded-2xl font-black text-lg uppercase tracking-widest transition-all duration-300
               ${seleccionada
                 ? 'bg-yellow-400 text-blue-900 shadow-xl shadow-yellow-400/20 hover:bg-yellow-300 hover:scale-[1.02] active:scale-95'
@@ -310,7 +335,7 @@ const ExamenPrincipal = ({ claveUnidad, unidadNombre, onTerminar }) => {
             Confirmar respuesta
           </button>
         ) : (
-          <button onClick={siguiente}
+          <button onClick={siguiente} disabled={guardando}
             className="w-full py-5 rounded-2xl bg-white text-black font-black text-lg
               uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
             {paso < preguntas.length - 1 ? 'Siguiente pregunta →' : 'Ver resultados 🏆'}

@@ -1,40 +1,39 @@
 // src/context/GameContext.jsx
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { useShop } from './ShopContext';
 import { useTitles } from './TitlesContext';
-import { advanceMissions } from '../utils/missionHelper';
-import { registrarProgresoLeccion, obtenerProgreso } from '../utils/progreso';
+import { obtenerProgreso } from '../utils/progreso';
 import nivelesData from '../data/niveles.json';
+import { MISIONES_DIARIAS, MISIONES_SEMANALES } from '../data/misiones';
+import { operarUsuario, iniciarSesionLeccion, premiarEjercicio, finalizarSesionLeccion, seleccionarSanto, premiarExamen, premiarRespuestaExamen } from '../utils/economia';
 import { sendLocalNotification } from '../utils/serviceWorker';
 import { db } from '../firebase';
-import { doc, increment, arrayUnion, collection, query, where, getDocs, addDoc, orderBy, getDoc, runTransaction } from 'firebase/firestore';
+import { doc, collection, query, where, getDocs, addDoc, orderBy, runTransaction } from 'firebase/firestore';
 import santosData from '../data/santos.json';
 import titulosData from '../data/titulos.json'
 
 const GameContext = createContext();
 
-const hoyStr = () => new Date().toISOString().split('T')[0];
+const definiciones = { diarias: MISIONES_DIARIAS, semanales: MISIONES_SEMANALES };
 
 // ── Mapa nivel → título ────────────────────────────────────────────────────
 const mapaNivelATitulo = {
-  'u1_padre_nuestro': 'protector_reino',
-  'u1_ave_maria': 'caballero_mariano',
-  'u1_gloria': 'luz_eterna',
-  'u1_angel_guarda': 'custodio_divino',
-  'u2_yo_confieso': 'corazon_purificado',
-  'u2_acto_contricion': 'espiritu_renovado',
-  'u2_dulce_madre': 'hijo_maria',
-  'u3_credo_apostolico': 'pilar_iglesia',
-  'u3_salve': 'reina_misericordia',
-  'u4_mandamientos': 'guardian_supremo',
-  'u4_bienaventuranzas': 'heredero_reino',
-  'u5_sacramentos': 'elegido_gracia',
-  'u5_obras_misericordia': 'manos_esperanza',
-  'u6_misterios_gozosos': 'luz_nazaret',
-  'u6_misterios_dolorosos': 'guerrero_calvario',
-  'u6_misterios_gloriosos': 'campeon_celestial',
-  'u6_misterios_luminosos': 'portador_luz_divina',
+  'padre_nuestro': 'protector_reino',
+  'ave_maria': 'caballero_mariano',
+  'gloria': 'luz_eterna',
+  'angel_de_la_guarda': 'custodio_divino',
+  'yo_confieso': 'corazon_purificado',
+  'acto_de_contricion': 'espiritu_renovado',
+  'credo_apostolico': 'pilar_iglesia',
+  'salve': 'reina_misericordia',
+  '10_mandamientos': 'guardian_supremo',
+  'sacramentos': 'elegido_gracia',
+  'obras_misericordia': 'manos_esperanza',
+  'misterios_gozosos': 'luz_nazaret',
+  'misterios_dolorosos': 'guerrero_calvario',
+  'misterios_gloriosos': 'campeon_celestial',
+  'misterios_luminosos': 'portador_luz_divina',
 };
 
 export const GameProvider = ({ children }) => {
@@ -47,9 +46,7 @@ export const GameProvider = ({ children }) => {
   const {
     usuarioId,
     userDoc,
-    setUserDoc,
     actualizarUserDoc,
-    registrarPrimeraLeccionDelDia,
     restarVida,
     vidas,
     actualizarAvatar,
@@ -58,7 +55,6 @@ export const GameProvider = ({ children }) => {
   } = authContext;
 
   const {
-    entregarSanto,
     setCofrePendiente,
     coleccion,
     cofrePendiente,
@@ -72,11 +68,12 @@ export const GameProvider = ({ children }) => {
   } = shopContext;
 
   const {
-    agregarLogroPendiente,
-    logrosPendientes,
+    logrosPendientes, comprarTituloLegendario, tituloDesbloqueadoReciente, setTituloDesbloqueadoReciente,
   } = titlesContext;
 
   // ── ESTADO LOCAL ──────────────────────────────────────────────────────
+  const sesionActualRef = useRef(null);
+  const iniciandoRef = useRef(false);
   const [activeTab, setActiveTab] = useState('mapa');
   const [enLeccion, setEnLeccion] = useState(false);
   const [oracionActual, setOracionActual] = useState(null);
@@ -211,104 +208,67 @@ export const GameProvider = ({ children }) => {
   };
 
   // ── FUNCIONES ORIGINALES ──────────────────────────────────────────────
-  const iniciarLeccion = (oracion) => {
-    if (!usuarioId) return;
-    setOracionActual(oracion);
-    setEnLeccion(true);
+  const ejecutarEconomia = operacion => {
+    if (!usuarioId) throw new Error('Inicia sesión para continuar.');
+    return runTransaction(db, tx => operarUsuario(tx, doc(db, 'usuarios', usuarioId), operacion));
+  };
+
+  const iniciarLeccion = async oracion => {
+    if (iniciandoRef.current) return false;
+    if (!nivelesData.unidades.some(u => u.lecciones.some(l => l.id === oracion?.id))) return false;
+    iniciandoRef.current = true;
+    try {
+      const sesionId = crypto.randomUUID();
+      const sesion = await ejecutarEconomia(data => iniciarSesionLeccion(data, oracion.id, sesionId));
+      sesionActualRef.current = sesion;
+      setOracionActual({ ...oracion, multiplicadorMonedas: sesion.multiplicador });
+      setEnLeccion(true);
+      return true;
+    } finally {
+      iniciandoRef.current = false;
+    }
   };
 
   const cerrarLeccion = () => {
     setEnLeccion(false);
     setOracionActual(null);
+    sesionActualRef.current = null;
   };
 
-  const sumarMonedas = async (cantidad) => {
-    if (!usuarioId) return;
-    await actualizarUserDoc({ monedas: increment(Number(cantidad)) });
-    if (cantidad > 0) {
-      await advanceMissions('monedas', Number(cantidad));
+  // Devuelve lo realmente abonado para que el mensaje y la pantalla final coincidan.
+  const sumarMonedas = (cantidad, clave) => {
+    if (clave?.startsWith('examen:')) {
+      return ejecutarEconomia(data => premiarRespuestaExamen(data, clave, cantidad, definiciones));
     }
+    const sesion = sesionActualRef.current;
+    if (!sesion) throw new Error('No hay una lección activa.');
+    return ejecutarEconomia(data => premiarEjercicio(data, sesion.id, clave, cantidad, definiciones));
   };
 
   const completarNivel = async (fueConPerfecta = false) => {
-    if (!usuarioId) return;
-    
-    const nivelId = oracionActual?.id;
-    if (!nivelId) {
-      console.warn('⚠️ completarNivel: no se pudo obtener el ID de la lección');
-      return;
+    const sesion = sesionActualRef.current;
+    if (!sesion || !oracionActual) throw new Error('No hay una lección activa.');
+    const tipo = fueConPerfecta ? 'oro' : 'madera';
+    const santo = seleccionarSanto(santosData.santos, tipo);
+    const resultado = await ejecutarEconomia(data => finalizarSesionLeccion(data, {
+      sesionId: sesion.id, leccion: oracionActual, unidades: nivelesData.unidades,
+      santo, tituloId: mapaNivelATitulo[oracionActual.id], perfecta: fueConPerfecta, definiciones,
+    }));
+    if (resultado.recompensa) setCofrePendiente({ tipo, recompensa: resultado.recompensa });
+    if (resultado.racha) {
+      setRecompensaRacha(resultado.racha);
+      setMostrarModalRacha(true);
+      void sendLocalNotification('Racha de ' + resultado.racha.racha + ' días',
+        'Has ganado ' + resultado.racha.monedas + ' monedas por tu constancia.', '/');
     }
-
-    // Confirmar en Firestore, sin depender de una copia local del progreso.
-    const primeraFinalizacion = await runTransaction(db, transaction =>
-      registrarProgresoLeccion(transaction, doc(db, 'usuarios', usuarioId), nivelId, nivelesData.unidades)
-    );
-
-    await advanceMissions('lecciones', 1);
-    await advanceMissions('niveles', 1);
-    if (fueConPerfecta) await advanceMissions('perfectas', 1);
-
-    const hoy = hoyStr();
-    const jugóHoy = userDoc?.jugóHoy ?? null;
-    const rachaAct = userDoc?.racha ?? 0;
-    let nuevaRacha = rachaAct;
-
-    if (jugóHoy !== hoy) {
-      const ayer = new Date();
-      ayer.setDate(ayer.getDate() - 1);
-      const ayerStr = ayer.toISOString().split('T')[0];
-
-      if (jugóHoy === ayerStr || jugóHoy === null) {
-        nuevaRacha = rachaAct + 1;
-      } else {
-        nuevaRacha = 1;
-      }
-
-      await actualizarUserDoc({
-        racha: nuevaRacha,
-        jugóHoy: hoy,
-      });
-
-      await advanceMissions('racha', 1);
-      await advanceMissions('racha_semanal', 1);
-
-      const resultado = await registrarPrimeraLeccionDelDia();
-      if (resultado) {
-        setRecompensaRacha(resultado);
-        setMostrarModalRacha(true);
-
-        sendLocalNotification(
-          `🔥 Racha de ${resultado.racha} días`,
-          `¡Has ganado ${resultado.monedas} monedas por tu constancia!`,
-          '/'
-        );
-      }
-    }
-
-    if (!primeraFinalizacion) return;
-
-    const tipoCofre = fueConPerfecta ? 'oro' : 'madera';
-    const recompensa = await entregarSanto(tipoCofre);
-    if (recompensa) {
-      setCofrePendiente({ tipo: tipoCofre, recompensa });
-    }
-
-    const tituloId = mapaNivelATitulo[nivelId];
-    if (tituloId) {
-      await agregarLogroPendiente(tituloId);
-    }
+    return resultado;
   };
 
-  const aprobarExamen = async (claveUnidad) => {
-    if (!usuarioId) return;
-    await actualizarUserDoc({
-      examenesAprobados: arrayUnion(claveUnidad),
-      monedas: increment(200),
-    });
-    const recompensa = await entregarSanto('plata');
-    if (recompensa) {
-      setCofrePendiente({ tipo: 'plata', recompensa });
-    }
+  const aprobarExamen = async claveUnidad => {
+    const santo = seleccionarSanto(santosData.santos, 'plata');
+    const resultado = await ejecutarEconomia(data => premiarExamen(data, claveUnidad, santo, definiciones));
+    if (resultado.recompensa) setCofrePendiente({ tipo: 'plata', recompensa: resultado.recompensa });
+    return resultado.monedas;
   };
 
   const obtenerRanking = async (grupo) => {
@@ -433,6 +393,8 @@ export const GameProvider = ({ children }) => {
     catalogoSantos: santosData.santos,
     cofrePendiente: cofrePendiente ?? null,
     cerrarCofre: cerrarCofre ?? (() => {}),
+
+    comprarTituloLegendario, tituloDesbloqueadoReciente, setTituloDesbloqueadoReciente,
 
     // Logros (desde TitlesContext)
     logrosPendientes: logrosPendientes ?? [],

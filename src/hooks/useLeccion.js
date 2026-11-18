@@ -94,6 +94,7 @@ export const useLeccion = ({
   const [escrito, setEscrito] = useState('');
   const [errores, setErrores] = useState(0);
   const [monedasAc, setMonedasAc] = useState(0);
+  const [ultimaGanancia, setUltimaGanancia] = useState(0);
   
   const escudoActivoRef = useRef(inventario.includes('escudo_miguel'));
   const [escudoActivo, setEscudoActivo] = useState(inventario.includes('escudo_miguel'));
@@ -149,7 +150,7 @@ export const useLeccion = ({
 
   // ── HANDLER PRINCIPAL (SOLO AÑADIDOS SONIDOS Y VIBRACIONES) ──────────
   const handleValidar = useCallback(async () => {
-    if (procesandoRef.current) {
+    if (procesandoRef.current || resultado) {
       console.warn('⚠️ handleValidar: ya está en proceso');
       return;
     }
@@ -171,10 +172,10 @@ export const useLeccion = ({
         playSound('correct');
         vibrate([20, 30, 20]);
         
-        setResultado('acierto');
         const baseXp = tipo === 'escritura' ? 40 : tipo === 'ordenar' ? 35 : 25;
-        const xp = Math.floor(baseXp * factorMonedas);
-        await sumarMonedas(xp);
+        const xp = await sumarMonedas(Math.floor(baseXp * factorMonedas), 'verso:' + paso);
+        setResultado('acierto');
+        setUltimaGanancia(xp);
         setMonedasAc(prev => prev + xp);
         setMensajeFlotante({ message: `+${xp} 🪙`, icon: '✨' });
 
@@ -209,6 +210,7 @@ export const useLeccion = ({
             setResultado('escudo');
             setMensajeFlotante({ message: '🛡️ Escudo te protegió', icon: '🛡️' });
           } else {
+            await restarVida();
             escudoActivoRef.current = false;
             setEscudoActivo(false);
             setResultado('error');
@@ -222,10 +224,10 @@ export const useLeccion = ({
           vibrate([50, 30, 50]);
           
           if (!vidaRestadaRef.current) {
+            await restarVida();
             vidaRestadaRef.current = true;
             setResultado('error');
             setErrores(prev => prev + 1);
-            await restarVida();
             setMensajeFlotante({ message: '❤️ -1 vida', icon: '❤️' });
           } else {
             setResultado('error');
@@ -235,11 +237,12 @@ export const useLeccion = ({
       }
     } catch (error) {
       console.error('❌ Error en handleValidar:', error);
+      setMensajeFlotante({ message: 'No se guardó la respuesta. Revisa tu conexión y vuelve a comprobar.', icon: '⚠️' });
     } finally {
       procesandoRef.current = false;
       setProcesando(false);
     }
-  }, [paso, banco, tiposPorVerso, seleccionada, respuestaOrden, escrito, consumirItem, restarVida, sumarMonedas, factorMonedas]);
+  }, [paso, banco, tiposPorVerso, seleccionada, respuestaOrden, escrito, consumirItem, restarVida, sumarMonedas, factorMonedas, resultado]);
 
   const handleSiguiente = useCallback(async () => {
     if (procesandoRef.current) return;
@@ -266,22 +269,31 @@ export const useLeccion = ({
 
   const handleUsarPocion = useCallback(async () => {
     const tipo = tiposPorVerso[paso];
-    if (!tienePocion || tipo !== 'seleccion' || usandoPocion) return;
-    const verso = banco[paso];
-    const opcionesOrig = [...verso.opcionesSeleccion];
-    const correcta = verso.palabraFaltante;
-    const incorrectas = opcionesOrig.filter(op => op !== correcta);
-    let nuevasIncorrectas = [...incorrectas];
-    if (nuevasIncorrectas.length >= 2) nuevasIncorrectas = nuevasIncorrectas.slice(0, -2);
-    else nuevasIncorrectas = nuevasIncorrectas.slice(0, -1);
-    const nuevasOpciones = [correcta, ...nuevasIncorrectas];
-    setOpcionesFiltradas(mezclar(nuevasOpciones));
-    setUsandoPocion(true);
-    if (consumirItem) await consumirItem('pocion_sabiduria');
-    
-    // ✅ Sonido al usar poción (SOLO UI/UX)
-    playSound('coin');
-    vibrate([20, 20]);
+    if (!tienePocion || tipo !== 'seleccion' || usandoPocion || procesandoRef.current) return;
+    procesandoRef.current = true;
+    setProcesando(true);
+    try {
+      if (!await consumirItem('pocion_sabiduria')) throw new Error('No quedan pociones.');
+      const verso = banco[paso];
+      const opcionesOrig = [...verso.opcionesSeleccion];
+      const correcta = verso.palabraFaltante;
+      const incorrectas = opcionesOrig.filter(op => op !== correcta);
+      let nuevasIncorrectas = [...incorrectas];
+      if (nuevasIncorrectas.length >= 2) nuevasIncorrectas = nuevasIncorrectas.slice(0, -2);
+      else nuevasIncorrectas = nuevasIncorrectas.slice(0, -1);
+      const nuevasOpciones = [correcta, ...nuevasIncorrectas];
+      setOpcionesFiltradas(mezclar(nuevasOpciones));
+      setUsandoPocion(true);
+
+      // ✅ Sonido al usar poción (SOLO UI/UX)
+      playSound('coin');
+      vibrate([20, 20]);
+    } catch (error) {
+      setMensajeFlotante({ message: error.message || 'No se pudo usar la poción.', icon: '⚠️' });
+    } finally {
+      procesandoRef.current = false;
+      setProcesando(false);
+    }
   }, [paso, banco, tiposPorVerso, usandoPocion, tienePocion, consumirItem]);
 
   const handleCerrarMensajeFlotante = useCallback(() => {
@@ -305,6 +317,7 @@ export const useLeccion = ({
     setEscrito,
     errores,
     monedasAc,
+    ultimaGanancia,
     escudoActivo,
     mostrarEscudo,
     setMostrarEscudo,

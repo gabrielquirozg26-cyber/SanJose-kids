@@ -221,7 +221,7 @@ const Mapa = ({ onIniciarExamen }) => {
 
   const isLeccionCompletada = (id) => nivelesCompletados.includes(id);
 
-  const handleIniciarLeccion = (leccion, uIdx, lIdx) => {
+  const handleIniciarLeccion = async (leccion, uIdx, lIdx) => {
     if (vidas <= 0) {
       showToast('❤️ Sin vidas — regresa en unas horas', 'warning', 3000);
       return;
@@ -234,7 +234,12 @@ const Mapa = ({ onIniciarExamen }) => {
       showToast(`Completa ${unidades[uIdx].lecciones[lIdx-1].nombre} para continuar.`, 'warning', 4000);
       return;
     }
-    iniciarLeccion(leccion);
+    try {
+      const iniciada = await iniciarLeccion(leccion);
+      if (!iniciada) showToast('Espera a que termine de abrirse la lección.', 'info');
+    } catch (error) {
+      showToast(error.message || 'No se pudo abrir la lección. Revisa tu conexión.', 'warning', 4000);
+    }
   };
 
   const totalLecciones = unidades.reduce((acc, u) => acc + u.lecciones.length, 0);

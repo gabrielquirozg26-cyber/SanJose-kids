@@ -56,6 +56,7 @@ const LeccionConcepto = ({
   consumirItem,
   inventario,
   oracionActual,
+  yaCompletadoAntes,
   completarNivel,
 }) => {
   const [paso, setPaso] = useState(0);
@@ -93,16 +94,25 @@ const LeccionConcepto = ({
   }, [pregunta?.id, opcionesFiltradas]);
 
   const usarPocionSabiduria = async () => {
-    if (!tienePocion || usandoPocion || respondido) return;
-    const correcta = pregunta.correcta;
-    const incorrectas = pregunta.opciones.filter((op) => op !== correcta);
-    let nuevasIncorrectas = [...incorrectas];
-    if (nuevasIncorrectas.length >= 2) nuevasIncorrectas = nuevasIncorrectas.slice(0, -2);
-    else nuevasIncorrectas = nuevasIncorrectas.slice(0, -1);
-    const nuevasOpciones = [correcta, ...nuevasIncorrectas];
-    setOpcionesFiltradas(mezclar(nuevasOpciones));
-    setUsandoPocion(true);
-    if (consumirItem) await consumirItem('pocion_sabiduria');
+    if (!tienePocion || usandoPocion || respondido || procesandoRef.current) return;
+    procesandoRef.current = true;
+    setProcesando(true);
+    try {
+      if (!await consumirItem('pocion_sabiduria')) throw new Error('No quedan pociones.');
+      const correcta = pregunta.correcta;
+      const incorrectas = pregunta.opciones.filter((op) => op !== correcta);
+      let nuevasIncorrectas = [...incorrectas];
+      if (nuevasIncorrectas.length >= 2) nuevasIncorrectas = nuevasIncorrectas.slice(0, -2);
+      else nuevasIncorrectas = nuevasIncorrectas.slice(0, -1);
+      const nuevasOpciones = [correcta, ...nuevasIncorrectas];
+      setOpcionesFiltradas(mezclar(nuevasOpciones));
+      setUsandoPocion(true);
+    } catch (error) {
+      setMensajeFlotante({ message: error.message || 'No se pudo usar la poción.', icon: '⚠️' });
+    } finally {
+      procesandoRef.current = false;
+      setProcesando(false);
+    }
   };
 
   const handleSeleccion = (opcion) => {
@@ -122,8 +132,7 @@ const LeccionConcepto = ({
       const esCorrecta = seleccion === pregunta.correcta;
 
       if (esCorrecta) {
-        const ganancia = 25;
-        await sumarMonedas(ganancia);
+        const ganancia = await sumarMonedas(yaCompletadoAntes ? 2 : 25, 'pregunta:' + paso);
         setMonedasGanadas((prev) => prev + ganancia);
         setAciertos((prev) => prev + 1);
         setMensajeFlotante({ message: `+${ganancia} 🪙`, icon: '✨' });
@@ -142,6 +151,7 @@ const LeccionConcepto = ({
             setMostrarEscudo(true);
             setMensajeFlotante({ message: '🛡️ Escudo te protegió', icon: '🛡️' });
           } else {
+            await restarVida();
             setEscudoActivo(false);
             setErrores((prev) => prev + 1);
             setMensajeFlotante({ message: '⚠️ Error con el escudo', icon: '⚠️' });
@@ -154,6 +164,8 @@ const LeccionConcepto = ({
       }
     } catch (error) {
       console.error('❌ Error en handleComprobar:', error);
+      setRespondido(false);
+      setMensajeFlotante({ message: 'No se guardó la respuesta. Revisa tu conexión y vuelve a comprobar.', icon: '⚠️' });
     } finally {
       procesandoRef.current = false;
       setProcesando(false);
@@ -172,14 +184,15 @@ const LeccionConcepto = ({
       const total = preguntas.length;
       const precision = total > 0 ? (aciertos / total) * 100 : 0;
       const aprobado = precision >= 70;
-      const monedasFinal = monedasGanadas + (aprobado ? 100 : 0);
+      let monedasFinal = monedasGanadas;
       const fueConPerfecta = errores === 0;
 
       if (aprobado && completarNivel) {
         procesandoRef.current = true;
         setProcesando(true);
         try {
-          await completarNivel(fueConPerfecta);
+          const premio = await completarNivel(fueConPerfecta);
+          monedasFinal += premio?.bonus ?? 0;
         } catch (error) {
           console.error('Error guardando la lección:', error);
           setMensajeFlotante({ message: 'No pudimos guardar. Revisa tu conexión e intenta continuar de nuevo.', icon: '⚠️' });

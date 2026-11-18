@@ -76,6 +76,7 @@ const LeccionOracion = ({
     setEscrito,
     errores,
     monedasAc,
+    ultimaGanancia,
     escudoActivo,
     mostrarEscudo,
     setMostrarEscudo,
@@ -337,7 +338,7 @@ const LeccionOracion = ({
                   ¡Perfecto!
                 </p>
                 <p className="text-base font-black text-green-300">
-                  +{tipo === 'seleccion' ? 25 : tipo === 'ordenar' ? 35 : 40}{' '}
+                  +{ultimaGanancia}{' '}
                   Monedas ✨
                 </p>
               </div>

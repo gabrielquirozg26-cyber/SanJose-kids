@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { operarUsuario, protegerRacha, registrarActividadDiaria, modificarVidas, vidasActivas } from '../utils/economia';
 import { auth, db } from '../firebase';
 import {
   createUserWithEmailAndPassword,
@@ -11,11 +12,9 @@ import {
 import { 
   doc, 
   setDoc, 
-  getDoc, 
   updateDoc, 
   onSnapshot,
-  increment,
-  arrayUnion
+  runTransaction
 } from 'firebase/firestore';
 
 const AuthContext = createContext();
@@ -83,22 +82,14 @@ export const AuthProvider = ({ children }) => {
   // ════════════════════════════════════════════════════════════════════════
   // 🔒 REGENERACIÓN DE VIDAS - NO TOCAR
   // ════════════════════════════════════════════════════════════════════════
-  const _aplicarRegenVidas = async (uid, data) => {
-    const vp = data.vidasPerdidas ?? [];
-    if (!vp.length) {
-      setVidasM(MAX_VIDAS);
-      return;
+  const _aplicarRegenVidas = async uid => {
+    try {
+      const vidasActuales = await runTransaction(db, tx => operarUsuario(tx, doc(db, 'usuarios', uid),
+        actual => modificarVidas(actual, 'regenerar')));
+      setVidasM(vidasActuales);
+    } catch (error) {
+      console.error('No se pudo regenerar vidas:', error);
     }
-    
-    const ahora = Date.now();
-    const nuevas = vp.filter(ts => ahora - ts < MS_REGEN_VIDA);
-    const vidasCalculadas = Math.min(MAX_VIDAS, MAX_VIDAS - nuevas.length);
-    
-    if (nuevas.length !== vp.length) {
-      await updateDoc(doc(db, 'usuarios', uid), { vidasPerdidas: nuevas });
-    }
-    
-    setVidasM(vidasCalculadas);
   };
 
   // ════════════════════════════════════════════════════════════════════════
@@ -106,30 +97,12 @@ export const AuthProvider = ({ children }) => {
   // ════════════════════════════════════════════════════════════════════════
   const _verificarRacha = async (uid, data) => {
     const hoy = hoyStr();
-    
-    // ✅ Si ya jugó hoy, no hacer nada
-    if (data.jugóHoy === hoy) return;
-    
-    const ayer = new Date();
-    ayer.setDate(ayer.getDate() - 1);
-    const ayerStr = ayer.toISOString().split('T')[0];
-    
-    // ✅ Verificar si tiene protector de racha
-    const tieneProtector = (data.inventario ?? []).includes('protector_racha');
-    
-    // Si no jugó ayer y no jugó hoy (es decir, se saltó un día)
-    if (data.jugóHoy !== ayerStr && data.jugóHoy !== null) {
-      if (tieneProtector) {
-        // ✅ Tiene protector → Consumirlo y NO reiniciar racha
-        console.log('🛡️ Protector de Racha activado para:', uid);
-        await updateDoc(doc(db, 'usuarios', uid), { 
-          inventario: (data.inventario ?? []).filter(i => i !== 'protector_racha')
-        });
-      } else {
-        // ❌ Sin protector → Reiniciar racha
-        console.log('❌ Racha reiniciada para:', uid);
-        await updateDoc(doc(db, 'usuarios', uid), { racha: 0 });
-      }
+    if (!protegerRacha(data, hoy).cambios) return;
+    try {
+      await runTransaction(db, tx => operarUsuario(tx, doc(db, 'usuarios', uid),
+        actual => protegerRacha(actual, hoy)));
+    } catch (error) {
+      console.error('No se pudo verificar la protección de racha:', error);
     }
   };
 
@@ -281,68 +254,22 @@ export const AuthProvider = ({ children }) => {
   // ════════════════════════════════════════════════════════════════════════
   // ❤️ VIDAS - NO TOCAR NADA DE ESTO
   // ════════════════════════════════════════════════════════════════════════
-  let restandoVida = false;
-
   const restarVida = async () => {
-    if (restandoVida) {
-      console.warn('⚠️ restarVida ya está en proceso');
-      return;
-    }
-    
-    if (!usuarioId) {
-      console.warn('⚠️ restarVida: usuarioId no disponible');
-      return;
-    }
-    
-    if (vidasMostradas <= 0) {
-      console.warn('⚠️ restarVida: sin vidas disponibles');
-      return;
-    }
-    
-    restandoVida = true;
-    
-    try {
-      const vp = userDoc?.vidasPerdidas ?? [];
-      const nuevasVidasPerdidas = [...vp, Date.now()];
-      
-      await actualizarUserDoc({
-        vidasPerdidas: nuevasVidasPerdidas
-      });
-      
-    } catch (error) {
-      console.error('❌ Error al restar vida:', error);
-    } finally {
-      restandoVida = false;
-    }
+    if (!usuarioId) throw new Error('Inicia sesión para continuar.');
+    return runTransaction(db, tx => operarUsuario(tx, doc(db, 'usuarios', usuarioId),
+      actual => modificarVidas(actual, 'restar')));
   };
 
   const añadirVida = async () => {
-    if (!usuarioId) return;
-    
-    const vp = userDoc?.vidasPerdidas ?? [];
-    if (!vp.length) return;
-    
-    try {
-      const nuevasVidasPerdidas = [...vp].sort((a, b) => a - b).slice(1);
-      
-      await actualizarUserDoc({
-        vidasPerdidas: nuevasVidasPerdidas
-      });
-      
-    } catch (error) {
-      console.error('❌ Error al añadir vida:', error);
-    }
+    if (!usuarioId) return false;
+    return runTransaction(db, tx => operarUsuario(tx, doc(db, 'usuarios', usuarioId),
+      actual => modificarVidas(actual, 'añadir')));
   };
 
   const minutosHastaVida = () => {
-    const vp = userDoc?.vidasPerdidas ?? [];
-    if (!vp.length) return 0;
-    
-    const masReciente = Math.max(...vp);
-    const tiempoRestante = MS_REGEN_VIDA - (Date.now() - masReciente);
-    
-    if (tiempoRestante <= 0) return 0;
-    return Math.ceil(tiempoRestante / 60000);
+    const perdidas = vidasActivas(userDoc ?? {});
+    if (!perdidas.length) return 0;
+    return Math.max(0, Math.ceil((MS_REGEN_VIDA - (Date.now() - perdidas[0])) / 60000));
   };
 
   // ════════════════════════════════════════════════════════════════════════
@@ -365,18 +292,8 @@ export const AuthProvider = ({ children }) => {
   // ════════════════════════════════════════════════════════════════════════
   const registrarPrimeraLeccionDelDia = async () => {
     if (!usuarioId) return false;
-    const hoy = hoyStr();
-    if (userDoc?.ultimaPrimeraLeccion === hoy) return false;
-    
-    const rachaActual = userDoc?.racha || 0;
-    let recompensa = 50;
-    if (rachaActual >= 7) recompensa = 200;
-    else if (rachaActual >= 3) recompensa = 100;
-    
-    await actualizarUserDoc({ monedas: increment(recompensa) });
-    await actualizarUserDoc({ ultimaPrimeraLeccion: hoy });
-    
-    return { monedas: recompensa, racha: rachaActual };
+    return runTransaction(db, tx => operarUsuario(tx, doc(db, 'usuarios', usuarioId),
+      actual => registrarActividadDiaria(actual)));
   };
 
   // ════════════════════════════════════════════════════════════════════════
