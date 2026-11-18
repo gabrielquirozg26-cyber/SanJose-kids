@@ -1,5 +1,4 @@
 // src/views/Leccion.jsx
-import React from 'react';
 import { useGame } from '../context/GameContext';
 import LeccionContainer from '../components/leccion/LeccionContainer';
 
@@ -16,19 +15,19 @@ const Leccion = () => {
     nivelesCompletados,
   } = useGame();
 
-  if (!oracionActual) return null;
+  if (!oracionActual) return <section className="aula-leccion aula-final"><h1>Volvamos a elegir una aventura</h1><button className="aula-boton aula-boton-principal" onClick={() => setEnLeccion(false)}>Volver al mapa</button></section>;
   // ✅ Asegurar que el ID existe para ambos tipos
 
   
-  console.log('🔍 Leccion - oracionActual:', oracionActual);
+
 
   const tieneVersos = Array.isArray(oracionActual.versos) && oracionActual.versos.length > 0;
   const tienePreguntas = Array.isArray(oracionActual.preguntas) && oracionActual.preguntas.length > 0;
 
-  if (!tieneVersos && !tienePreguntas) return null;
 
   return (
     <LeccionContainer
+      key={oracionActual.id}
       oracionActual={oracionActual}
       vidas={vidas}
       restarVida={restarVida}

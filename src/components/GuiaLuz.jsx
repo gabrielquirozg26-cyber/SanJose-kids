@@ -4,7 +4,7 @@ import './GuiaLuz.css';
 // Ilustración vectorial compartida: se adapta a cualquier tamaño sin cargar imágenes.
 export default function GuiaLuz({ celebrando = false, className = '' }) {
   const id = useId().replaceAll(':', '');
-  return <svg className={'guia-luz ' + className} viewBox="0 0 280 240" role="img" aria-label={celebrando ? 'Luci, tu estrella compañera, celebra contigo' : 'Luci, tu estrella compañera, te invita a explorar'}>
+  return <svg className={'guia-luz ' + className} viewBox="0 0 280 240" role="img" aria-label={celebrando ? 'Lucy, tu estrella compañera, celebra contigo' : 'Lucy, tu estrella compañera, te invita a explorar'}>
     <defs>
       <linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff5a8"/><stop offset=".55" stopColor="#ffd354"/><stop offset="1" stopColor="#ffa847"/></linearGradient>
     </defs>

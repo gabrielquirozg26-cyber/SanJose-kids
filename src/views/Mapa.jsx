@@ -5,6 +5,7 @@ import { useToast } from '../components/ui/Toast';
 import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-motion';
 import './Mapa.css';
 import GuiaLuz from '../components/GuiaLuz';
+import { PersonajeLeccion } from '../components/leccion/CompaneroLeccion';
 import confetti from 'canvas-confetti';
 import nivelesData from '../data/niveles.json';
 import { esReinoDesbloqueado } from '../utils/progreso';
@@ -391,6 +392,7 @@ const Mapa = ({ onIniciarExamen }) => {
                     </div>
                     {!desbloqueada && <span className="mapa-estado">Bloqueado</span>}
                     {desbloqueada && reinoCompleto && <span className="mapa-estado mapa-estado-completo">✓ Completado</span>}
+                    {desbloqueada && <span className="mapa-companero-reino" aria-hidden="true"><PersonajeLeccion personaje={uIdx % 3 === 0 ? 'angel' : uIdx % 3 === 1 ? 'francisco' : 'lucy'}/></span>}
                   </header>
 
                   {desbloqueada ? (

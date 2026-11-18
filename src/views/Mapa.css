@@ -471,3 +471,7 @@ main:has(> .mapa-sendero) {
   .mapa-reino-header h3 { line-height: 1.3; }
   .mapa-actividades { gap: 16px; }
 }
+
+.mapa-companero-reino { flex: 0 0 76px; width: 76px; align-self: center; }
+.mapa-companero-reino .personaje-leccion { width: 76px; height: 76px; }
+@media (max-width: 420px) { .mapa-companero-reino { display: none; } }

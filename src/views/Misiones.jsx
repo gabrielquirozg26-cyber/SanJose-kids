@@ -60,13 +60,13 @@ export default function Misiones() {
       </button>
     </article>;
   }
-  if (loading) return <main className="misiones-page"><p role="status">Luci está preparando tus misiones…</p></main>;
+  if (loading) return <main className="misiones-page"><p role="status">Lucy está preparando tus misiones…</p></main>;
   return <main className="misiones-page">
     <header className="misiones-portada">
-      <div className="misiones-portada-texto"><span className="misiones-eyebrow">⭐ TU TABLERO DE AVENTURAS</span><h1>¡Hoy puedes<br/><em>brillar un poco más!</em></h1><p>Soy Luci. ¿Vamos a descubrir tu próximo reto?</p>
+      <div className="misiones-portada-texto"><span className="misiones-eyebrow">⭐ TU TABLERO DE AVENTURAS</span><h1>¡Hoy puedes<br/><em>brillar un poco más!</em></h1><p>Soy Lucy. ¿Vamos a descubrir tu próximo reto?</p>
         <button className="misiones-btn misiones-btn-oro" onClick={totalRecompensas ? verRecompensas : () => setActiveTab('mapa')}>{totalRecompensas ? '¡Recoger mis premios!' : '¡Vamos al mapa!'} <span aria-hidden="true">→</span></button>
       </div>
-      <div className="misiones-luci"><span className="misiones-bocadillo">{totalRecompensas ? '¡Tienes premios esperando!' : '¡Yo te acompaño!'}</span><GuiaLuz celebrando={totalRecompensas > 0}/><span className="misiones-luci-nombre">LUCI · TU COMPAÑERA DE AVENTURA</span></div>
+      <div className="misiones-luci"><span className="misiones-bocadillo">{totalRecompensas ? '¡Tienes premios esperando!' : '¡Yo te acompaño!'}</span><GuiaLuz celebrando={totalRecompensas > 0}/><span className="misiones-luci-nombre">LUCY · TU COMPAÑERA DE AVENTURA</span></div>
     </header>
 
     <div className="misiones-resumen" aria-label="Resumen de tus misiones">

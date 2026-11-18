@@ -1,83 +1,41 @@
 // src/hooks/useLeccion.js
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { mezclar, elegirTipoEjercicio, normalizar } from '../utils/leccionHelpers';
+const BANCO_VACIO = [];
 
 // ── SONIDOS (SOLO UI/UX, NO AFECTA LÓGICA) ────────────────────────────
-const playSound = (type) => {
+const playSound = type => {
   try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    
-    switch (type) {
-      case 'correct':
-        oscillator.frequency.setValueAtTime(523, audioCtx.currentTime);
-        oscillator.frequency.linearRampToValueAtTime(659, audioCtx.currentTime + 0.1);
-        oscillator.frequency.linearRampToValueAtTime(784, audioCtx.currentTime + 0.2);
-        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        oscillator.type = 'sine';
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.3);
-        break;
-        
-      case 'wrong':
-        oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
-        oscillator.frequency.linearRampToValueAtTime(300, audioCtx.currentTime + 0.2);
-        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        oscillator.type = 'square';
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.3);
-        break;
-        
-      case 'shield':
-        const notes = [523, 659, 784];
-        notes.forEach((freq, i) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.1);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.2);
-          osc.type = 'sine';
-          osc.start(audioCtx.currentTime + i * 0.1);
-          osc.stop(audioCtx.currentTime + i * 0.1 + 0.2);
-        });
-        break;
-        
-      case 'coin':
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        oscillator.type = 'sine';
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.15);
-        break;
-        
-      default:
-        break;
-    }
-    audioCtx.resume();
-  } catch (e) {}
+    const Audio = window.AudioContext || window.webkitAudioContext;
+    if (!Audio) return;
+    const contexto = new Audio();
+    const notas = { correct: [523, 659, 784], wrong: [330, 294], shield: [523, 659, 784], coin: [880, 1047] }[type] ?? [659];
+    notas.forEach((frecuencia, i) => {
+      const oscilador = contexto.createOscillator();
+      const volumen = contexto.createGain();
+      oscilador.connect(volumen); volumen.connect(contexto.destination);
+      oscilador.type = 'sine'; oscilador.frequency.value = frecuencia;
+      const inicio = contexto.currentTime + i * 0.08;
+      volumen.gain.setValueAtTime(0.06, inicio);
+      volumen.gain.exponentialRampToValueAtTime(0.001, inicio + 0.16);
+      if (i === notas.length - 1) oscilador.onended = () => { void contexto.close().catch(() => {}); };
+      oscilador.start(inicio); oscilador.stop(inicio + 0.18);
+    });
+    void contexto.resume().catch(() => {});
+  } catch { /* El ejercicio sigue funcionando si el dispositivo no permite audio. */ }
 };
 
 // ── VIBRACIÓN (SOLO UI/UX) ─────────────────────────────────────────────
 const vibrate = (pattern) => {
   try {
-    if (window.navigator && window.navigator.vibrate) {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && window.navigator?.vibrate) {
       window.navigator.vibrate(pattern);
     }
-  } catch (e) {}
+  } catch { /* Vibración opcional. */ }
 };
 
 export const useLeccion = ({
   oracionActual,
-  setEnLeccion,
   completarNivel,
   sumarMonedas,
   restarVida,
@@ -108,8 +66,9 @@ export const useLeccion = ({
   const procesandoRef = useRef(false);
   const [procesando, setProcesando] = useState(false);
   const vidaRestadaRef = useRef(false);
+  const ultimoPasoAvanzadoRef = useRef(null);
 
-  const banco = oracionActual?.versos || [];
+  const banco = oracionActual?.versos || BANCO_VACIO;
   const nivelId = oracionActual?.id;
   const yaCompletadoAntes = nivelesCompletados?.includes(nivelId) || false;
   const factorMonedas = yaCompletadoAntes ? 0.1 : 1;
@@ -125,7 +84,7 @@ export const useLeccion = ({
   }, [inventario]);
 
   // ── TIPOS DE EJERCICIO (SIN CAMBIOS) ──────────────────────────────────
-  const tiposPorVerso = useMemo(() => {
+  const [tiposPorVerso] = useState(() => {
     if (!banco.length) return [];
     const tipos = [];
     let anterior = null;
@@ -135,22 +94,11 @@ export const useLeccion = ({
       anterior = nuevo;
     }
     return tipos;
-  }, [oracionActual?.id]);
-
-  // ── RESETEO AL CAMBIAR VERSO (SIN CAMBIOS) ──────────────────────────
-  useEffect(() => {
-    setResultado(null);
-    setSeleccionada(null);
-    setRespOrden('');
-    setEscrito('');
-    setUsandoPocion(false);
-    setOpcionesFiltradas(null);
-    vidaRestadaRef.current = false;
-  }, [paso]);
+  });
 
   // ── HANDLER PRINCIPAL (SOLO AÑADIDOS SONIDOS Y VIBRACIONES) ──────────
   const handleValidar = useCallback(async () => {
-    if (procesandoRef.current || resultado) {
+    if (procesandoRef.current || resultado || vidas <= 0) {
       console.warn('⚠️ handleValidar: ya está en proceso');
       return;
     }
@@ -169,19 +117,19 @@ export const useLeccion = ({
 
       if (correcto) {
         // ✅ ACIERTO - Sonido y vibración (SOLO UI/UX)
-        playSound('correct');
-        vibrate([20, 30, 20]);
         
         const baseXp = tipo === 'escritura' ? 40 : tipo === 'ordenar' ? 35 : 25;
         const xp = await sumarMonedas(Math.floor(baseXp * factorMonedas), 'verso:' + paso);
+        playSound('correct');
+        vibrate([20, 30, 20]);
         setResultado('acierto');
         setUltimaGanancia(xp);
         setMonedasAc(prev => prev + xp);
         setMensajeFlotante({ message: `+${xp} 🪙`, icon: '✨' });
 
-        import('canvas-confetti').then(({ default: confetti }) => {
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) import('canvas-confetti').then(({ default: confetti }) => {
           confetti({ 
-            particleCount: 80, 
+            particleCount: 30,
             spread: 60, 
             origin: { y: 0.7 }, 
             colors: ['#facc15', '#fff', '#3b82f6', '#10b981'] 
@@ -242,14 +190,18 @@ export const useLeccion = ({
       procesandoRef.current = false;
       setProcesando(false);
     }
-  }, [paso, banco, tiposPorVerso, seleccionada, respuestaOrden, escrito, consumirItem, restarVida, sumarMonedas, factorMonedas, resultado]);
+  }, [paso, banco, tiposPorVerso, seleccionada, respuestaOrden, escrito, consumirItem, restarVida, sumarMonedas, factorMonedas, resultado, vidas]);
 
   const handleSiguiente = useCallback(async () => {
-    if (procesandoRef.current) return;
+    if (procesandoRef.current || !resultado) return;
     if (paso < banco.length - 1) {
+      if (ultimoPasoAvanzadoRef.current === paso) return;
+      ultimoPasoAvanzadoRef.current = paso;
       // ✅ Sonido de avance (SOLO UI/UX)
       playSound('coin');
       vibrate([10]);
+      setResultado(null); setSeleccionada(null); setRespOrden(''); setEscrito('');
+      setUsandoPocion(false); setOpcionesFiltradas(null); vidaRestadaRef.current = false;
       setPaso(p => p + 1);
     } else {
       procesandoRef.current = true;
@@ -265,7 +217,7 @@ export const useLeccion = ({
         setProcesando(false);
       }
     }
-  }, [paso, banco.length, errores, completarNivel]);
+  }, [paso, banco.length, errores, completarNivel, resultado]);
 
   const handleUsarPocion = useCallback(async () => {
     const tipo = tiposPorVerso[paso];
@@ -283,6 +235,7 @@ export const useLeccion = ({
       else nuevasIncorrectas = nuevasIncorrectas.slice(0, -1);
       const nuevasOpciones = [correcta, ...nuevasIncorrectas];
       setOpcionesFiltradas(mezclar(nuevasOpciones));
+      setSeleccionada(null);
       setUsandoPocion(true);
 
       // ✅ Sonido al usar poción (SOLO UI/UX)

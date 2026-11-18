@@ -1,9 +1,10 @@
+import { mezclar as mezclarFisherYates } from './aprendizaje.js';
 // src/utils/leccionHelpers.js
 
 /**
  * Mezcla un array (Fisher-Yates)
  */
-export const mezclar = (arr) => [...arr].sort(() => Math.random() - 0.5);
+export const mezclar = arr => mezclarFisherYates(arr);
 
 /**
  * Normaliza texto para comparación
