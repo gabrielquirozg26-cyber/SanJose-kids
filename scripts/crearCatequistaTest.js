@@ -1,3 +1,4 @@
+import { readAdminPassword } from './adminPassword.js';
 // scripts/crearCatequistaTest.js
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -5,6 +6,9 @@ import { getAuth } from 'firebase-admin/auth';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+// Validar antes de inicializar Firebase Admin.
+const TEST_PASSWORD = readAdminPassword('ADMIN_CATEQUISTA_TEST_PASSWORD');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,7 +31,7 @@ async function crearCatequistaTest() {
   console.log('='.repeat(60));
   
   const email = '1catequista.test@sanjosekids.com';
-  const password = 'Catequista2024!';
+  const password = TEST_PASSWORD;
   const nombre = 'MARÍA CATEQUISTA';
   const grupo = 'San Francisco de Asís';
   

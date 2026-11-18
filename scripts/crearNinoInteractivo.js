@@ -1,3 +1,4 @@
+import { readAdminPassword } from './adminPassword.js';
 // scripts/crearNinoInteractivo.js
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -6,6 +7,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import readline from 'readline';
+
+// Validar antes de inicializar Firebase Admin.
+const PASSWORD = readAdminPassword('ADMIN_NINO_PASSWORD');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +26,6 @@ const auth = getAuth();
 
 // ── CONFIGURACIÓN DE GENERACIÓN ────────────────────────────────────────
 const DOMAIN = '@sanjosekids.com';
-const PASSWORD = 'SanJose2026!';
 
 const gruposDisponibles = [
   'San Francisco de Asís',

@@ -1,3 +1,4 @@
+import { readAdminPassword } from './adminPassword.js';
 // scripts/generarCredencialesNinos.js
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -5,6 +6,9 @@ import { getAuth } from 'firebase-admin/auth';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+// Validar antes de inicializar Firebase Admin.
+const PASSWORD = readAdminPassword('ADMIN_NINO_PASSWORD');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,7 +23,6 @@ initializeApp({ credential: cert(serviceAccount) });
 const db = getFirestore();
 const auth = getAuth();
 
-const PASSWORD = 'SanJose2026!';
 const gruposDisponibles = [
   'San Francisco de Asís',
   'San Diego de Alcalá',

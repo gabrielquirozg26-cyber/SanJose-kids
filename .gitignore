@@ -45,3 +45,13 @@ scripts/crearUsuarioTest.js
 *.backup
 *.bak
 .DS_Store
+# Datos privados generados por los scripts administrativos
+scripts/credenciales_*
+scripts/resultados_*
+scripts/*serviceAccount*.json
+
+# Configuracion privada de scripts y variantes de entorno
+.env.*
+!.env*.example
+*.pem
+*.key
