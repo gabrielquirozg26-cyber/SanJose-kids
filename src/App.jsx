@@ -208,24 +208,28 @@ const AppShellCatequista = () => {
 
 // ── Rutas ──────────────────────────────────────────────────────────────────
 const RutaEstudiante = () => {
-  const { usuarioId, loading } = useAuth();
-  if (loading) return <Cargando />;
-  if (!usuarioId) return <Login />;
+  const { usuarioId, loading, userDoc } = useAuth();
+  const [enviando, setEnviando] = useState(false);
+  if (loading && !enviando) return <Cargando />;
+  if (usuarioId && !userDoc && !enviando) return <Cargando />;
+  if (!usuarioId || enviando) return <Login onEnviando={setEnviando}/>;
   return <AppShell key={usuarioId} />;
 };
 
 const RutaCatequista = () => {
   const { usuarioId, loading, userDoc } = useAuth();
+  const [enviando, setEnviando] = useState(false);
   const rol = userDoc?.rol || 'estudiante';
   
   console.log('🔍 RutaCatequista - usuarioId:', usuarioId);
   console.log('🔍 RutaCatequista - rol:', rol);
   console.log('🔍 RutaCatequista - loading:', loading);
   
-  if (loading) return <Cargando />;
-  if (!usuarioId || (rol !== 'catequista' && rol !== 'coordinador')) {
+  if (loading && !enviando) return <Cargando />;
+  if (usuarioId && !userDoc && !enviando) return <Cargando />;
+  if (!usuarioId || enviando || (rol !== 'catequista' && rol !== 'coordinador')) {
     console.log('🔑 Redirigiendo a LoginCatequista');
-    return <LoginCatequista />;
+    return <LoginCatequista onEnviando={setEnviando}/>;
   }
   console.log('✅ Usuario válido, mostrando AppShellCatequista');
   return <AppShellCatequista />;

@@ -1,0 +1,76 @@
+.acceso-pagina { min-height: 100dvh; padding: max(20px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom)); color: #f3f7ff; background: radial-gradient(ellipse at 15% 35%,#536ac24d,transparent 55%),radial-gradient(ellipse at 95% 5%,#ad8bda26,transparent 45%),linear-gradient(145deg,#14183d,#1e255e); font: 16px/1.6 ui-rounded,'Trebuchet MS',system-ui,sans-serif; }
+.acceso-contenedor { width: min(100%,1120px); margin: auto; }
+.acceso-marca { display: flex; align-items: center; gap: 14px; }
+.acceso-marca img { width: 58px; height: 58px; border: 2px solid #ffdf8c; border-radius: 50%; }
+.acceso-marca strong { display: block; color: #ffe49b; font-size: 26px; line-height: 1.3; font-weight: 850; }
+.acceso-marca span { display: block; font-size: 14px; color: #d4e1ff; }
+.acceso-distribucion { display: grid; grid-template-columns: minmax(0,1fr) minmax(360px,440px); gap: clamp(32px,6vw,84px); align-items: center; margin: 40px 0 28px; }
+.acceso-presentacion h1 { font-size: clamp(36px,4.2vw,52px); line-height: 1.12; font-weight: 850; letter-spacing: -.035em; margin: 16px 0 20px; }
+.acceso-presentacion h1 em { font-style: normal; color: #ffdf8c; }
+.acceso-etiqueta { color: #d3e3ff; font-size: 14px; font-weight: 750; letter-spacing: .035em; }
+.acceso-presentacion > p { font-size: 18px; max-width: 42ch; color: #dce6ff; }
+.acceso-amigos { position: relative; display: flex; align-items: center; margin: 20px 0 12px; min-height: 220px; }
+.acceso-amigos > .guia-luz { width: 230px; max-width: 50%; flex-shrink: 0; }
+.acceso-burbuja { position: relative; padding: 18px; background: #edf3ff; color: #30436e; border: 2px solid #a6bdec; border-radius: 24px; box-shadow: 0 4px 0 #111c43; }
+.acceso-burbuja::before { content: ''; position: absolute; top: 40%; left: -9px; width: 14px; height: 14px; transform: rotate(-45deg); background: #edf3ff; border-top: 2px solid #a6bdec; border-left: 2px solid #a6bdec; }
+.acceso-burbuja strong, .acceso-burbuja span { display: block; }
+.acceso-burbuja strong { font-size: 18px; margin-bottom: 4px; }
+.acceso-burbuja span { font-size: 16px; }
+.acceso-lily { position: absolute; bottom: -8px; right: 20px; }
+.acceso-lily .lily-avatar { width: 74px; height: 82px; }
+.acceso-camino { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: #e4edff; font-size: 14px; margin-top: 20px; }
+.acceso-camino span { padding: 8px 12px; border-radius: 14px; border: 1px solid #91abe266; background: #304174; }
+.acceso-camino i { font-style: normal; color: #ffdf8c; }
+.acceso-tarjeta { padding: 28px; border: 2px solid #becdf0; border-radius: 30px; background: #f4f7ff; color: #27375c; box-shadow: 0 8px 0 #0c16394d,0 22px 60px #070e302e; }
+.acceso-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 5px; border-radius: 18px; background: #dfe7f8; }
+.acceso-roles a { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 8px; color: #40537d; text-decoration: none; font-weight: 800; border-radius: 13px; }
+.acceso-roles a[aria-current=page] { background: #293a72; color: #fff0b3; box-shadow: 0 2px 0 #17254d; }
+.acceso-formulario-titulo { margin: 24px 0; }
+.acceso-formulario-titulo > span { display: block; font-size: 28px; }
+.acceso-formulario-titulo h2 { margin: 6px 0 10px; font-size: 26px; font-weight: 850; line-height: 1.25; letter-spacing: -.02em; }
+.acceso-formulario-titulo p { color: #526382; margin: 0; font-size: 16px; }
+.acceso-campo { margin-bottom: 18px; }
+.acceso-campo label { display: block; font-size: 16px; font-weight: 800; margin-bottom: 8px; color: #32456a; }
+.acceso-campo input { box-sizing: border-box; min-height: 56px; width: 100%; min-width: 0; border: 2px solid #a1b4d9; border-radius: 14px; padding: 12px 14px; background: #fff; color: #243556; font: inherit; }
+.acceso-campo input::placeholder { color: #66799b; }
+.acceso-password { position: relative; }
+.acceso-password input { padding-right: 96px; }
+.acceso-password button { position: absolute; top: 4px; right: 4px; min-width: 80px; min-height: 48px; border: 0; border-radius: 10px; background: #e4ecfb; color: #354e7d; font: inherit; font-weight: 750; cursor: pointer; }
+.acceso-pagina :is(input,button,a):focus-visible { outline: 3px solid #5a64bc; outline-offset: 3px; }
+.acceso-error { padding: 14px; margin: 0 0 16px; background: #fff0e5; border: 1px solid #bb7f5a; border-radius: 14px; color: #754328; font-size: 16px; }
+.acceso-error:focus { outline: 3px solid #bb7f5a; outline-offset: 2px; }
+.acceso-entrar { display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%; min-height: 58px; padding: 14px 20px; border: 1px solid #e9bb48; border-radius: 17px; background: linear-gradient(#ffe69a,#ffd363); color: #342948; box-shadow: 0 4px 0 #b18a37; font: inherit; font-weight: 850; cursor: pointer; transition: background .15s,transform .15s; }
+.acceso-entrar:hover:not(:disabled) { background: #ffeaac; }
+.acceso-entrar:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #b18a37; }
+.acceso-entrar:disabled { background: #e0e7f4; color: #4c6087; border-color: #adbfdf; box-shadow: none; cursor: wait; }
+.acceso-estado { display: block; min-height: 22px; margin-top: 8px; font-size: 14px; text-align: center; color: #526382; }
+.acceso-ayuda { display: flex; align-items: flex-start; gap: 12px; padding: 14px; margin-top: 8px; border-radius: 16px; background: #e6edfa; }
+.acceso-ayuda > span { font-size: 22px; }
+.acceso-ayuda p { color: #465c80; margin: 0; font-size: 14px; }
+.acceso-ayuda strong { color: #32456a; }
+.acceso-pie { text-align: center; font-size: 14px; color: #cedbfa; padding: 8px 0 16px; }
+.acceso-pie span { color: #ffdf8c; margin-left: 8px; }
+.acceso-pie strong { display: block; font-weight: 500; margin-top: 6px; }
+.acceso-espera { width: 18px; height: 18px; border: 2px solid #7188af; border-top-color: transparent; border-radius: 50%; animation: acceso-giro .8s linear infinite; }
+@keyframes acceso-giro { to { transform: rotate(360deg); } }
+@media (max-width: 760px) {
+  .acceso-pagina { padding: max(16px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom)); }
+  .acceso-contenedor { max-width: 480px; }
+  .acceso-marca { gap: 12px; }
+  .acceso-marca img { width: 48px; height: 48px; }
+  .acceso-marca strong { font-size: 24px; }
+  .acceso-marca span { font-size: 14px; line-height: 1.4; }
+  .acceso-distribucion { grid-template-columns: minmax(0,1fr); gap: 18px; margin: 22px 0 16px; }
+  .acceso-etiqueta, .acceso-presentacion h1, .acceso-presentacion > p, .acceso-camino, .acceso-lily { display: none; }
+  .acceso-amigos { min-height: 0; margin: 0; gap: 12px; }
+  .acceso-amigos > .guia-luz { width: 88px; max-width: none; }
+  .acceso-burbuja { padding: 12px 14px; border-radius: 20px; }
+  .acceso-burbuja strong { font-size: 16px; }
+  .acceso-burbuja span { font-size: 14px; }
+  .acceso-tarjeta { padding: 20px; border-radius: 26px; }
+  .acceso-formulario-titulo { margin: 20px 0; }
+  .acceso-formulario-titulo > span { display: none; }
+  .acceso-formulario-titulo h2 { font-size: 25px; }
+}
+@media (max-width: 350px) { .acceso-pagina { padding-inline: 12px; } .acceso-tarjeta { padding: 16px; } .acceso-roles a { font-size: 14px; } .acceso-burbuja { padding: 10px; } }
+@media (prefers-reduced-motion: reduce) { .acceso-pagina *, .acceso-pagina *::before { animation: none !important; transition: none !important; } }
