@@ -1,10 +1,11 @@
 import GuiaLuz from './GuiaLuz';
 import { useEffect } from 'react';
 import '../styles/aventura-vistas.css';
+import { contenedorJuego } from '../utils/scrollJuego';
 
 export default function CabeceraAventura({ etiqueta, titulo, descripcion, children }) {
   useEffect(() => {
-    document.getElementById('root')?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    contenedorJuego()?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
   return <header className="juego-portada">
     <div className="juego-portada-texto"><span className="juego-etiqueta">{etiqueta}</span><h1>{titulo}</h1><p>{descripcion}</p>{children}

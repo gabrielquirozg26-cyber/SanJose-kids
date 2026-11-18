@@ -13,22 +13,19 @@ export function agregarFicha(seleccion, id, fichas) {
 
 export const textoOrdenado = (fichas, seleccion) => seleccion.map(id => fichas.find(f => f.id === id)?.texto ?? '').join(' ');
 
-// Conserva los IDs originales, el orden y todas las palabras, incluidas las repetidas.
-export function dividirEnTramos(palabras, maxPalabras = 6, maxCaracteres = 42) {
-  const tramos = [];
-  let actual = [], caracteres = 0;
-  for (const ficha of crearFichas(palabras)) {
-    const longitud = ficha.texto.length + (actual.length ? 1 : 0);
-    if (actual.length && (actual.length >= maxPalabras || caracteres + longitud > maxCaracteres)) {
-      tramos.push(actual); actual = []; caracteres = 0;
+// Las frases largas usan piezas cortas en un único tablero, sin pasos secundarios.
+export function crearPiezasOracion(palabras) {
+  if (palabras.length <= 8) return crearFichas(palabras);
+  const piezas = [];
+  let actual = [], inicio = 0;
+  for (let i = 0; i < palabras.length; i++) {
+    const texto = [...actual, palabras[i]].join(' ');
+    if (actual.length && (actual.length >= 3 || texto.length > 22)) {
+      piezas.push({ id: inicio, texto: actual.join(' ') });
+      actual = []; inicio = i;
     }
-    actual.push(ficha); caracteres += ficha.texto.length + (actual.length > 1 ? 1 : 0);
+    actual.push(palabras[i]);
   }
-  if (actual.length) tramos.push(actual);
-  return tramos;
-}
-
-export function alternarFicha(seleccion, id, fichas) {
-  if (!fichas.some(f => f.id === id)) return seleccion;
-  return seleccion.includes(id) ? seleccion.filter(actual => actual !== id) : [...seleccion, id];
+  if (actual.length) piezas.push({ id: inicio, texto: actual.join(' ') });
+  return piezas;
 }

@@ -1,3 +1,4 @@
+import { contenedorJuego } from '../../utils/scrollJuego';
 import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { TutorialContext } from './TutorialContext';
@@ -8,18 +9,18 @@ export default function TutorialProvider({ children, bloqueado, primerAcceso }) 
   const { usuarioId, userDoc, activeTab, setActiveTab } = useGame();
   // Conserva el primer acceso aunque la bienvenida acabe de actualizar la contraseña.
   const [sesion, setSesion] = useState(() => prepararTutorial(primerAcceso ? { ...userDoc, contrasenaCambiada: false } : userDoc, leerTutorial(usuarioId)));
-  const regreso = useRef({ tab: activeTab, scroll: document.getElementById('root')?.scrollTop ?? 0 });
+  const regreso = useRef({ tab: activeTab, scroll: contenedorJuego()?.scrollTop ?? 0 });
   const iniciado = useRef(false);
   useEffect(() => {
     if (sesion.abierto && !bloqueado && !iniciado.current) {
-      regreso.current = { tab: activeTab, scroll: document.getElementById('root')?.scrollTop ?? 0 };
+      regreso.current = { tab: activeTab, scroll: contenedorJuego()?.scrollTop ?? 0 };
       iniciado.current = true;
     }
   }, [sesion.abierto, bloqueado, activeTab]);
   const guardar = (siguiente, estado) => guardarTutorial(usuarioId, registroTutorial(siguiente, estado, leerTutorial(usuarioId)));
   function abrir(modo = 'completo') {
     iniciado.current = true;
-    regreso.current = { tab: activeTab, scroll: document.getElementById('root')?.scrollTop ?? 0 };
+    regreso.current = { tab: activeTab, scroll: contenedorJuego()?.scrollTop ?? 0 };
     const registro = leerTutorial(usuarioId);
     const anterior = prepararTutorial(userDoc, registro);
     const nueva = { modo, paso: registro?.estado === 'aplazado' && anterior.modo === modo ? anterior.paso : 0, abierto: true };
@@ -28,7 +29,7 @@ export default function TutorialProvider({ children, bloqueado, primerAcceso }) 
   function cerrar(estado) {
     guardar(sesion, estado); setSesion(s => ({ ...s, abierto: false }));
     setActiveTab(regreso.current.tab);
-    requestAnimationFrame(() => document.getElementById('root')?.scrollTo({ top: regreso.current.scroll, behavior: 'instant' }));
+    requestAnimationFrame(() => contenedorJuego()?.scrollTo({ top: regreso.current.scroll, behavior: 'instant' }));
   }
   function avanzar(delta) {
     const pasos = pasosTutorial(sesion.modo);

@@ -42,6 +42,8 @@ import { ToastProvider } from './components/ui/Toast';
 
 import OfflineIndicator from './components/OfflineIndicator';
 import TutorialProvider from './components/tutorial/TutorialProvider';
+import { contenedorJuego } from './utils/scrollJuego';
+import './styles/juego-layout.css';
 
 // ── Cargando ───────────────────────────────────────────────────────────────
 const Cargando = () => <LoadingScreen />;
@@ -82,6 +84,7 @@ const AppShell = () => {
   const [bienvenidaCerrada, setBienvenidaCerrada] = useState(false);
   const [primerAcceso] = useState(() => userDoc?.esPrimeraVez !== false && !userDoc?.contrasenaCambiada);
   const mostrarBienvenida = userDoc && userDoc.esPrimeraVez !== false && !userDoc.contrasenaCambiada && !bienvenidaCerrada;
+  useEffect(() => { contenedorJuego()?.scrollTo({ top: 0, behavior: 'instant' }); }, [activeTab]);
 
   if (enLeccion) return <Leccion />;
 
@@ -99,7 +102,7 @@ const AppShell = () => {
 
   return (
     <TutorialProvider key={usuarioId} primerAcceso={primerAcceso} bloqueado={!!cofrePendiente || mostrarModalRacha || !!tituloDesbloqueadoReciente?.mostrar}>
-    <div className="min-h-screen text-white font-sans flex flex-col relative">
+    <div className="juego-marco text-white font-sans relative">
       <OfflineIndicator />  {/* ← AGREGAR AQUÍ */}
       <div className="fixed inset-0 -z-10">
         <div 
@@ -112,7 +115,7 @@ const AppShell = () => {
 
       <Header />
 
-      <main className="flex-1 pb-24 pt-20 px-4 max-w-2xl mx-auto w-full">
+      <main data-juego-scroll className="pt-20 px-4 max-w-2xl mx-auto w-full">
         {activeTab === 'mapa' && <Mapa onIniciarExamen={(clave, nombre) => setExamenActivo({ clave, nombre })} />}
         
         {activeTab === 'album' && (

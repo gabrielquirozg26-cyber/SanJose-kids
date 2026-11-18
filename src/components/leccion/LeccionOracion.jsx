@@ -9,6 +9,7 @@ import PantallaVictoria from './PantallaVictoria';
 import CompaneroLeccion from './CompaneroLeccion';
 import RespuestaLeccion from './RespuestaLeccion';
 import '../../styles/aula.css';
+const ayudasMovil = { seleccion: 'Toca la palabra que falta en la oración.', ordenar: 'Toca las piezas en orden. ¡Arma la oración conmigo!', escritura: 'Escribe la palabra que falta. ¡La pista te ayuda!' };
 const guias = { seleccion: ['lucy', 'Busca la palabra que hace brillar esta oración.'], ordenar: ['francisco', 'Vamos a construirla juntos. Una palabra, y después otra.'], escritura: ['angel', 'Tú puedes escribirla. Lee con calma y fíjate en la primera letra.'] };
 export default function LeccionOracion(props) {
   const l = useLeccion(props);
@@ -31,7 +32,7 @@ export default function LeccionOracion(props) {
   return <div className="aula-leccion" data-reto={l.tipo}>
     <HeaderLeccion titulo={oracionActual.nombre} progreso={(l.paso + Number(!!l.resultado)) / l.banco.length * 100} vidas={vidas} escudoActivo={l.escudoActivo} onCerrar={onVolverMapa} procesando={l.procesando}/>
     <ProgressBar paso={l.paso} total={l.banco.length} tipo={l.tipo} titulo={oracionActual.nombre} icono={oracionActual.icono}/>
-    <main className="aula-contenido" key={l.paso}><CompaneroLeccion personaje={l.resultado === 'escudo' ? 'angel' : personaje} emocion={l.resultado === 'acierto' ? 'feliz' : 'calma'} mensaje={l.resultado === 'acierto' ? '¡Tu esfuerzo está dando frutos!' : l.resultado === 'error' ? 'No pasa nada. Mira la respuesta y sigamos aprendiendo.' : l.resultado === 'escudo' ? 'Tu escudo te protegió. ¡Podemos continuar!' : mensaje}/>
+    <main className="aula-contenido" key={l.paso}><CompaneroLeccion mensajeMovil={!l.resultado ? ayudasMovil[l.tipo] : undefined} personaje={l.resultado === 'escudo' ? 'angel' : personaje} emocion={l.resultado === 'acierto' ? 'feliz' : 'calma'} mensaje={l.resultado === 'acierto' ? '¡Tu esfuerzo está dando frutos!' : l.resultado === 'error' ? 'No pasa nada. Mira la respuesta y sigamos aprendiendo.' : l.resultado === 'escudo' ? 'Tu escudo te protegió. ¡Podemos continuar!' : mensaje}/>
       <div className="aula-reto" key={l.verso.id}>
         {l.tipo === 'seleccion' && <EjercicioSeleccion verso={l.verso} resultado={l.resultado} seleccionada={l.seleccionada} onSeleccionar={l.setSeleccionada} opcionesFiltradas={l.opcionesFiltradas} bloqueado={bloqueado}/>}
         {l.tipo === 'ordenar' && <EjercicioOrdenar verso={l.verso} resultado={l.resultado} onRespuesta={l.setRespOrden} bloqueado={bloqueado}/>}

@@ -1,33 +1,33 @@
-# Aula adaptada a celulares
+# Navegación y lecciones: revisión de usabilidad
 
-## Diagnóstico de las capturas
+## Navegación en ventana normal
 
-La cabecera y el diálogo del personaje consumían gran parte de la pantalla inicial. El pie sticky cubría el contenido mientras que su altura aumentaba al incluir pociones. Ordenar duplicaba cada palabra: una ficha en el banco y otra en la oración formada, incluso para versos de 21 palabras.
+Se retiraron las reglas duplicadas que fijaban html/body, forzaban alturas de pantalla completa y trataban de ocultar las barras del navegador. El shell de estudiantes usa una cuadrícula de dos filas: contenido desplazable y navegación. La barra inferior ocupa espacio propio dentro de 100dvh; sus etiquetas no dependen de F11. En escritorio y tablets, icono y nombre comparten una fila.
 
-## Solución
+El desplazamiento de portadas, pestañas y focos de Lily utiliza el contenedor central mediante scrollJuego.js. Las lecciones y exámenes mantienen su propia vista.
 
-- En móvil, el aula ocupa la altura visible y se divide en cabecera, ruta, contenido desplazable y pie. El botón de comprobación ocupa su propia fila y conserva su espacio; no se dibuja sobre el reto.
-- Marca y salida al mapa compactas, sin retirar el escudo ni San JoseKids.
-- Personaje de 48 px y mensaje desplegable mediante Ver ayuda. Se conserva la presentación amplia de escritorio.
-- Ordenar presenta partes de hasta seis palabras y aproximadamente 42 caracteres. Conserva todos los IDs originales y las palabras repetidas. Se puede regresar y editar cualquier parte antes de comprobar.
-- Las palabras seleccionadas se muestran como texto legible, sin duplicar botones. Las fichas permanecen en su lugar y permiten añadir o quitar; una insignia indica su posición.
-- La comprobación sigue recibiendo la oración completa. Cambiar de parte no valida, no concede monedas y no completa niveles.
-- Botones de palabras de al menos 48 × 48 px y separación de 16 px. El botón principal conserva 56 px de altura. La ayuda de pociones está dentro del contenido y conserva sus reglas de consumo.
-- Seleccionar utiliza dos columnas cuando hay espacio; conceptos y exámenes con respuestas largas conservan una columna.
-- Ajuste de la altura con VisualViewport para el teclado móvil, sin reducir la interfaz al ampliar con los dedos. Se respetan las áreas seguras y el movimiento reducido.
+## Ordenar: un solo tablero
 
-Una oración larga o el texto ampliado pueden requerir desplazamiento dentro del reto. Se prioriza conservar textos legibles y controles amplios, en vez de forzar todo dentro de una pantalla.
+Se retiró la navegación entre partes. Las oraciones cortas conservan palabras individuales; las largas se presentan como piezas de hasta tres palabras y unos 22 caracteres. El ejemplo de 21 palabras se reduce a ocho piezas sin quitar texto.
 
-## Referencias utilizadas
+Cada toque añade una pieza a la oración visible y la marca como colocada en el banco. Las piezas mantienen su tamaño y sitio. Quitar la última y Empezar otra vez son las dos únicas acciones de edición. La respuesta completa se envía al validador existente: no se corrige automáticamente ni se otorgan premios intermedios.
 
-- [W3C: tamaño de objetivos táctiles](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced/). La implementación usa 48 px, por encima del umbral de 44 px del criterio mejorado.
-- [MDN: VisualViewport](https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport).
-- [Chrome: teclado y cambios de viewport](https://developer.chrome.com/blog/viewport-resize-behavior/).
+## Ayuda y comprobación
 
-## Verificación
+En móvil, el personaje mide 80 px y vuelve la burbuja clara con su mensaje visible. La explicación móvil es breve; escritorio conserva el mensaje habitual. No hay que abrir Ver ayuda para entender el reto.
 
-83 pruebas automatizadas: incluyen conservación de todos los versos reales, IDs repetidos, edición de partes y entrega íntegra al validador. Compilación de producción y lint de los componentes de lecciones modificados.
+Comprobar utiliza una barra inferior con espacio reservado en celular, tablet y PC. El botón mide al menos 56 px de alto y tiene un ancho limitado en pantallas grandes. Su icono, texto y estado deshabilitado mantienen contraste. Las áreas de piezas tienen al menos 60 px de alto y separación de 16 px.
 
-Revisión visual en Edge con los componentes reales y datos de ejemplo, dentro de ventanas de 390 × 780 y 320 × 640 px. Se comprobaron banco de palabras, avance entre partes, estabilidad de fichas, escritura y botón de comprobación habilitado. No se hicieron compras ni cambios en Firebase. La apertura de un teclado físico de Android/iOS queda por comprobar en un teléfono real.
+## Archivos
 
-No se modifican Firebase, proveedores de progreso, inventario ni transacciones de recompensas. La rama conserva también los últimos ajustes locales del recorrido de Lily y el acceso a compartir desde Perfil.
+- App.jsx, index.css, index.html y styles/juego-layout.css: altura y distribución de la aplicación.
+- NavegacionJuego.jsx y Navbar.jsx: presentación de la barra separada de las acciones de navegación.
+- utils/scrollJuego.js, CabeceraAventura.jsx y componentes de tutorial: desplazamiento compatible con la nueva distribución.
+- componentes/leccion/EjercicioOrdenar.jsx, CompaneroLeccion.jsx, LeccionOracion.jsx y RespuestaLeccion.jsx, styles/aula.css y utils/ejercicios.js: interacción, ayuda y controles.
+- tests/ordenar-piezas.test.js: conservación de todos los versos, duplicados, deshacer y orden incorrecto sin autocorrección.
+
+## Comprobaciones
+
+83 pruebas automatizadas y compilación de producción. Lint de los componentes nuevos y modificados de la interacción. No se modificaron Firebase, proveedores, inventario, niveles ni transacciones de recompensas.
+
+El teclado virtual y las áreas seguras deben comprobarse también en un dispositivo físico; las vistas de revisión locales usan los componentes reales y datos de ejemplo, sin operaciones sobre cuentas.

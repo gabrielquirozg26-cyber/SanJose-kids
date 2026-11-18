@@ -1,3 +1,4 @@
+import { contenedorJuego } from '../../utils/scrollJuego';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { pasosTutorial } from '../../utils/tutorialLily';
@@ -17,7 +18,7 @@ export default function RecorridoLily({ modo, indice, onAvanzar, onCerrar, activ
   useLayoutEffect(() => {
     const dialogo = dialogoRef.current;
     const anterior = document.activeElement;
-    const raiz = document.getElementById('root');
+    const raiz = contenedorJuego();
     const overflow = raiz?.style.overflow;
     if (raiz) raiz.style.overflow = 'hidden';
     dialogo.showModal();
@@ -33,7 +34,7 @@ export default function RecorridoLily({ modo, indice, onAvanzar, onCerrar, activ
 
   useLayoutEffect(() => {
     if (activeTab !== paso.tab || !paso.foco) return;
-    const raiz = document.getElementById('root');
+    const raiz = contenedorJuego();
     let frame = 0;
     let colocado = false;
     const buscar = () => document.querySelector('[data-tutorial="' + paso.foco + '"]') ?? (paso.alternativa ? document.querySelector('[data-tutorial="' + paso.alternativa + '"]') : null);
