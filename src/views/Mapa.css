@@ -484,3 +484,5 @@ body:has(.mapa-sendero) nav button:focus-visible {
     transform: none !important;
   }
 }
+.mapa-examen { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 56px; margin-top: 20px; padding: 16px; border: 1px solid #e8c65c; border-radius: 16px; background: #202d50; color: #fff3c1; font-size: 16px; font-weight: 700; text-align: left; cursor: pointer; }
+.mapa-examen:focus-visible { outline: 3px solid white; outline-offset: 4px; }

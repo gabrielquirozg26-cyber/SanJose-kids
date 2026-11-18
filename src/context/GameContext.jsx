@@ -1,3 +1,4 @@
+import { mapaNivelATitulo, examenDisponible } from '../utils/aprendizaje';
 // src/context/GameContext.jsx
 import React, { createContext, useContext, useState, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
@@ -16,25 +17,6 @@ import titulosData from '../data/titulos.json'
 const GameContext = createContext();
 
 const definiciones = { diarias: MISIONES_DIARIAS, semanales: MISIONES_SEMANALES };
-
-// ── Mapa nivel → título ────────────────────────────────────────────────────
-const mapaNivelATitulo = {
-  'padre_nuestro': 'protector_reino',
-  'ave_maria': 'caballero_mariano',
-  'gloria': 'luz_eterna',
-  'angel_de_la_guarda': 'custodio_divino',
-  'yo_confieso': 'corazon_purificado',
-  'acto_de_contricion': 'espiritu_renovado',
-  'credo_apostolico': 'pilar_iglesia',
-  'salve': 'reina_misericordia',
-  '10_mandamientos': 'guardian_supremo',
-  'sacramentos': 'elegido_gracia',
-  'obras_misericordia': 'manos_esperanza',
-  'misterios_gozosos': 'luz_nazaret',
-  'misterios_dolorosos': 'guerrero_calvario',
-  'misterios_gloriosos': 'campeon_celestial',
-  'misterios_luminosos': 'portador_luz_divina',
-};
 
 export const GameProvider = ({ children }) => {
   // ── HOOKS: SIEMPRE se ejecutan ────────────────────────────────────────
@@ -238,7 +220,10 @@ export const GameProvider = ({ children }) => {
   // Devuelve lo realmente abonado para que el mensaje y la pantalla final coincidan.
   const sumarMonedas = (cantidad, clave) => {
     if (clave?.startsWith('examen:')) {
-      return ejecutarEconomia(data => premiarRespuestaExamen(data, clave, cantidad, definiciones));
+      return ejecutarEconomia(data => {
+        if (!examenDisponible(nivelesData.unidades, clave.split(':')[1], data.nivelesCompletados)) throw new Error('Este examen todavía está bloqueado.');
+        return premiarRespuestaExamen(data, clave, cantidad, definiciones);
+      });
     }
     const sesion = sesionActualRef.current;
     if (!sesion) throw new Error('No hay una lección activa.');
@@ -266,7 +251,10 @@ export const GameProvider = ({ children }) => {
 
   const aprobarExamen = async claveUnidad => {
     const santo = seleccionarSanto(santosData.santos, 'plata');
-    const resultado = await ejecutarEconomia(data => premiarExamen(data, claveUnidad, santo, definiciones));
+    const resultado = await ejecutarEconomia(data => {
+      if (!examenDisponible(nivelesData.unidades, claveUnidad, data.nivelesCompletados)) throw new Error('Completa las lecciones de este reino y los anteriores antes del examen.');
+      return premiarExamen(data, claveUnidad, santo, definiciones);
+    });
     if (resultado.recompensa) setCofrePendiente({ tipo: 'plata', recompensa: resultado.recompensa });
     return resultado.monedas;
   };

@@ -252,6 +252,7 @@ export function canjearTitulo(data, titulo, ahora = Date.now()) {
 export function normalizarMisiones(misiones, definiciones, hoy = fechaJuego()) {
   const semana = semanaJuego(hoy);
   const nuevo = { ...misiones, diaActual: hoy, semanaActual: semana,
+    diasRacha: misiones?.semanaActual === semana ? (misiones.diasRacha ?? []) : [],
     nivelesDistintos: misiones?.semanaActual === semana ? (misiones.nivelesDistintos ?? []) : [] };
   for (const grupo of ['diarias', 'semanales']) {
     const mismoPeriodo = grupo === 'diarias' ? misiones?.diaActual === hoy : misiones?.semanaActual === semana;
@@ -274,6 +275,19 @@ export function conMisiones(data, cambios, definiciones, eventos, hoy = fechaJue
 
 export function avanzarMisiones(data, definiciones, tipo, cantidad, hoy = fechaJuego(), leccionId) {
   const misiones = normalizarMisiones(data.misiones, definiciones, hoy);
+  if (!Number.isFinite(cantidad) || cantidad <= 0) return { resultado: false };
+  let consecutivos = 0;
+  if (tipo === 'racha_semanal') {
+    if (misiones.diasRacha.includes(hoy)) return { resultado: false };
+    misiones.diasRacha = [...misiones.diasRacha, hoy].sort();
+    let tramo = 0;
+    let anterior;
+    for (const dia of misiones.diasRacha) {
+      tramo = diasEntre(anterior, dia) === 1 ? tramo + 1 : 1;
+      consecutivos = Math.max(consecutivos, tramo);
+      anterior = dia;
+    }
+  }
   if (tipo === 'niveles' && leccionId) {
     const distintos = data.misiones?.semanaActual === misiones.semanaActual ? (data.misiones.nivelesDistintos ?? []) : [];
     if (distintos.includes(leccionId)) return { resultado: false };
@@ -284,7 +298,8 @@ export function avanzarMisiones(data, definiciones, tipo, cantidad, hoy = fechaJ
   for (const grupo of ['diarias', 'semanales']) {
     for (const def of definiciones[grupo]) {
       const progreso = misiones[grupo][def.id];
-      if (def.tipo === tipo && !progreso.reclamada) progreso.progreso = Math.min(def.meta, progreso.progreso + cantidad);
+      if (def.tipo === tipo && !progreso.reclamada) progreso.progreso = Math.min(def.meta,
+        tipo === 'racha_semanal' ? consecutivos : progreso.progreso + cantidad);
     }
   }
   return { cambios: { misiones }, resultado: true };

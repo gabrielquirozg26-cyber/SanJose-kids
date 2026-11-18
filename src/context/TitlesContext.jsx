@@ -1,3 +1,4 @@
+import { logrosDisponibles } from '../utils/aprendizaje';
 import { createContext, useContext, useMemo, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../firebase';
@@ -35,7 +36,7 @@ export const TitlesProvider = ({ children }) => {
 
   const canjearLogro = async id => {
     const titulo = titulosData.porNivel.find(t => t.id === id);
-    const nuevo = await intentar(data => canjearTitulo(data, titulo));
+    const nuevo = await intentar(data => canjearTitulo({ ...data, logrosPendientes: logrosDisponibles(data) }, titulo));
     if (!nuevo) return false;
     setTituloDesbloqueadoReciente({ mostrar: true, titulo: nuevo });
     return true;
@@ -60,7 +61,7 @@ export const TitlesProvider = ({ children }) => {
     titulosDesbloqueados: userDoc?.titulosDesbloqueados ?? [],
     tituloEquipado: userDoc?.tituloEquipado ?? null,
     marcosDesbloqueados, marcoEquipado: userDoc?.marcoEquipado ?? null,
-    logrosPendientes: userDoc?.logrosPendientes ?? [],
+    logrosPendientes: logrosDisponibles(userDoc ?? {}),
     tituloDesbloqueadoReciente, setTituloDesbloqueadoReciente,
     equiparTitulo, equiparMarco, comprarTituloLegendario, canjearLogro,
     desbloquearTitulo: canjearLogro,

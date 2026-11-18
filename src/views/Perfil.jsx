@@ -1,3 +1,4 @@
+import titulosCatalogo from '../data/titulos.json';
 // src/views/Perfil.jsx
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
@@ -516,7 +517,7 @@ const Perfil = () => {
                 <p className="text-purple-300 text-[9px] font-black uppercase tracking-widest">✨ Logros por canjear</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {logrosPendientes.map(l => {
-                    const titulo = titulosDesbloqueados?.find(t => t.id === l.id);
+                    const titulo = titulosCatalogo.porNivel.find(t => t.id === l.id);
                     return <span key={l.id} className="bg-purple-500/20 px-2 py-1 rounded-full text-[10px] font-black">{titulo?.nombre || l.id}</span>;
                   })}
                 </div>
@@ -543,18 +544,10 @@ const Perfil = () => {
               </div>
             </div>
 
-            {/* Gráfico de evolución */}
             <div className="glass-card rounded-2xl p-4 sm:p-5 border border-white/10">
-              <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">📈 Evolución de nivel</p>
-              <div className="flex items-end gap-0.5 sm:gap-1 h-24 sm:h-32 mt-3">
-                {Array.from({ length: 17 }, (_, i) => i + 1).map(n => (
-                  <div key={n} className="flex-1 flex flex-col items-center">
-                    <div className="w-full bg-yellow-400/30 rounded-t transition-all" style={{ height: `${n <= nivelActual ? 30 : 0}px` }} />
-                    <span className="text-[6px] sm:text-[8px] text-white/40 mt-0.5">{n}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-center text-white/40 text-[10px] mt-2">Nivel actual: {nivelActual}</p>
+              <p className="text-white text-base font-bold">Lecciones completadas</p>
+              <p className="text-white text-base mt-2">{nivelesCount} de {nivelesData.unidades.reduce((total, u) => total + u.lecciones.length, 0)} lecciones · Nivel actual: {nivelActual}</p>
+              <p className="text-white text-sm mt-2">Reclama tus títulos ganados en la pestaña Misiones.</p>
             </div>
           </motion.div>
         )}

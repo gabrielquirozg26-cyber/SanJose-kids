@@ -130,6 +130,7 @@ const Mapa = ({ onIniciarExamen }) => {
     nivelesCompletados,
     vidas,
     iniciarLeccion,
+    examenesAprobados,
   } = useGame();
 
   const reducedMotion = useReducedMotion();
@@ -440,6 +441,14 @@ const Mapa = ({ onIniciarExamen }) => {
                           );
                         })}
                       </div>
+                      <button type="button" className="mapa-examen" onClick={() => {
+                        if (!reinoCompleto) { showToast('Completa todas las lecciones de este reino para abrir su examen.', 'warning'); return; }
+                        if (vidas <= 0) { showToast('Recupera vidas antes de comenzar el examen.', 'warning'); return; }
+                        onIniciarExamen?.(unidad.id, unidad.nombre);
+                      }}>
+                        <span aria-hidden="true">🎓</span>
+                        <span>{examenesAprobados.includes(unidad.id) ? '✓ Examen aprobado · Practicar' : reinoCompleto ? 'Comenzar examen del reino' : 'Examen · Completa las lecciones para desbloquear'}</span>
+                      </button>
                     </div>
                   ) : (
                     <button type="button" className="mapa-locked-message" onClick={() => showToast(`Completa ${unidades[uIdx-1].nombre} para continuar.`, "warning", 4000)}>

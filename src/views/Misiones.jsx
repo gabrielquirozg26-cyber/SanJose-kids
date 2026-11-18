@@ -1,452 +1,102 @@
-// src/views/Misiones.jsx
-import React, { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMissions } from '../context/MissionsContext';
-import { useGame } from '../context/GameContext';
+import { useTitles } from '../context/TitlesContext';
 import { useToast } from '../components/ui/Toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
+import './Misiones.css';
 
-const Misiones = () => {
+function Estrella({ className = '' }) {
+  return <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="m32 5 7.8 16 17.7 2.6-12.8 12.5 3 17.6L32 45.4l-15.7 8.3 3-17.6L6.5 23.6 24.2 21Z" fill="currentColor"/><path d="m32 15 5.4 11 12.1 1.8-8.8 8.5 2.1 12.1L32 42.7" stroke="#fff5cf" strokeWidth="2" strokeLinecap="round"/></svg>;
+}
+
+export default function Misiones() {
   const { misionesState, reclamarMision, MISIONES_DIARIAS, MISIONES_SEMANALES, loading } = useMissions();
-  const { logrosPendientes, canjearLogro, titulosPorNivel } = useGame();
+  const { logrosPendientes, canjearLogro, titulosPorNivel } = useTitles();
   const { showToast } = useToast();
-  
-  const [reclamando, setReclamando] = useState(null);
-  const [canjeando, setCanjeando] = useState(null);
   const [filtro, setFiltro] = useState('todas');
-
-  // ── ANIMACIONES ──
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.06, delayChildren: 0.1 }
+  const [ocupada, setOcupada] = useState(null);
+  const operando = useRef(false);
+  const pendientes = logrosPendientes.map(l => titulosPorNivel.find(t => t.id === l.id)).filter(Boolean);
+  const grupos = [
+    { id: 'diarias', nombre: 'Un poquito cada día', etiqueta: 'Misiones diarias', icono: '☀️', definiciones: MISIONES_DIARIAS, plazo: 'Se renuevan cada día a las 18:00 · Nicaragua' },
+    { id: 'semanales', nombre: 'Una semana para brillar', etiqueta: 'Misiones semanales', icono: '✦', definiciones: MISIONES_SEMANALES, plazo: 'Se renuevan el domingo a las 18:00 · Nicaragua' },
+  ];
+  const todas = grupos.flatMap(g => g.definiciones.map(d => ({ ...d, grupo: g.id, estado: misionesState?.[g.id]?.[d.id] ?? { progreso: 0, reclamada: false } })));
+  const listas = todas.filter(d => d.estado.progreso >= d.meta && !d.estado.reclamada);
+  const completadas = todas.filter(d => d.estado.progreso >= d.meta).length;
+  const monedasListas = listas.reduce((suma, d) => suma + d.recompensa, 0);
+  const totalRecompensas = listas.length + pendientes.length;
+  async function reclamar(clave, accion, mensaje) {
+    if (operando.current) return;
+    operando.current = true;
+    setOcupada(clave);
+    try {
+      const ok = await accion();
+      showToast(ok ? mensaje : 'No se pudo reclamar. Comprueba tu conexión y si ya la recibiste.', ok ? 'success' : 'warning');
+    } catch (error) {
+      showToast(error.message || 'No se pudo guardar. Intenta de nuevo.', 'error');
+    } finally {
+      operando.current = false;
+      setOcupada(null);
     }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 15, scale: 0.97 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { type: 'spring', stiffness: 350, damping: 25 }
-    }
-  };
-
-  const handleReclamar = async (grupo, id, recompensa) => {
-    setReclamando(id);
-    const ok = await reclamarMision(grupo, id, recompensa);
-    setReclamando(null);
-    if (ok) {
-      confetti({ 
-        particleCount: 60, 
-        spread: 50, 
-        origin: { y: 0.6 }, 
-        colors: ['#facc15', '#fff', '#3b82f6'] 
-      });
-      showToast(`🎉 +${recompensa} monedas reclamadas`, 'success');
-    }
-  };
-
-  const handleCanjear = async (logroId) => {
-    setCanjeando(logroId);
-    const ok = await canjearLogro(logroId);
-    setCanjeando(null);
-    if (ok) {
-      confetti({ 
-        particleCount: 80, 
-        spread: 60, 
-        origin: { y: 0.6 }, 
-        colors: ['#a855f7', '#facc15', '#fff'] 
-      });
-      showToast('🏆 Título desbloqueado', 'success');
-    }
-  };
-
-  const diarias = misionesState?.diarias || {};
-  const semanales = misionesState?.semanales || {};
-
-  const mostrarDiarias = filtro === 'todas' || filtro === 'diarias';
-  const mostrarSemanales = filtro === 'todas' || filtro === 'semanales';
-
-  // ── CONTADORES ──
-  const diariasCompletadas = Object.values(diarias).filter(m => m?.progreso > 0).length;
-  const diariasReclamadas = Object.values(diarias).filter(m => m?.reclamada).length;
-  const semanalesCompletadas = Object.values(semanales).filter(m => m?.progreso > 0).length;
-  const semanalesReclamadas = Object.values(semanales).filter(m => m?.reclamada).length;
-
-  if (loading) {
-    return (
-      <div className="py-20 text-center">
-        <div className="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-white/40 text-sm mt-4 animate-pulse">Cargando misiones...</p>
-      </div>
-    );
   }
+  function verRecompensas() {
+    setFiltro(totalRecompensas ? 'listas' : 'todas');
+    document.getElementById('misiones-recompensas')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+  }
+  if (loading) return <main className="misiones-page"><p role="status">Preparando tus misiones…</p></main>;
+  return <main className="misiones-page">
+    <header className="misiones-portada">
+      <div className="misiones-portada-texto"><span className="misiones-eyebrow">✦ CADA PASO CUENTA</span><h1>Pequeños retos.<br/><em>Una gran aventura.</em></h1><p>Aprende algo nuevo, cuida tu fe y deja que tus logros brillen.</p></div>
+      <aside className="misiones-tesoro" aria-label="Recompensas disponibles">
+        <div className="misiones-insignia"><Estrella /></div>
+        <span className="misiones-eyebrow">TU ESFUERZO TIENE PREMIO</span>
+        <h2>{totalRecompensas ? totalRecompensas + (totalRecompensas === 1 ? ' recompensa lista' : ' recompensas listas') : 'Tu próxima victoria te espera'}</h2>
+        <p>{totalRecompensas ? '¡Lo has conseguido! Es momento de recoger tus premios.' : 'Elige una misión y avanza a tu ritmo. Cada pequeño paso suma.'}</p>
+        <button className="misiones-btn misiones-btn-oro" onClick={verRecompensas}>{totalRecompensas ? 'Ver mis recompensas' : 'Explorar misiones'} <span aria-hidden="true">↗</span></button>
+      </aside>
+    </header>
 
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="py-3 sm:py-6 space-y-4 sm:space-y-6 px-3 sm:px-4"
-    >
-      {/* ── ENCABEZADO ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: -15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
-        <div className="inline-block px-3 py-0.5 rounded-full bg-yellow-400/20 border border-yellow-400/40 mb-1.5">
-          <p className="text-[8px] sm:text-[9px] font-black text-yellow-400 uppercase tracking-[0.3em]">🎯 Desafíos</p>
-        </div>
-        <h2 className="text-xl sm:text-2xl font-black text-white tracking-tighter">Misiones</h2>
-        <p className="text-white/40 text-[10px] sm:text-xs mt-0.5">Completa desafíos para ganar monedas</p>
-      </motion.div>
+    <div className="misiones-resumen" aria-label="Resumen de tus misiones">
+      <div><span className="misiones-resumen-icono" aria-hidden="true">✓</span><p><strong>{completadas}<small> / {todas.length}</small></strong><span>Misiones completadas</span></p></div>
+      <div><span className="misiones-resumen-icono" aria-hidden="true">◉</span><p><strong>{monedasListas}</strong><span>Monedas por reclamar</span></p></div>
+      <div><span className="misiones-resumen-icono" aria-hidden="true">♜</span><p><strong>{pendientes.length}</strong><span>Títulos por reclamar</span></p></div>
+    </div>
 
-      {/* ── FILTROS (ESPECTACULARES) ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex gap-1 sm:gap-2 bg-white/5 backdrop-blur-sm rounded-full p-1 border border-white/10 mx-0"
-      >
-        {[
-          { id: 'todas', label: 'Todas', icon: '📋' },
-          { id: 'diarias', label: 'Diarias', icon: '☀️' },
-          { id: 'semanales', label: 'Semanales', icon: '🌟' },
-        ].map(t => {
-          const isActive = filtro === t.id;
-          // Contador para el badge
-          let count = 0;
-          if (t.id === 'todas') {
-            count = Object.values(diarias).filter(m => m?.progreso > 0).length + 
-                    Object.values(semanales).filter(m => m?.progreso > 0).length;
-          } else if (t.id === 'diarias') {
-            count = Object.values(diarias).filter(m => m?.progreso > 0).length;
-          } else {
-            count = Object.values(semanales).filter(m => m?.progreso > 0).length;
-          }
+    <section id="misiones-recompensas" className="misiones-logros" aria-labelledby="misiones-logros-titulo">
+      <div className="misiones-logros-cabecera"><span className="misiones-logros-sello" aria-hidden="true">🏅</span><div><h2 id="misiones-logros-titulo">Tu colección de títulos</h2><p>{pendientes.length ? 'Un recuerdo especial de lo que has aprendido.' : 'Al completar nuevas lecciones ganarás títulos para tu perfil.'}</p></div>{pendientes.length > 0 && <span className="misiones-contador">{pendientes.length} nuevos</span>}</div>
+      {pendientes.map(t => <article className="misiones-titulo" key={t.id}>
+        <div><span className="misiones-eyebrow">TÍTULO CONSEGUIDO</span><h3>{t.nombre}</h3><p>Reclámalo y llévalo contigo en tu perfil.</p></div>
+        <button className="misiones-btn misiones-btn-oro" disabled={!!ocupada} onClick={() => reclamar(t.id, () => canjearLogro(t.id), 'Título añadido a tu colección')}>{ocupada === t.id ? 'Guardando…' : 'Reclamar título'} <span aria-hidden="true">→</span></button>
+      </article>)}
+    </section>
 
-          return (
-            <motion.button
-              key={t.id}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.92 }}
-              onClick={() => setFiltro(t.id)}
-              className={`relative flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-full font-black text-[8px] sm:text-[10px] uppercase tracking-wider transition-all duration-300 ${
-                isActive 
-                  ? 'text-blue-900' 
-                  : 'text-white/50 hover:text-white/80'
-              }`}
-            >
-              {/* Fondo activo con animación */}
-              {isActive && (
-                <motion.div
-                  layoutId="filtroActivo"
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-300 shadow-lg shadow-yellow-400/30"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-              
-              {/* Efecto de brillo en hover */}
-              {!isActive && (
-                <motion.div
-                  className="absolute inset-0 rounded-full bg-white/0"
-                  whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
-                  transition={{ duration: 0.2 }}
-                />
-              )}
-              
-              {/* Contenido */}
-              <span className="relative z-10 flex items-center justify-center gap-1 sm:gap-1.5">
-                <span className="text-[10px] sm:text-sm">{t.icon}</span>
-                <span className={`${isActive ? 'text-blue-900' : 'text-white/70'}`}>
-                  {t.label}
-                </span>
-                {/* Badge de conteo */}
-                {count > 0 && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className={`text-[7px] sm:text-[8px] px-1.5 py-0.5 rounded-full font-black ${
-                      isActive 
-                        ? 'bg-blue-900/20 text-blue-900' 
-                        : 'bg-white/20 text-white/60'
-                    }`}
-                  >
-                    {count}
-                  </motion.span>
-                )}
-              </span>
-            </motion.button>
-          );
-        })}
-      </motion.div>
-
-      {/* ── LOGROS DE NIVEL ── */}
-      {logrosPendientes && logrosPendientes.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">🏆</span>
-            <h3 className="text-white font-black text-[10px] sm:text-xs uppercase tracking-wider">
-              Recompensas ({logrosPendientes.length})
-            </h3>
-          </div>
-          <div className="space-y-1.5">
-            {logrosPendientes.map((logro, index) => {
-              const titulo = titulosPorNivel?.find(t => t.id === logro.id);
-              if (!titulo) return null;
-              return (
-                <motion.div 
-                  key={logro.id} 
-                  initial={{ opacity: 0, x: -15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.04 }}
-                  whileHover={{ scale: 1.01 }}
-                  className="glass-card rounded-xl p-2.5 sm:p-3 border border-purple-500/30 bg-purple-500/5 flex items-center gap-2.5"
-                >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-lg sm:text-xl shrink-0">
-                    🎖️
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-white text-[10px] sm:text-sm truncate">{titulo.nombre}</p>
-                    <p className="text-white/40 text-[8px] sm:text-[10px] truncate">Completa el nivel para desbloquear</p>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleCanjear(logro.id)}
-                    disabled={canjeando === logro.id}
-                    className="px-2.5 sm:px-4 py-1 rounded-xl font-black text-[8px] sm:text-[10px] bg-gradient-to-r from-purple-500 to-pink-500 text-white transition-all disabled:opacity-50 shrink-0"
-                  >
-                    {canjeando === logro.id ? (
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      'Canjear'
-                    )}
-                  </motion.button>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── MISIONES DIARIAS ── */}
-      {mostrarDiarias && (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-        >
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">☀️</span>
-              <h3 className="text-white font-black text-[10px] sm:text-xs uppercase tracking-wider">
-                Diarias ({diariasReclamadas}/{Object.keys(diarias).length})
-              </h3>
-            </div>
-            <span className="text-white/30 text-[8px] font-black">
-              {diariasCompletadas} completadas
-            </span>
-          </div>
-          
-          <div className="space-y-1.5">
-            {MISIONES_DIARIAS.map((def, index) => {
-              const mision = diarias[def.id];
-              if (!mision) return null;
-              const completada = mision.progreso >= def.meta;
-              const reclamada = mision.reclamada;
-              const porcentaje = Math.min((mision.progreso / def.meta) * 100, 100);
-
-              return (
-                <motion.div 
-                  key={def.id}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ delay: index * 0.04 }}
-                  className={`glass-card rounded-xl p-2.5 sm:p-3 border transition-all ${
-                    completada && !reclamada ? 'border-yellow-400/50 bg-yellow-400/5' : 'border-white/10'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {/* Icono */}
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-lg sm:text-xl shrink-0 ${
-                      completada && !reclamada ? 'bg-yellow-400/20 border border-yellow-400/40' : 'bg-white/5 border border-white/10'
-                    }`}>
-                      {def.icono}
-                    </div>
-
-                    {/* Contenido */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="font-black text-white text-[10px] sm:text-sm truncate">{def.titulo}</p>
-                        <p className="text-yellow-400 font-black text-[9px] sm:text-xs shrink-0">+{def.recompensa} 🪙</p>
-                      </div>
-                      <p className="text-white/40 text-[8px] sm:text-[10px] truncate">{def.descripcion}</p>
-                      
-                      {/* Barra de progreso */}
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${porcentaje}%` }}
-                            transition={{ duration: 0.6 }}
-                            className={`h-full rounded-full ${
-                              completada ? 'bg-gradient-to-r from-yellow-400 to-amber-400' : 'bg-gradient-to-r from-blue-400 to-cyan-400'
-                            }`}
-                          />
-                        </div>
-                        <span className="text-white/30 text-[8px] font-black min-w-[20px] text-right">
-                          {mision.progreso}/{def.meta}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Botón Reclamar */}
-                    {!reclamada && completada && (
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleReclamar('diarias', def.id, def.recompensa)}
-                        disabled={reclamando === def.id}
-                        className="px-2.5 py-1 rounded-lg font-black text-[8px] bg-yellow-400 text-blue-900 transition-all disabled:opacity-50 shrink-0"
-                      >
-                        {reclamando === def.id ? (
-                          <div className="w-3 h-3 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          'Reclamar'
-                        )}
-                      </motion.button>
-                    )}
-                    {reclamada && (
-                      <span className="text-green-400 text-[8px] sm:text-[9px] font-black shrink-0">✓</span>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── MISIONES SEMANALES ── */}
-      {mostrarSemanales && (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🌟</span>
-              <h3 className="text-white font-black text-[10px] sm:text-xs uppercase tracking-wider">
-                Semanales ({semanalesReclamadas}/{Object.keys(semanales).length})
-              </h3>
-            </div>
-            <span className="text-white/30 text-[8px] font-black">
-              {semanalesCompletadas} completadas
-            </span>
-          </div>
-          
-          <div className="space-y-1.5">
-            {MISIONES_SEMANALES.map((def, index) => {
-              const mision = semanales[def.id];
-              if (!mision) return null;
-              const completada = mision.progreso >= def.meta;
-              const reclamada = mision.reclamada;
-              const porcentaje = Math.min((mision.progreso / def.meta) * 100, 100);
-
-              return (
-                <motion.div 
-                  key={def.id}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ delay: index * 0.04 }}
-                  className={`glass-card rounded-xl p-2.5 sm:p-3 border transition-all ${
-                    completada && !reclamada ? 'border-blue-400/50 bg-blue-400/5' : 'border-white/10'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {/* Icono */}
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-lg sm:text-xl shrink-0 ${
-                      completada && !reclamada ? 'bg-blue-400/20 border border-blue-400/40' : 'bg-white/5 border border-white/10'
-                    }`}>
-                      {def.icono}
-                    </div>
-
-                    {/* Contenido */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="font-black text-white text-[10px] sm:text-sm truncate">{def.titulo}</p>
-                        <p className="text-yellow-400 font-black text-[9px] sm:text-xs shrink-0">+{def.recompensa} 🪙</p>
-                      </div>
-                      <p className="text-white/40 text-[8px] sm:text-[10px] truncate">{def.descripcion}</p>
-                      
-                      {/* Barra de progreso */}
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${porcentaje}%` }}
-                            transition={{ duration: 0.6 }}
-                            className={`h-full rounded-full ${
-                              completada ? 'bg-gradient-to-r from-blue-400 to-cyan-400' : 'bg-gradient-to-r from-purple-400 to-pink-400'
-                            }`}
-                          />
-                        </div>
-                        <span className="text-white/30 text-[8px] font-black min-w-[20px] text-right">
-                          {mision.progreso}/{def.meta}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Botón Reclamar */}
-                    {!reclamada && completada && (
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleReclamar('semanales', def.id, def.recompensa)}
-                        disabled={reclamando === def.id}
-                        className="px-2.5 py-1 rounded-lg font-black text-[8px] bg-yellow-400 text-blue-900 transition-all disabled:opacity-50 shrink-0"
-                      >
-                        {reclamando === def.id ? (
-                          <div className="w-3 h-3 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          'Reclamar'
-                        )}
-                      </motion.button>
-                    )}
-                    {reclamada && (
-                      <span className="text-green-400 text-[8px] sm:text-[9px] font-black shrink-0">✓</span>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── MENSAJE VACÍO ── */}
-      {logrosPendientes?.length === 0 && Object.keys(diarias).length === 0 && Object.keys(semanales).length === 0 && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-card rounded-2xl p-6 text-center border border-white/10"
-        >
-          <p className="text-4xl mb-2">🎯</p>
-          <p className="text-white font-black text-sm">¡No hay misiones activas!</p>
-          <p className="text-white/40 text-xs mt-1">Vuelve más tarde para nuevos desafíos</p>
-        </motion.div>
-      )}
-    </motion.div>
-  );
-};
-
-export default Misiones;
+    <div className="misiones-filtros-cabecera"><h2>Elige tu próximo reto</h2><nav className="misiones-filtros" aria-label="Filtrar misiones">
+      {[['todas', 'Todas'], ['diarias', 'Diarias'], ['semanales', 'Semanales'], ['listas', 'Por reclamar']].map(([id, nombre]) => <button key={id} aria-pressed={filtro === id} onClick={() => setFiltro(id)}>{nombre}{id === 'listas' && listas.length > 0 && <span>{listas.length}</span>}</button>)}
+    </nav></div>
+    {filtro === 'listas' && !listas.length && <div className="misiones-vacio"><Estrella /><h3>{pendientes.length ? 'Tus títulos te esperan arriba' : '¡Todo recogido por aquí!'}</h3><p>{pendientes.length ? 'Reclama los títulos que has ganado y sigue con tu aventura.' : 'Sigue aprendiendo para desbloquear tu próxima recompensa.'}</p><button className="misiones-btn misiones-btn-contorno" onClick={() => setFiltro('todas')}>Ver todas las misiones</button></div>}
+    {grupos.filter(g => filtro === 'todas' || filtro === 'listas' || filtro === g.id).map(g => {
+      const misiones = todas.filter(d => d.grupo === g.id && (filtro !== 'listas' || listas.some(l => l.id === d.id)));
+      if (!misiones.length) return null;
+      const completas = todas.filter(d => d.grupo === g.id && d.estado.progreso >= d.meta).length;
+      return <section key={g.id} className="misiones-grupo" aria-labelledby={g.id}>
+        <header className="misiones-grupo-cabecera"><div><span className="misiones-eyebrow">{g.icono} {g.etiqueta}</span><h2 id={g.id}>{g.nombre}</h2><p>{g.plazo}</p></div><span className="misiones-grupo-cuenta">{completas} / {g.definiciones.length}<small>completadas</small></span></header>
+        <div className="misiones-grid">{misiones.map(d => {
+          const m = d.estado;
+          const progreso = Math.min(d.meta, Math.max(0, m.progreso));
+          const lista = progreso >= d.meta;
+          const estado = m.reclamada ? 'recibida' : lista ? 'lista' : 'progreso';
+          return <article className={'mision-card mision-card--' + estado} key={d.id}>
+            <div className="mision-card-top"><span className="mision-icono" aria-hidden="true">{d.icono}</span><span className="mision-premio"><span aria-hidden="true">◉</span> +{d.recompensa}<small>monedas</small></span></div>
+            <div className="mision-contenido"><h3>{d.titulo}</h3><p>{d.descripcion}</p></div>
+            <div className="mision-progreso-texto"><span>{m.reclamada ? '✓ Recompensa recibida' : lista ? '✦ ¡Misión conseguida!' : 'Tu progreso'}</span><strong>{progreso}<small> / {d.meta}</small></strong></div>
+            <progress max={d.meta} value={progreso} aria-label={d.titulo} />
+            <button className={'misiones-btn ' + (lista && !m.reclamada ? 'misiones-btn-oro' : 'misiones-btn-contorno')} disabled={!lista || m.reclamada || !!ocupada} onClick={() => reclamar(d.id, () => reclamarMision(g.id, d.id), '+' + d.recompensa + ' monedas recibidas')}>
+              {ocupada === d.id ? 'Guardando…' : m.reclamada ? '✓ Premio recibido' : lista ? 'Recoger recompensa' : 'En progreso'}{lista && !m.reclamada && <span aria-hidden="true">→</span>}
+            </button>
+          </article>;
+        })}</div>
+      </section>;
+    })}
+    <p className="misiones-pie">✦ Tu aventura se construye un pequeño paso a la vez.</p>
+  </main>;
+}

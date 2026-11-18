@@ -1,0 +1,121 @@
+main:has(> .misiones-page) { max-width: 75rem; padding-inline: clamp(12px, 3vw, 32px); }
+.misiones-page {
+  --m-oro: #f5d18e;
+  --m-texto: #f8f3e8;
+  --m-suave: #c2cdc7;
+  position: relative;
+  isolation: isolate;
+  padding: 20px 0 calc(40px + env(safe-area-inset-bottom));
+  color: var(--m-texto);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.misiones-page::before { content: ''; position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse at 90% 0, #263b36, transparent 60%), #101719; pointer-events: none; }
+.misiones-page h1, .misiones-page h2, .misiones-page h3, .misiones-page p { margin: 0; }
+.misiones-page button { font: inherit; cursor: pointer; }
+.misiones-page button:focus-visible { outline: 3px solid var(--m-oro); outline-offset: 5px; }
+.misiones-portada { position: relative; display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; gap: 32px; padding: clamp(24px, 4vw, 52px); border: 1px solid #a9ba9e40; border-radius: 28px; background: radial-gradient(ellipse at 15% 90%, #40534450, transparent 65%), linear-gradient(125deg, #243a32, #182624 70%); overflow: hidden; }
+.misiones-portada::after { content: '✦'; position: absolute; right: -35px; top: -120px; font-family: Georgia, serif; font-size: 350px; line-height: 1; color: #f5d18e08; pointer-events: none; }
+.misiones-eyebrow { display: block; color: var(--m-oro); font-size: 14px; font-weight: 700; letter-spacing: .07em; }
+.misiones-portada h1 { margin: 20px 0; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(38px, 4.6vw, 64px); line-height: 1.08; letter-spacing: -.035em; font-weight: 400; }
+.misiones-portada h1 em { color: var(--m-oro); font-weight: 400; }
+.misiones-portada-texto > p { max-width: 36ch; color: #d4dfd5; line-height: 1.7; }
+.misiones-tesoro { position: relative; z-index: 1; padding: 24px; border: 1px solid #f5d18e38; border-radius: 22px; background: #101d19b8; }
+.misiones-insignia { display: grid; place-items: center; width: 66px; height: 66px; margin-bottom: 18px; border: 1px solid #f5d18e50; outline: 5px solid #f5d18e09; border-radius: 50%; background: radial-gradient(circle, #f5d18e25, #f5d18e05); }
+.misiones-insignia svg { width: 38px; height: 38px; color: var(--m-oro); }
+.misiones-tesoro .misiones-eyebrow { font-size: 14px; letter-spacing: .03em; }
+.misiones-tesoro h2 { margin: 10px 0; font-size: 24px; line-height: 1.3; font-weight: 700; }
+.misiones-tesoro p { margin-bottom: 22px; color: var(--m-suave); font-size: 16px; }
+.misiones-btn { display: inline-flex; align-items: center; justify-content: center; gap: 16px; min-height: 50px; padding: 12px 20px; border: 1px solid transparent; border-radius: 12px; font-weight: 750 !important; transition: background .16s, border-color .16s, transform .16s; }
+.misiones-btn:not(:disabled):hover { transform: translateY(-2px); }
+.misiones-btn-oro { background: linear-gradient(110deg, #f6d99f, #eabb68); color: #242719; box-shadow: 0 4px 16px #0002; }
+.misiones-btn-oro:not(:disabled):hover { background: #ffe3ad; }
+.misiones-btn-contorno { border-color: #768d805e; background: #26372f; color: #dce8de; }
+.misiones-btn:disabled { cursor: default; opacity: .7; box-shadow: none; }
+.misiones-tesoro .misiones-btn { width: 100%; min-height: 56px; }
+.misiones-resumen { display: grid; grid-template-columns: repeat(3, 1fr); margin: 20px 0 28px; border: 1px solid #a9ba9e30; border-radius: 20px; background: #1b2825; }
+.misiones-resumen > div { display: flex; align-items: center; gap: 14px; margin: 22px 0; padding: 0 24px; }
+.misiones-resumen > div + div { border-left: 1px solid #a9ba9e30; }
+.misiones-resumen-icono { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; background: #b9d6ad12; border-radius: 12px; color: var(--m-oro); font-size: 22px; }
+.misiones-resumen p { display: flex; flex-direction: column; gap: 3px; }
+.misiones-resumen strong { font-size: 26px; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.misiones-resumen small { font-size: 16px; font-weight: 400; color: var(--m-suave); }
+.misiones-resumen p > span { color: var(--m-suave); font-size: 14px; }
+.misiones-logros { scroll-margin-top: 100px; padding: 22px 24px; border: 1px solid #d9bb7f4a; border-radius: 20px; background: linear-gradient(110deg, #3a3224aa, #222b25); }
+.misiones-logros-cabecera { display: flex; gap: 16px; align-items: center; }
+.misiones-logros-sello { display: grid; place-items: center; width: 52px; height: 52px; flex-shrink: 0; font-size: 30px; border: 1px solid #f5d18e33; border-radius: 16px; background: #f5d18e0c; }
+.misiones-logros h2 { font-size: 20px; font-weight: 700; }
+.misiones-logros p { margin-top: 4px; color: var(--m-suave); font-size: 14px; }
+.misiones-contador { margin-left: auto; color: var(--m-oro); background: #f5d18e12; border: 1px solid #f5d18e38; border-radius: 100px; padding: 6px 12px; white-space: nowrap; font-size: 14px; }
+.misiones-titulo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; padding-top: 22px; margin-top: 20px; border-top: 1px solid #f5d18e26; }
+.misiones-titulo h3 { margin-top: 6px; font-size: 22px; font-weight: 700; }
+.misiones-filtros-cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; margin: 38px 0 30px; }
+.misiones-filtros-cabecera > h2 { font-family: Georgia, serif; font-size: 28px; font-weight: 400; }
+.misiones-filtros { display: flex; flex-wrap: wrap; gap: 4px; padding: 5px; border: 1px solid #a9ba9e33; border-radius: 14px; background: #192522; }
+.misiones-filtros button { min-height: 48px; padding: 10px 16px; border-radius: 10px; border: 1px solid transparent; background: transparent; color: #cad5ce; font-size: 16px; }
+.misiones-filtros button[aria-pressed=true] { background: #3c5145; border-color: #b6caa33b; color: #fff8e7; }
+.misiones-filtros button:hover { color: white; }
+.misiones-filtros button span { margin-left: 8px; padding: 2px 6px; background: var(--m-oro); border-radius: 5px; color: #242719; font-size: 14px; }
+.misiones-grupo { margin-bottom: 36px; }
+.misiones-grupo-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 20px; }
+.misiones-grupo-cabecera h2 { margin-top: 6px; font-size: 24px; font-weight: 700; }
+.misiones-grupo-cabecera p { margin-top: 5px; color: var(--m-suave); font-size: 14px; }
+.misiones-grupo-cuenta { min-width: 88px; padding-left: 16px; text-align: right; color: var(--m-oro); font-size: 24px; font-weight: 700; white-space: nowrap; }
+.misiones-grupo-cuenta small { display: block; color: var(--m-suave); font-size: 14px; font-weight: 400; }
+.misiones-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.mision-card { display: flex; flex-direction: column; padding: 24px; border: 1px solid #a9ba9e38; border-radius: 22px; background: linear-gradient(145deg, #23332d, #1b2725); box-shadow: 0 7px 20px #0001; }
+.mision-card--lista { border-color: #d4b37c80; background: radial-gradient(ellipse at top right, #7e65321c, transparent 65%), #23312a; }
+.mision-card--recibida { background: #1a2422; }
+.mision-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.mision-icono { display: grid; place-items: center; width: 54px; height: 54px; background: #a3c4a21a; border: 1px solid #b7cfaa30; border-radius: 16px; font-size: 28px; }
+.mision-premio { display: flex; align-items: center; gap: 6px; padding: 7px 11px; border: 1px solid #f5d18e24; border-radius: 10px; background: #f5d18e0b; color: var(--m-oro); font-size: 20px; font-weight: 750; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mision-premio small { font-size: 14px; font-weight: 400; }
+.mision-premio > span { font-size: 18px; }
+.mision-contenido { flex: 1; }
+.mision-contenido h3 { font-size: 20px; font-weight: 750; line-height: 1.3; }
+.mision-contenido p { margin-top: 8px; margin-bottom: 24px; color: var(--m-suave); font-size: 16px; }
+.mision-progreso-texto { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: var(--m-suave); }
+.mision-progreso-texto strong { font-size: 16px; color: var(--m-texto); font-variant-numeric: tabular-nums; }
+.mision-progreso-texto small { color: var(--m-suave); font-size: 14px; font-weight: 400; }
+.mision-card--lista .mision-progreso-texto > span { color: var(--m-oro); }
+.mision-card--recibida .mision-progreso-texto > span { color: #b5d6b9; }
+.mision-card progress { display: block; width: 100%; height: 6px; margin: 10px 0 22px; border: 0; border-radius: 100px; overflow: hidden; appearance: none; background: #a9ba9e26; accent-color: #dbbc83; }
+.mision-card progress::-webkit-progress-bar { background: #a9ba9e26; }
+.mision-card progress::-webkit-progress-value { background: linear-gradient(90deg, #b89b65, #f4d59b); border-radius: 100px; }
+.mision-card progress::-moz-progress-bar { background: #dbbc83; border-radius: 100px; }
+.mision-card--recibida progress::-webkit-progress-value { background: #88ad91; }
+.mision-card .misiones-btn { width: 100%; }
+.misiones-vacio { padding: 40px 24px; text-align: center; border: 1px dashed #a9ba9e50; border-radius: 22px; background: #1b2825; }
+.misiones-vacio svg { width: 50px; height: 50px; margin: 0 auto 20px; color: var(--m-oro); }
+.misiones-vacio h3 { font-size: 24px; font-weight: 700; }
+.misiones-vacio p { color: var(--m-suave); margin: 10px 0 24px; }
+.misiones-pie { padding-top: 8px; text-align: center; color: var(--m-suave); font-size: 14px; }
+@media (max-width: 900px) {
+  .misiones-portada { gap: 24px; padding: 28px; }
+  .misiones-resumen > div { padding-inline: 16px; }
+  .misiones-resumen-icono { display: none; }
+}
+@media (max-width: 640px) {
+  .misiones-page { padding-top: 8px; }
+  .misiones-portada { grid-template-columns: 1fr; gap: 26px; padding: 24px; border-radius: 22px; }
+  .misiones-portada h1 { font-size: clamp(36px, 9vw, 48px); }
+  .misiones-tesoro { padding: 20px; }
+  .misiones-insignia { width: 48px; height: 48px; float: right; margin: 0 0 10px 12px; }
+  .misiones-insignia svg { width: 28px; height: 28px; }
+  .misiones-tesoro h2 { font-size: 22px; }
+  .misiones-resumen { border-radius: 16px; }
+  .misiones-resumen > div { margin-block: 16px; padding-inline: 10px; }
+  .misiones-resumen strong { font-size: 24px; }
+  .misiones-resumen p > span { font-size: 14px; }
+  .misiones-logros { padding: 20px 16px; }
+  .misiones-contador { display: none; }
+  .misiones-titulo .misiones-btn { width: 100%; }
+  .misiones-filtros-cabecera { margin-block: 30px 24px; }
+  .misiones-filtros { display: grid; grid-template-columns: repeat(2, 1fr); width: 100%; gap: 16px; padding: 8px; }
+  .misiones-filtros button { padding-inline: 10px; }
+  .misiones-grupo-cabecera h2 { font-size: 22px; }
+  .misiones-grupo-cuenta { min-width: 64px; font-size: 20px; }
+  .misiones-grid { grid-template-columns: 1fr; gap: 16px; }
+  .mision-card { padding: 22px; }
+}
+@media (prefers-reduced-motion: reduce) { .misiones-page *, .misiones-page *::before, .misiones-page *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
